@@ -1,0 +1,46 @@
+10
+
+dir
+2080
+svn+ssh://jniu@98.129.53.210/var/svnroot/vibe/htdocs/sites/all/modules/spam/filters
+svn+ssh://jniu@98.129.53.210/var/svnroot/vibe
+
+
+
+2009-12-28T17:27:28.382500Z
+139
+bill
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+a32a93f9-1dfb-4946-ba86-15f61e76f467
+
+node_age
+dir
+
+url
+dir
+
+surbl
+dir
+
+custom
+dir
+
+duplicate
+dir
+
+bayesian
+dir
+

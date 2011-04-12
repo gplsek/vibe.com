@@ -1,0 +1,11 @@
+name = Jetpack
+description = Jetpack Module Functions 
+package = Jetpack
+core = 6.x
+
+; Information added by drupal.org packaging script on 2009-11-18
+version = "6.x-1.0-alpha8"
+core = "6.x"
+project = "jetpack"
+datestamp = "1258581955"
+

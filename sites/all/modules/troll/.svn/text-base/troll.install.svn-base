@@ -1,0 +1,136 @@
+<?php
+// $Id: troll.install,v 1.5.2.4 2009/05/09 05:47:46 deekayen Exp $
+
+/**
+ * @file
+ * .install file for troll module.
+ */
+
+/**
+ * Implementation of hook_install().
+ */
+function troll_install() {
+  drupal_install_schema('troll');
+
+  // Whitelist 127.0.0.1.
+  db_query("INSERT INTO {troll_whitelist} (net, bcast) VALUES (2130706433, 2130706433)");
+}
+
+/**
+ * Add RBL tables.
+ */
+function troll_update_1() {
+  $ret = array();
+  db_create_table($ret, 'troll_blacklist', array(
+    'fields' => array(
+         'net' => array('type' => 'int', 'not null' => TRUE, 'disp-width' => '11'),
+         'bcast' => array('type' => 'int', 'not null' => TRUE, 'disp-width' => '11')),
+    'unique keys' => array(
+         'net' => array('net', 'bcast'))
+    )
+  );
+  db_create_table($ret, 'troll_whitelist', array(
+    'fields' => array(
+         'net' => array('type' => 'int', 'not null' => TRUE, 'disp-width' => '11'),
+         'bcast' => array('type' => 'int', 'not null' => TRUE, 'disp-width' => '11')),
+    'unique keys' => array(
+         'net' => array('net', 'bcast'))
+    )
+  );
+
+  $ret[] = update_sql('INSERT INTO {troll_whitelist} (net, bcast) VALUES (2130706433, 2130706433)');
+  return $ret;
+}
+
+/**
+ * This update will not run properly under Drupal 6 because _system_update_utf8() does
+ * not exist in Drupal 6.
+ *
+ * See http://drupal.org/node/54614
+ * @return array
+ */
+/*
+function troll_update_2() {
+  return _system_update_utf8(array('troll_blacklist', 'troll_ip_ban', 'troll_ip_track', 'troll_whitelist'));
+}
+ */
+
+/**
+ * Support IPv6 address lengths.
+ */
+function troll_update_5000() {
+  $ret = array();
+
+  db_drop_unique_key($ret, 'troll_ip_ban', 'ip');
+  db_change_field($ret, 'troll_ip_ban', 'ip_address', 'ip_address', array('type' => 'varchar', 'length' => '39', 'not null' => TRUE, 'default' => ''));
+  db_add_unique_key($ret, 'troll_ip_ban', 'ip', array('ip_address'));
+
+  db_change_field($ret, 'troll_ip_track', 'ip_address', 'ip_address', array('type' => 'varchar', 'length' => '39', 'not null' => TRUE, 'default' => ''));
+  return $ret;
+}
+
+function troll_update_6000() {
+  $ret = array();
+  db_change_field($ret, 'troll_blacklist', 'net', 'net', array('type' => 'int', 'size' => 'big', 'not null' => TRUE));
+  db_change_field($ret, 'troll_blacklist', 'bcast', 'bcast', array('type' => 'int', 'size' => 'big', 'not null' => TRUE));
+  db_change_field($ret, 'troll_whitelist', 'net', 'net', array('type' => 'int', 'size' => 'big', 'not null' => TRUE));
+  db_change_field($ret, 'troll_whitelist', 'bcast', 'bcast', array('type' => 'int', 'size' => 'big', 'not null' => TRUE));
+  return $ret;
+}
+
+/**
+ * Implementation of hook_uninstall().
+ */
+function troll_uninstall() {
+  drupal_uninstall_schema('troll');
+  variable_del('troll_block_role');
+  variable_del('troll_blacklist_stutter');
+  variable_del('troll_blacklist_mod_requests');
+  variable_del('troll_blacklist_alt_page');
+  variable_del('troll_blacklist_alt_url');
+  variable_del('troll_enable_ip_ban');
+  variable_del('troll_ip_ban_redirect');
+}
+
+/**
+ * Implementation of hook_schema().
+ */
+function troll_schema() {
+  $schema['troll_whitelist'] = array(
+    'fields' => array(
+         'net' => array('type' => 'int', 'size' => 'big', 'not null' => TRUE),
+         'bcast' => array('type' => 'int', 'size' => 'big', 'not null' => TRUE)),
+    'unique keys' => array(
+         'net' => array('net', 'bcast')),
+  );
+  $schema['troll_ip_track'] = array(
+    'fields' => array(
+         'uid' => array('type' => 'int', 'not null' => TRUE, 'default' => 0, 'disp-width' => '11'),
+         'accessed' => array('type' => 'int', 'unsigned' => TRUE, 'not null' => TRUE, 'default' => 0, 'disp-width' => '11'),
+         'ip_address' => array('type' => 'varchar', 'length' => '39', 'not null' => TRUE, 'default' => ''),
+         'created' => array('type' => 'int', 'not null' => TRUE, 'default' => 0, 'disp-width' => '11')),
+    'indexes' => array(
+         'uid' => array('uid')),
+  );
+  $schema['troll_ip_ban'] = array(
+    'fields' => array(
+         'iid' => array('type' => 'serial', 'not null' => TRUE, 'disp-width' => '11'),
+         'ip_address' => array('type' => 'varchar', 'length' => '39', 'not null' => TRUE, 'default' => ''),
+         'domain_name' => array('type' => 'varchar', 'length' => '255', 'not null' => TRUE, 'default' => ''),
+         'expires' => array('type' => 'int', 'unsigned' => TRUE, 'not null' => TRUE, 'default' => 0, 'disp-width' => '11'),
+         'created' => array('type' => 'int', 'unsigned' => TRUE, 'not null' => TRUE, 'default' => 0, 'disp-width' => '11'),
+         'uid' => array('type' => 'int', 'unsigned' => TRUE, 'not null' => TRUE, 'default' => 0, 'disp-width' => '10')),
+    'primary key' => array('iid'),
+    'unique keys' => array(
+         'ip' => array('ip_address')),
+  );
+  $schema['troll_blacklist'] = array(
+    'fields' => array(
+         'net' => array('type' => 'int', 'size' => 'big', 'not null' => TRUE),
+         'bcast' => array('type' => 'int', 'size' => 'big', 'not null' => TRUE)),
+    'unique keys' => array(
+         'net' => array('net', 'bcast')),
+  );
+
+  return $schema;
+}

@@ -1,0 +1,40 @@
+/* $Id: sidebars-right-liquid.css,v 1.1 2009/09/25 03:37:34 garrettalbright Exp $ */
+
+/* Liquid layout; both sidebars on right */
+
+#sidebar-left {
+  width: LSB-SBpx;
+  float: right;
+  margin-right: 0px;
+}
+
+#sidebar-right {
+  width: RSB-SBpx;
+}
+
+#sidebar-left-inner {
+  margin-left: 20px;
+  margin-right: 0px;
+}
+
+.sidebar-left #content-inner {
+  padding-left: 0px;
+  padding-right: LSB-SBpx;
+}
+
+.sidebar-right #content-inner {
+  padding-right: RSB-SBpx;
+}
+
+.two-sidebars #sidebar-left {
+  margin-right: RSB-SBpx;
+}
+
+.two-sidebars #sidebar-right {
+  margin-right: -BOTHSB-SBpx;
+}
+
+.two-sidebars #content-inner {
+  padding-left: 0px;
+  padding-right: BOTHSB-SBpx;
+}

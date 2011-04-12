@@ -1,0 +1,14 @@
+; $Id: simplehtmldom.info,v 1.2 2009/08/29 01:35:25 rsvelko Exp $
+name = simplehtmldom API
+description = A wrapper module around the simplehtmldom PHP library at sourceforge.
+package = Filter
+dependencies[] = node
+core = 6.x
+
+
+; Information added by drupal.org packaging script on 2009-08-29
+version = "6.x-1.11"
+core = "6.x"
+project = "simplehtmldom"
+datestamp = "1251515160"
+

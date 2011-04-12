@@ -1,0 +1,60 @@
+/* $Id: compact-icon.css,v 1.1.2.4 2009/09/12 09:12:03 sign Exp $ */
+
+ul.admin-menu-compact {
+  padding: 0;
+  margin-left: 0;
+  float: left;
+}
+
+ul.admin-menu-compact li.leaf {
+  border:1px solid #fff;
+  float:left;
+  height:105px;
+  list-style-image:none;
+  list-style-position:outside;
+  list-style-type:none;
+  margin-bottom:10px;
+  margin-right:10px;
+  padding:0;
+  text-align:center;
+  width:130px;
+}
+
+ul.admin-menu-compact li.last {
+  margin-right: 10;
+}
+
+ul.admin-menu-compact a {
+  display:block;
+  height:80px;
+  padding:20px 10px 5px;
+  text-decoration:none;
+  width:110px;
+}
+
+ul.admin-menu-compact a:hover {
+  background-color:#FFFFFF;
+  border:1px solid silver;
+  height:80px;
+  margin-left:-1px;
+  margin-top:-1px;
+  padding:20px 10px 5px;
+  width:110px;
+}
+
+div.admin-panel {
+  float: left;
+  width: 100%;
+}
+
+div.admin-panel h3 {
+  border: 1px solid silver;
+  padding: 5px 35px;
+  background: transparent url(icons/i24/admin/admin.png) no-repeat scroll 1% 50%;
+}
+
+div.admin-panel h3:hover {
+  background-color: #fff;
+  text-decoration: underline;
+  cursor: pointer;
+}

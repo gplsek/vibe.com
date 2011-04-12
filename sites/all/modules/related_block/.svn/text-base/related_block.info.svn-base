@@ -1,0 +1,14 @@
+; $Id$
+
+name = Related Block
+description = Creates a block with the related nodes.
+dependencies[] = search
+
+core = 6.x
+
+; Information added by drupal.org packaging script on 2009-08-10
+version = "6.x-1.0"
+core = "6.x"
+project = "related_block"
+datestamp = "1249869343"
+

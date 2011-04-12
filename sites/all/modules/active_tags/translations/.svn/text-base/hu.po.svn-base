@@ -1,0 +1,77 @@
+# Hungarian translation of active_tags (6.x-1.4)
+# Copyright (c) 2009 by the Hungarian translation team
+# Generated from files:
+#  active_tags.info,v 1.1 2008/09/12 08:31:03 darrenmuk
+#  active_tags_popular.info,v 1.1.2.1 2008/09/12 17:15:11 darrenmuk
+#  active_tags.module,v 1.2.2.4 2009/03/13 00:38:51 dragonwize
+#  active_tags_popular.module,v 1.1.2.5 2009/03/24 18:42:00 dragonwize
+#  active_tags_popular.js,v 1.1.2.5 2009/03/20 14:44:40 dragonwize
+#
+msgid ""
+msgstr ""
+"Project-Id-Version: active_tags (6.x-1.4)\n"
+"POT-Creation-Date: 2009-05-16 16:09+0200\n"
+"PO-Revision-Date: 2009-04-16 14:47+0200\n"
+"Last-Translator: Balogh Zoltán\n"
+"Language-Team: Hungarian http://forditas.mindworks.hu\n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=utf-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+"Plural-Forms: nplurals=2; plural=(n!=1);\n"
+
+#: active_tags.info:0; active_tags_popular.info:0
+msgid "User interface"
+msgstr "Felhasználói felület"
+
+#: active_tags.module:34; active_tags.info:0
+msgid "Active Tags"
+msgstr "Élő címkék"
+
+#: active_tags.module:37
+msgid ""
+"Swaps this vocabulary widget for an enhanced tag field if browser "
+"supports javascript."
+msgstr ""
+"Lecseréli a szótár címkéző eszközét a javított címkéző "
+"mezőre, ha a böngésző támogatja a javascript-et."
+
+#: active_tags.module:0
+msgid "active_tags"
+msgstr "active_tags"
+
+#: active_tags_popular.module:69
+msgid "Active Tags Helper - Popular"
+msgstr "Élő címkék - Gyakoriak"
+
+#: active_tags_popular.module:72
+msgid ""
+"Adds additional helpers to the active tags widget to assist in adding "
+"popular tags to posts"
+msgstr "További segítséget ad a gyakori címkék tartalomhoz fűzésében"
+
+#: active_tags_popular.module:76
+msgid "Number of popular tags to show"
+msgstr "Megjelenített gyakori címkék száma"
+
+#: active_tags_popular.module:33; active_tags_popular.info:0
+msgid "Active Tags Popular"
+msgstr "Gyakori élő címkék"
+
+#: active_tags_popular.module:0
+msgid "active_tags_popular"
+msgstr "active_tags_popular"
+
+#: active_tags.info:0
+msgid "Enhanced tag widget for free tagging vocabularies"
+msgstr "Javított címkéző eszköz a szabad címkézésű szótárakoz"
+
+#: active_tags_popular.info:0
+msgid ""
+"Further enhance Active Tags by making it easy for users to select from "
+"some popular tags"
+msgstr "Élő címkék további javítása a gyakori címkék listázásával"
+
+#: active_tags_popular.js:0
+msgid "Add popular tags: "
+msgstr "Gyakori címkék: "
+

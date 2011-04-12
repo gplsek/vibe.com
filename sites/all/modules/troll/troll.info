@@ -1,0 +1,12 @@
+; $Id $
+name = Troll
+description = Provides tools for community sites including users by IP address, banning IP addresses, advanced user searching, and blocking user by role.
+core = 6.x
+php = 5.2
+
+; Information added by drupal.org packaging script on 2009-08-04
+version = "6.x-1.x-dev"
+core = "6.x"
+project = "troll"
+datestamp = "1249345786"
+

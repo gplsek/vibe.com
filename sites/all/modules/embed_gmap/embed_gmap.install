@@ -1,0 +1,28 @@
+<?php
+/**
+* Implementation of hook_install().
+*/
+function embed_gmap_install() {
+  content_notify('install', 'embed_gmap');
+}
+
+/**
+* Implementation of hook_uninstall().
+*/
+function embed_gmap_uninstall() {
+  content_notify('uninstall', 'embed_gmap');
+}
+
+/**
+* Implementation of hook_enable().
+*/
+function embed_gmap_enable() {
+  content_notify('enable', 'embed_gmap');
+}
+
+/**
+* Implementation of hook_disable().
+*/
+function embed_gmap_disable() {
+  content_notify('disable', 'embed_gmap');
+}

@@ -1,0 +1,9 @@
+<?php
+
+function jetpack_imagecache_enable() {
+  cache_clear_all('imagecache_actions', 'cache');
+}
+
+function jetpack_imagecache_disable() {
+  cache_clear_all('imagecache_actions', 'cache');
+}

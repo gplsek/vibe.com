@@ -1,0 +1,59 @@
+<?php
+
+// $Id: session_api.module.test,v 1.1.2.1 2008/07/09 15:32:31 jhedstrom Exp $
+
+/**
+ * @file
+ * Session API SimpleTests.
+ */
+
+/**
+ * Session API SimpleTest class
+ */
+class SessionApiTest extends DrupalTestCase {
+  function get_info() {
+    return array(
+      'name' => t('Session API tests'),
+      'desc' => t('Tests various Session API functions'),
+      'group' => t('Session API'),
+    );
+  }
+
+  /**
+   * Verify functions.
+   */
+  function testFunctions() {
+    module_load_include('module', 'session_api');
+    // Capture existing values, which are restored at the end of this function.
+    $old_cookie = $_COOKIE;
+    $old_session_api_id = $_SESSION['session_api_id'];
+    $old_sid = session_id();
+
+    // session_api_available();
+    $_COOKIE = NULL;
+    $this->assertFalse(session_api_available(), t('Function session_api_available() correctly returns FALSE when cookies are disabled.'));
+    $this->assertFalse(session_api_get_sid(), t('Function session_api_get_sid() correctly returns FALSE when cookies are disabled.'));
+
+    // enable cookies
+    $_COOKIE = $old_cookie;
+
+    // Find correct sid
+    $fake_sid = rand(1, 2000000);
+    $_SESSION['session_api_id'] = $fake_sid;
+    $this->assertTrue(session_api_get_sid() == $fake_sid, t('Function session_api_get_sid() returns expected value.'));
+
+    // Store ID in the db
+    session_id(md5(rand(1, 20000)));
+    $rec = new stdClass();
+    $rec->session_id = session_id();
+    drupal_write_record('session_api', $rec);
+    $_SESSION['session_api_id'] = NULL;
+    $this->assertTrue(session_api_get_sid() == $rec->sid, 'Function session_api_get_sid() correctly retrieves the session_api_id from the database.');
+
+    // restore pre-testing values
+    $_COOKIE = $old_cookie;
+    $_SESSION['session_api_id'] = $old_session_api_id;
+    db_query("DELETE FROM {session_api} WHERE session_id = '%s'", session_id());
+    session_id($old_sid);
+  }
+}

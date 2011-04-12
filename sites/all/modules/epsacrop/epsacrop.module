@@ -1,0 +1,332 @@
+<?php
+// $Id: epsacrop.module,v 1.1 2009/10/12 15:26:37 yvmarques Exp $
+/**
+ * @file
+ * The main file of module
+ */
+
+if (defined('MAINTENANCE_MODE') && MAINTENANCE_MODE == 'install') {
+  define('EPSACROP_JCROP_PATH', dirname(__FILE__) .'/Jcrop');
+}
+else {
+  define('EPSACROP_JCROP_PATH', drupal_get_path('module', 'epsacrop') .'/Jcrop');
+}
+
+/**
+ * 
+ * Implementation of hook_init
+ * Ajout des différents javascript, css nécessaires
+ */
+function epsacrop_init() {
+  if (arg(0) == 'node' && (arg(1) == 'add' || arg(2) == 'edit')) {
+    drupal_add_js(array('epsacrop' => array('base' => base_path(), 'path' => drupal_get_path('module', 'epsacrop'))), 'setting');
+    drupal_add_js(drupal_get_path('module', 'epsacrop') .'/js/epsacrop.js');
+    drupal_add_js(EPSACROP_JCROP_PATH .'/js/jquery.Jcrop.min.js');
+    drupal_add_js(drupal_get_path('module', 'epsacrop') .'/js/json2.js');
+    jquery_ui_add(array('ui.dialog'));
+    drupal_add_css(drupal_get_path('module', 'epsacrop') .'/css/ui.all.css');
+    drupal_add_css(EPSACROP_JCROP_PATH .'/css/jquery.Jcrop.css');
+    drupal_add_css(drupal_get_path('module', 'epsacrop') .'/css/epsacrop.css');
+  }
+}
+
+/**
+ *  Implementation of hook_menu
+ *  Menu pour le dialog
+ */
+function epsacrop_menu() {
+  $items = array();
+  $items['crop/dialog'] = array(
+    'title' => 'Dialog Crop',
+    'page callback' => 'epsacrop_dialog',
+    'access callback' => TRUE,
+    'type' => MENU_CALLBACK
+  );
+  return $items;
+}
+
+/**
+ * function de callback pour le dialog celle-ci va chercher les preset qui contiennent
+ * l'action crop dans les presets et les affiches
+ */
+function epsacrop_dialog() {
+  $args = func_get_args();
+  $out ='<div class="epsacrop-global">'."\n";
+  $out .='<div class="epsacrop-image-crop">'."\n";
+  $out .='<img src="_blank" id="epsacrop-target" />'."\n";
+  $out .='</div>'."\n";
+  $out .='<div class="epsacrop-presets-menu">'."\n";
+  $out .='<ul class="epsacrop-presers-menu-ul">'."\n";
+  $query = db_query("SELECT p.presetname, a.data FROM {imagecache_action} a RIGHT JOIN {imagecache_preset} p ON p.presetid = a.presetid WHERE a.action LIKE '%crop';");
+  $i = 0;
+  while ($res = db_fetch_array($query)) {
+    $data = unserialize($res['data']);
+    $out .='<li class="epsacrop-presers-menu-li"><a href="javascript:EPSACrop.crop(\''. $data['width'] .'x'. $data['height'] .'\');" rel="'. $data['width'] .'x'. $data['height'] .'"'. ($i == 0 ? ' class="selected"' : '') .'>'. $res['presetname'] .'</a></li>';
+    $i++; 
+  }
+  $out .='</ul>'."\n";
+  $out .='</div>'."\n";
+  $out .='<br style="clear:both;" />'."\n";
+  $out .='</div>'."\n";
+
+  $GLOBALS['devel_shutdown'] = FALSE;
+  echo $out;
+  exit;
+}
+
+function epsacrop_nodeapi(&$node, $op, $a3, $a4) {
+//var_dump($op);
+  switch ($op) {
+    case'delete':
+      _epsacrop_delete($node->nid);
+    break;
+    case'insert':
+    case'update':
+      if (!empty($node->epsacropcoords)) {
+        $coords = json_decode($node->epsacropcoords, TRUE);
+        // $scalled = json_decode($node->epsacropscalled, TRUE);
+        foreach ($coords as $fid => $coord) {
+          _epsacrop_update_file($fid, $coord, $node->nid);
+        }
+      }
+    break;
+    case'load':
+      
+    break;
+    case'prepare':
+      if ($node->nid) {
+        // $node->epsacropscalled = _epsacrop_get_scalled_from_nid($node->nid) ? json_encode(_epsacrop_get_scalled_from_nid($node->nid)) : NULL;
+        $node->epsacropcoords = _epsacrop_get_coords_from_nid($node->nid) ? json_encode(_epsacrop_get_coords_from_nid($node->nid)) : NULL;
+      }
+    break;
+    case'validate':
+	// crop for preive of billboard nodes only
+      if (!empty($a3['epsacropcoords']['#post']) && $a3['epsacropcoords']['#post']['op'] == 'Preview' && $a3['epsacropcoords']['#post']['form_id'] == 'billboard_node_form') {        
+      	if (!empty($a3['epsacropcoords']['#value'])) {
+        	$coords = json_decode($a3['epsacropcoords']['#value'], TRUE);
+            foreach ($coords as $fid => $coord) {
+          		_epsacrop_update_file($fid, $coord, $node->nid);
+        	}
+      	}
+
+      }
+    break;
+  }
+}
+
+function epsacrop_form_alter(&$form, $form_state, $form_id) {
+  if (eregi('_node_form', $form_id)) {
+    $node = $form['#node'];
+    $form['epsacropcoords'] = array(
+      '#type' => 'textarea',
+      '#default_value' => (!empty($node->epsacropcoords) ? $node->epsacropcoords : ''),
+      '#prefix' => '<div id="edit-epsacropcoords-wrapper">',
+      '#suffix' => '</div>',
+    );
+    /* $form['epsacropscalled'] = array(
+      '#type' => 'textarea',
+      '#default_value' => (!empty($node->epsacropscalled) ? $node->epsacropscalled : ''),
+      '#prefix' => '<div id="edit-epsacropscalled-wrapper">',
+      '#suffix' => '</div>',
+    ); */
+  }
+}
+
+function epsacrop_jcrop_get_version() {
+  $vresion = 0;
+  if (file_exists(EPSACROP_JCROP_PATH .'/js/jquery.Jcrop.js')) {
+    $lines = file(EPSACROP_JCROP_PATH .'/js/jquery.Jcrop.js');
+    array_shift($lines); // First line is simple comment
+    if (preg_match('/v(.*)/', array_shift($lines), $matches)) {
+      $version = $matches[1];
+    }
+    else {
+      drupal_set_message(t('Could be give the version of Jcrop, check your install', 'error'));
+      $version = 0;
+    }
+  }
+  return $version;
+}
+
+function _epsacrop_fid_exists($fid) {
+  return db_result(db_query('SELECT COUNT(fid) FROM {epsacrop_files} WHERE fid = %d', $fid));
+}
+
+function _epsacrop_add_file($fid, $coords, $nid) {
+  db_query("INSERT INTO {epsacrop_files}(fid, coords, nid) VALUES(%d, '%s', %d)", $fid, serialize($coords), $nid);
+}
+
+function _epsacrop_update_file($fid, $coords, $nid) {
+  db_query("UPDATE {epsacrop_files} SET coords = '%s', nid = %d WHERE fid = %d", serialize($coords), $nid, $fid);
+  if ((db_affected_rows() == 0) && (_epsacrop_fid_exists($fid) == 0)) {
+    _epsacrop_add_file($fid, $coords, $nid);
+  }
+  $filepath = _epsacrop_get_path_from_fid($fid);
+  imagecache_image_flush($filepath);
+  _epsacrop_crop_file($fid, $coords, $nid, $filepath); 
+}
+
+function _epsacrop_delete_file($fid) {
+  db_query('DELETE FROM {epsacrop_files} WHERE fid = %d', $fid);
+}
+
+function _epsacrop_delete($nid) {
+  db_query('DELETE FROM {epsacrop_files} WHERE nid = %d', $nid);
+}
+/*
+function _epsacrop_get_scalled_from_nid($nid) {
+  $array = NULL;
+  $result = db_query('SELECT fid, scalled FROM {epsacrop_files} WHERE nid = %d', $nid);
+  while ($res = db_fetch_array($result)) {
+    $array[$res['fid']] = unserialize($res['scalled']);
+  }
+  return $array;
+} */
+
+function _epsacrop_get_coords_from_nid($nid) {
+  $array = NULL;
+  $result = db_query('SELECT fid, coords FROM {epsacrop_files} WHERE nid = %d', $nid);
+  while ($res = db_fetch_array($result)) {
+    $array[$res['fid']] = unserialize($res['coords']);
+  }
+  return $array;
+}
+ 
+function _epsacrop_get_coords_from_fid($fid) {
+  $out = FALSE;
+  $result = db_query('SELECT coords FROM {epsacrop_files} WHERE fid = %d', $fid);
+  $has_coords = db_result(db_query('SELECT COUNT(*) FROM {epsacrop_files} WHERE fid = %d', $fid));
+  if ($has_coords != 0) {
+    $out = unserialize(db_result($result));
+  }
+  return $out;
+}
+
+function _epsacrop_get_crop_action($preset) {
+  foreach ($preset['actions'] as $action) {
+    if (strpos($action['action'], 'crop') !== FALSE) {
+      return $action['data'];
+    }
+  }
+}
+
+function _epsacrop_get_fid_from_path($path) {
+  if (!empty($path)) {
+    return (int) db_result(db_query_range("SELECT fid FROM {files} WHERE filepath = '%s'", $path, 0, 1));
+  }
+  return FALSE;
+}
+
+function _epsacrop_get_path_from_fid($fid) {
+  if (!empty($fid) && is_numeric($fid)) {
+    return (string) db_result(db_query_range("SELECT filepath FROM {files} WHERE fid = %d", $fid, 0, 1));
+  }
+  return FALSE;
+}
+
+/**
+ * Implementation of hook_theme
+ * permet d'overider la fonction de imagefield afin d'ajouter le lien pour
+ * gérer le crop
+ */
+function epsacrop_theme($existing, $type, $theme, $path) {
+  $widget = $existing['imagefield_widget_item'];
+  $widget['function'] = 'theme_epsacrop_widget_item';
+  $widget['theme paths'][]  = $path;
+  
+  $imagecache = $existing['imagecache'];
+  $imagecache['function'] = 'theme_epsacrop';
+  $imagecache['theme paths'][] = $path;
+  return array('imagefield_widget_item' => $widget, 'imagecache' => $imagecache);
+}
+
+/**
+ * fonction theme qui ajouter le lien gérer le crop
+ */
+function theme_epsacrop_widget_item($element) {
+  if ((int) $element['fid']['#value'] > 0) {
+    $fid = (int) $element['fid']['#value'];
+    $filepath = db_result(db_query('SELECT filepath FROM {files} WHERE fid = %d', $fid));
+    $info = @getimagesize('./'. $filepath);
+    $element['epsacrop'] = array(
+      '#type' => 'markup',
+      '#value' => '[<a href="javascript:EPSACrop.dialog(\''. $element['fid']['#value'] .'\', \''. url($filepath, array('absolute' => TRUE)) .'\', ['. $info[0] .', '. $info[1] .']);">'. t('Update Cropping') .'</a>]'
+    );
+  }
+  return theme('filefield_widget_item', $element);
+}
+
+function theme_epsacrop($presetname, $path, $alt = '', $title = '', $attributes = NULL, $getsize = TRUE) {
+  if (is_null($attributes)) {
+    $attributes['class'] = 'imagecache imagecache-'. $presetname;
+  }
+
+  if ($getsize && ($image = image_get_info(imagecache_create_path($presetname, $path)))) {
+    $attributes['width'] = $image['width'];
+    $attributes['height'] = $image['height'];
+  }
+
+  $attributes = drupal_attributes($attributes);
+  $imagecache_url = imagecache_create_url($presetname, $path);
+  $imagecache_path = imagecache_create_path($presetname, $path);
+  $fid = _epsacrop_get_fid_from_path($path);
+
+  if (is_numeric($fid)) {
+    $preset = imagecache_preset_by_name($presetname);
+    if ($preset) {
+      $data = _epsacrop_get_crop_action($preset);
+      $_preset = $data['width'] .'x'. $data['height'];
+      $coords = _epsacrop_get_coords_from_fid($fid);
+      if ($coords[$_preset]) {
+        if ($imgapi = imageapi_image_open($path)) {
+          if (imageapi_image_crop($imgapi, $coords[$_preset]['x'], $coords[$_preset]['y'], $coords[$_preset]['w'], $coords[$_preset]['h'])) {
+            if (imageapi_image_resize($imgapi, $data['width'], $data['height'])) {
+            $mondir = dirname($imagecache_path);
+            if (!is_dir($mondir)) {
+              mkdir($mondir, 0777, TRUE);
+            }
+            imageapi_image_close($imgapi, $imagecache_path);
+            // touch($imagecache_path);
+            return '<img src="'. $imagecache_url .'" alt="'. check_plain($alt) .'" title="'. check_plain($title) .'" '. $attributes .' />';
+            }
+          }
+        }
+      }
+    }
+  }
+  return '<img src="'. $imagecache_url .'" alt="'. check_plain($alt) .'" title="'. check_plain($title) .'" '. $attributes .' />';
+}
+
+function _epsacrop_crop_file($fid, $coords, $nid, $filepath) {
+  $path = $filepath;
+  $presets = imagecache_presets();
+  
+  foreach ($presets as $presetId => $preset) {
+  	$presetname = $preset['presetname']; //TODO how do we get presetname? it must know the preset somehow 
+  	//$preset = imagecache_preset_by_name($presetname);
+  	$imagecache_url = imagecache_create_url($presetname, $path);
+  	$imagecache_path = imagecache_create_path($presetname, $path);
+    $data = _epsacrop_get_crop_action($preset);
+    $_preset = $data['width'] .'x'. $data['height'];
+    //$coords = _epsacrop_get_coords_from_fid($fid);
+    if ($coords[$_preset]) {
+   // echo $presetname . ":" . $path . ":" . $imagecache_path . "<br>";
+      	if ($imgapi = imageapi_image_open($path)) {
+        	if (imageapi_image_crop($imgapi, $coords[$_preset]['x'], $coords[$_preset]['y'], $coords[$_preset]['w'], $coords[$_preset]['h'])) {
+            	if (imageapi_image_resize($imgapi, $data['width'], $data['height'])) {
+            		$mondir = dirname($imagecache_path);
+            		if (!is_dir($mondir)) {
+              			mkdir($mondir, 0777, TRUE);
+            		}
+           			imageapi_image_close($imgapi, $imagecache_path);
+            		// touch($imagecache_path);
+            	}
+          	}
+        }
+     }
+   }
+   //die();
+}
+
+
+

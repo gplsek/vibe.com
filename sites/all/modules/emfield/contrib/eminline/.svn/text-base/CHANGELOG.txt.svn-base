@@ -1,0 +1,17 @@
+// $Id: CHANGELOG.txt,v 1.1.4.7 2009/09/24 13:41:05 aaron Exp $
+
+CHANGELOG for Embedded Inline Media.
+
+September 2009
+--------------
+by aaron: Add instructions to the README.txt file.
+
+===============
+ DRUPAL-6--1-5
+===============
+
+July 2009
+---------
+by aaron: Fix format settings for new FAPI.
+by aaron: Port to d6.
+by grndlvl: Initial d5 version of eminline.
