@@ -1,0 +1,50 @@
+/* $Id\$ */
+
+/* Fixed layout; both sidebars on left */
+
+#page, .no-sidebars #content {
+  width: PAGEpx;
+}
+
+#sidebar-left {
+  width: LSB-SBpx;
+  margin-right: -LSB-SBpx;
+}
+
+#sidebar-right {
+  width: RSB-SBpx;
+}
+
+.two-sidebars #sidebar-right {
+  margin-left: RSB-SBpx;
+  margin-right: -BOTHSB-SBpx;
+}
+
+.sidebar-right #sidebar-right {
+  margin-left: 0px;
+  margin-right: -RSB-SBpx;
+}
+
+#sidebar-right-inner {
+  margin-left: 0px;
+  margin-right: 20px;
+}
+
+.no-sidebars #content, .one-sidebar #content, .two-sidebars #content {
+  margin-right: -PAGEpx;
+}
+
+.sidebar-left #content {
+  margin-left: LSB-SBpx;
+  width: LSB-CONTENTpx;
+}
+
+.sidebar-right #content {
+  margin-left: RSB-SBpx;
+  width: RSB-CONTENTpx;
+}
+
+.two-sidebars #content {
+  margin-left: BOTHSB-CONTENTpx;
+  width: BOTHSB-CONTENTpx;
+}

@@ -1,0 +1,13 @@
+; $Id: action_email_role.info,v 1.4 2008/09/13 02:59:33 bec Exp $
+
+name = Action email role
+description = "Provides an action to email all users in selected role(s)"
+package = Actions
+core = 6.x
+
+; Information added by drupal.org packaging script on 2008-09-13
+version = "6.x-1.0-beta1"
+core = "6.x"
+project = "action_email_role"
+datestamp = "1221278102"
+

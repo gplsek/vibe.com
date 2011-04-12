@@ -1,0 +1,141 @@
+<?php
+// $Id ;
+
+function jp_collection_schema() {
+  $schema['jp_collection'] = array(
+    'description' => t('Base table for collections, storing global information for each collection'),
+    'fields' => array(
+      'nid' => array(
+      	'description' => t('node id for collection'),
+        'type' => 'int',
+        'unsigned' => TRUE,
+        'not null' => TRUE,
+        'default' => 0,
+      ),
+      'vid' => array(
+      	'description' => t('revision id for collection'),
+        'type' => 'int',
+        'unsigned' => TRUE,
+        'not null' => TRUE,
+        'default' => 0,
+      ),
+      'size' => array(
+        'description' => t('How many nodes this collection will hold'),
+        'type' => 'int',
+        'default' => 0,
+      ),
+    ), // fields
+    'primary key' => array('nid', 'vid'),
+    'key' => array(
+    	'collection_nid' => array('nid'),
+    ),
+  ); // jp_collection.
+  $schema['jp_collection_types'] = array(
+    'description' => t('Defines the node types which are allowed in each collection'),
+    'fields' => array(
+      'nid' => array(
+        'description' => t('Primary key for {jp_collection}'),
+        'type' => 'int',
+        'unsigned' => TRUE,
+        'not null' => TRUE
+      ),
+      'vid' => array(
+        'description' => t('Revision key for {jp_collection}'),
+        'type' => 'int',
+        'unsigned' => TRUE,
+        'not null' => TRUE
+      ),
+      'type' => array(
+        'description' => t('Node Type'),
+        'type' => 'varchar',
+        'length' => 255,
+        'not null' => FALSE
+      ),
+    ), // fields
+    'indexes' => array(
+      '{jp_collection_types}_nid_idx' => array('nid', 'vid'),
+      '{jp_collection_types}_type_idx' => array('type'),
+    ), // indexes
+  ); // jp_collection_types
+  $schema['jp_collection_nodes'] = array(
+    'description' => t('Indicates which nodes are in which collections.'),
+    'fields' => array(
+      'nid' => array(
+        'description' => t('Primary key for {jp_collection}'),
+        'type' => 'int',
+        'unsigned' => TRUE,
+        'not null' => TRUE
+      ),
+      'vid' => array(
+        'description' => t('Revision key for {jp_collection}'),
+        'type' => 'int',
+        'unsigned' => TRUE,
+        'not null' => TRUE
+      ),
+      'cnid' => array(
+        'description' => t('Content node id in this collection'),
+        'type' => 'int',
+        'unsigned' => TRUE,
+        'not null' => FALSE
+      ),
+      'position' => array(
+        'description' => t('The position of the node in this collection.'),
+        'type' => 'int',
+        'unsigned' => TRUE,
+        'not null' => FALSE
+      ),
+      'override_link' => array(
+      		'description' => t('Link override'),
+      		'type' => 'varchar',
+      		'length' => 255,
+      		'not_null' => FALSE
+      ),
+       'override_title' => array(
+      		'description' => t('Title override, if we do not want to use the node title'),
+      		'type' => 'varchar',
+      		'length' => 255,
+      		'not_null' => FALSE
+      ),
+      'subtitle' => array(
+      		'description' => t('Subtitle'),
+      		'type' => 'varchar',
+      		'length' => 255,
+      		'not_null' => FALSE
+      ),
+      'imagecache_setting' => array(
+      		'description' => t('Choose an image cache setting to use'),
+      		'type' => 'varchar',
+      		'length' => 255,
+      		'not_null' => FALSE
+      ),
+      'timestamp' => array(
+        'description' => t('When entry was saved'),
+        'type' => 'int',
+        'unsigned' => TRUE,
+        'not null' => TRUE,
+        'default' => 0,
+      ),
+    ), // fields
+    'indexes' => array(
+      '{jp_collection_nodes}_cnid_idx' => array('cnid'),
+      '{jp_collection}_nid_idx' => array('nid', 'vid'),
+    ), // indexes
+  ); // jp_collection_nodes
+  
+  return $schema;
+}
+
+function jp_collection_install() {
+  drupal_install_schema('jp_collection');
+  //todo create imagecache settings
+}
+
+function jp_collection_uninstall() {
+  drupal_uninstall_schema('jp_collection');
+}
+
+function jp_collection_update_1() {
+  $ret = array();
+  db_add_field($ret, 'jp_collection_nodes', 'subtitle', array('type' => 'varchar', 'length' => '255', 'not_null' => 'FALSE'));
+  return $ret;
+}

@@ -1,0 +1,13 @@
+; $Id: formfilter_ui.info,v 1.1 2008/11/25 05:15:54 nedjo Exp $
+name = Formfilter UI
+description = Provides a UI for filtering forms.
+core = 6.x
+dependencies[] = formfilter
+
+
+; Information added by drupal.org packaging script on 2009-09-11
+version = "6.x-1.x-dev"
+core = "6.x"
+project = "formfilter"
+datestamp = "1252628038"
+

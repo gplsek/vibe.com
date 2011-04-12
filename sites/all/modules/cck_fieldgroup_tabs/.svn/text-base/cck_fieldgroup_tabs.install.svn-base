@@ -1,0 +1,13 @@
+<?php
+// $Id: cck_fieldgroup_tabs.install,v 1.2 2008/04/13 02:39:23 nedjo Exp $
+
+function cck_fieldgroup_tabs_install() {
+  // Set weight higher than that of fieldgroup, since the form_alter must come after fieldgroup's.
+  $weight = db_result(db_query("SELECT weight FROM {system} WHERE type = 'module' AND name = 'fieldgroup'"));
+  db_query("UPDATE {system} SET weight = %d WHERE type = 'module' AND name = 'cck_fieldgroup_tabs'", ($weight ? $weight : 0) + 10);
+}
+
+function cck_fieldgroup_tabs_update_1() {
+  menu_rebuild();
+  return array();
+}

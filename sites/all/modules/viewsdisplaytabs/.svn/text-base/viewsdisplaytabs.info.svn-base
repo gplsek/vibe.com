@@ -1,0 +1,12 @@
+; $Id: viewsdisplaytabs.info,v 1.1.2.2 2009/07/15 08:19:30 solipsist Exp $
+name = Views Display Tabs
+description = A module that exposes a view's displays as tabs.
+package = Views
+dependencies[] = views
+core = 6.x
+; Information added by drupal.org packaging script on 2009-07-29
+version = "6.x-1.0-beta4"
+core = "6.x"
+project = "viewsdisplaytabs"
+datestamp = "1248904623"
+

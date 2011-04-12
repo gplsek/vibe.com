@@ -1,0 +1,254 @@
+<?php
+// $Id: embed_gmap.module,v 1.1.4.3 2009/07/12 20:40:40 haugstrup Exp $
+
+/**
+ * @file
+ * Defines a field for embedding Google Maps.
+ */
+
+/**
+ * Implementation of hook_theme().
+ */
+function embed_gmap_theme() {
+  return array(
+    'embed_gmap_field' => array(
+      'arguments' => array('value' => NULL, 'formatter' => NULL),
+    ),
+    'embed_gmap_embed_gmap' => array(
+      'arguments' => array('element' => NULL),
+    ),
+    'embed_gmap_formatter_default' => array(
+      'arguments' => array('element' => NULL),
+    ),
+    'embed_gmap_formatter_small' => array(
+      'arguments' => array('element' => NULL),
+    ),
+    'embed_gmap_formatter_large' => array(
+      'arguments' => array('element' => NULL),
+    ),
+  );
+}
+
+/**
+ * Implementation of hook_field_info().
+ */
+function embed_gmap_field_info() {
+  return array(
+    'embed_gmap' => array('label' => t('Embedded Google Map'), 'description' => t('Embed Google Maps directly into nodes.')),
+  );
+}
+
+/**
+ * Implementation of hook_field_settings().
+ */
+function embed_gmap_field_settings($op, $field) {
+  switch ($op) {
+    case 'database columns':
+      $columns['value'] = array('type' => 'text', 'size' => 'big', 'not null' => FALSE, 'sortable' => TRUE, 'views' => TRUE);
+      return $columns;
+  }
+}
+
+/**
+* Implementation of hook_content_is_empty().
+*/
+function embed_gmap_content_is_empty($item, $field) {
+  if (empty($item['value'])) {
+    return TRUE;
+  }
+  return FALSE;
+}
+
+/**
+ * Implementation of hook_field_formatter_info().
+ */
+function embed_gmap_field_formatter_info() {
+  return array(
+    'default' => array(
+      'label' => t('Medium map'),
+      'field types' => array('embed_gmap'),
+      'multiple values' => CONTENT_HANDLE_CORE,
+    ),
+    'small' => array(
+      'label' => t('Small map'),
+      'field types' => array('embed_gmap'),
+      'multiple values' => CONTENT_HANDLE_CORE,
+    ),
+    'large' => array(
+      'label' => t('Large map'),
+      'field types' => array('embed_gmap'),
+      'multiple values' => CONTENT_HANDLE_CORE,
+    ),
+  );
+}
+
+/**
+ * Transform embedded map code into Google Maps URL.
+ */
+function embed_gmap_process_value($item) {
+
+  if (empty($item['value']) || is_null($item['value'])) {
+    return '';
+  }
+
+  // Find map URL from value.
+  $code = $item['value'];
+  $map = FALSE;
+  if (drupal_substr($code, 0, 23) == 'http://maps.google.com/') {
+    $map = $code .'&output=embed';
+  }
+  else {
+    // See if we have a Google Maps iframe.
+    preg_match('@<iframe (.*)src="([^\"\']*)"@', $code, $matches);
+    if ($matches[2]) {
+      $map = html_entity_decode($matches[2]);
+    }
+  }
+  if (!$map) {
+    $map = 'http://maps.google.com/maps?f=q&source=s_q&geocode=&q='. $code .'&ie=UTF8&z=16&output=embed';
+  }
+
+  $item['value'] = $map ? $map : NULL;
+
+  // Filter output.
+  $item['value'] = check_url($item['value']);
+
+  return $item;
+}
+
+/**
+ * Implementation of hook_widget_info().
+ */
+function embed_gmap_widget_info() {
+  return array(
+    'embed_gmap_embed_gmap' => array(
+      'label' => t('Embedded Google Map'),
+      'field types' => array('embed_gmap'),
+      'multiple values' => CONTENT_HANDLE_CORE,
+      'callbacks' => array(
+        'default value' => CONTENT_CALLBACK_DEFAULT,
+      ),
+    ),
+  );
+  
+}
+
+/**
+ * Implementation of hook_widget().
+ */
+function embed_gmap_widget(&$form, &$form_state, $field, $items, $delta = 0) {
+  $element = array(
+    '#type' => $field['widget']['type'],
+    '#default_value' => isset($items[$delta]) ? $items[$delta] : '',
+  );
+  return $element;
+}
+
+/**
+ * Implementation of FAPI hook_elements().
+ */
+function embed_gmap_elements() {
+  return array(
+    'embed_gmap_embed_gmap' => array(
+      '#input' => TRUE,
+      '#columns' => array('value'), '#delta' => 0,
+      '#process' => array('embed_gmap_embed_gmap_process'),
+      '#autocomplete_path' => FALSE,
+    ),
+  );
+}
+
+/**
+ * Process an individual element.
+ *
+ * Build the form element. When creating a form using FAPI #process,
+ * note that $element['#value'] is already set.
+ *
+ * The $fields array is in $form['#field_info'][$element['#field_name']].
+ */
+function embed_gmap_embed_gmap_process($element, $edit, $form_state, $form) {
+  $field = $form['#field_info'][$element['#field_name']];
+  $field_key = $element['#columns'][0];
+  $delta = $element['#delta'];
+  $element[$field_key] = array(
+    '#type' => 'textfield',
+    '#default_value' => isset($element['#value'][$field_key]) ? $element['#value'][$field_key] : NULL,
+    '#autocomplete_path' => $element['#autocomplete_path'],
+    '#size' => !empty($field['widget']['size']) ? $field['widget']['size'] : 60,
+    '#attributes' => array('class' => 'text'),
+    // The following values were set by the content module and need
+    // to be passed down to the nested element.
+    '#title' => $element['#title'],
+    '#description' => $element['#description'],
+    '#required' => $element['#required'],
+    '#field_name' => $element['#field_name'],
+    '#type_name' => $element['#type_name'],
+    '#delta' => $element['#delta'],
+    '#columns' => $element['#columns'],
+  );
+
+  $element[$field_key]['#maxlength'] = 1024;
+
+  // Used so that hook_field('validate') knows where to flag an error.
+  $element['_error_element'] = array(
+    '#type' => 'value',
+    '#value' => implode('][', array_merge($element['#parents'], array($field_key))),
+  );
+
+  return $element;
+}
+
+/**
+ * Theme a FAPI element.
+ */
+function theme_embed_gmap_embed_gmap($element) {
+  return $element['#children'];
+}
+
+/**
+ * Theme formatter default.
+ */
+function theme_embed_gmap_formatter_default($element) {
+  return theme('embed_gmap_field', $element);
+}
+
+/**
+ * Theme formatter small.
+ */
+function theme_embed_gmap_formatter_small($element) {
+  return theme('embed_gmap_field', $element);
+}
+
+/**
+ * Theme formatter large.
+ */
+function theme_embed_gmap_formatter_large($element) {
+  return theme('embed_gmap_field', $element);
+}
+
+/**
+ * Theme a progress field value.
+ */
+function theme_embed_gmap_field($element) {
+  $element['#item'] = embed_gmap_process_value($element['#item']);
+
+  if (empty($element['#item']['value'])) {
+    return '';
+  }
+
+  switch ($element['#formatter']) {
+    case 'small':
+      $width = 300;
+      $height = 300;
+      break;
+    case 'large':
+      $width = 640;
+      $height = 480;
+      break;
+    default:
+      $width = 425;
+      $height = 350;
+      break;
+  }
+  return '<iframe width="'. $width .'" height="'. $height .'" frameborder="0" scrolling="no" marginheight="0" marginwidth="0" src="'. $element['#item']['value'] .'"></iframe><p class="embed-gmap-link"><a href="'. str_replace('&amp;output=embed', '', $element['#item']['value']) .'" target="_BLANK">'. t('Show large map') .'</a></p>';
+}

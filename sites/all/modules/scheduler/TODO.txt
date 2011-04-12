@@ -1,0 +1,17 @@
+A list of things to do, either for myself or from "feature requests"
+====================================================================
+
+http://drupal.org/node/5312
+http://drupal.org/node/28722
+	Make scheduler use localtime settings
+
+
+http://drupal.org/node/53008
+http://drupal.org/node/76970
+	Make scheduler "actions api aware" (trigger actions)
+
+
+http://drupal.org/node/14159
+	Schedule promote/demote of nodes
+
+

@@ -1,0 +1,193 @@
+<?php
+// $Id: action_email_role.module,v 1.6 2008/09/13 03:28:37 bec Exp $
+
+/*
+ * @file
+ * Provides an action to email all users in selected role(s)
+ */
+
+/**
+ * Implementation of hook_action_info().
+ */
+function action_email_role_action_info() {
+  return array(
+    'action_email_role_send_email_action' => array(
+      'description' => t('Send email to all users in specified role(s)'),
+      'type' => 'node',
+      'configurable' => TRUE,
+      'hooks' => array(
+        'nodeapi' => array('view', 'insert', 'update', 'delete'),
+      )
+    ),
+  );
+}
+
+/**
+ * Return a form definition so the Send email action can be configured.
+ *
+ * @see action_email_role_send_email_action_validate()
+ * @see action_email_role_send_email_action_submit()
+ * @param $context
+ *   Default values (if we are editing an existing action instance).
+ * @return
+ *   Form definition.
+ */
+function action_email_role_send_email_action_form($context) {
+  // Set default values for form.
+  if (!isset($context['recipient'])) {
+    $context['recipient'] = array();
+  }
+  if (!isset($context['node_types_set'])) {
+    $context['node_types_set'] = 'all';
+  }
+  if (!isset($context['node_types_selected'])) {
+    $context['node_types_selected'] = array();
+  }
+  if (!isset($context['subject'])) {
+    $context['subject'] = '';
+  }
+  if (!isset($context['message'])) {
+    $context['message'] = '';
+  }
+
+  // roles checkboxes
+  $result = db_query('SELECT * FROM {role} WHERE rid NOT IN (1,2)');
+  while ($role = db_fetch_object($result)) {
+    $roles[$role->rid] = $role->name;
+  }
+
+  $form['recipient'] = array(
+    '#type' => 'checkboxes',
+    '#title' => t('Recipient Roles'),
+    '#default_value' => $context['recipient'],
+    '#options' => $roles,
+    '#description' => t('Select the role(s) you would like to email'),
+    '#required' => TRUE,
+  );
+
+  // node type checkboxes
+  $node_types = node_get_types();
+  foreach ($node_types as $key => $val) {
+    $node_types[$key] = $val->name;
+  }
+
+  $form['node_types'] = array(
+    '#type' => 'fieldset',
+    '#title' => t('Send notification for specific node types'),
+    '#collapsible' => TRUE,
+    '#collapsed' => ($context['node_types_set'] == 'all'),
+  );
+
+  $form['node_types']['node_types_set'] = array(
+    '#type' => 'radios',
+    '#title' => t('Perform action for'),
+    '#options' => array(
+      'all' => t('all node types'),
+      'selected' => t('selected node types (below)'),
+    ),
+    '#default_value' => $context['node_types_set'],
+    '#required' => TRUE,
+  );
+
+  $form['node_types']['node_types_selected'] = array(
+    '#type' => 'checkboxes',
+    '#title' => t('Node types'),
+    '#default_value' => $context['node_types_selected'],
+    '#options' => $node_types,
+    '#description' => t('Select the node types this action should affect'),
+  );
+
+  // message components
+  $form['subject'] = array(
+    '#type' => 'textfield',
+    '#title' => t('Subject'),
+    '#default_value' => $context['subject'],
+    '#maxlength' => '254',
+    '#description' => t('The subject of the message.'),
+    '#required' => TRUE,
+  );
+
+  $form['message'] = array(
+    '#type' => 'textarea',
+    '#title' => t('Message'),
+    '#default_value' => $context['message'],
+    '#cols' => '80',
+    '#rows' => '20',
+    '#description' => t('The message that should be sent. You may include the following variables: %site_name, %uid, %node_url, %node_type, %title, %teaser, %body. Not all variables will be available in all contexts.'),
+    '#required' => TRUE,
+  );
+
+  return $form;
+}
+
+/**
+ * Process action_email_role_send_email_action form submissions.
+ */
+function action_email_role_send_email_action_submit($form, &$form_state) {
+  // Process the HTML form to store configuration. The keyed array that
+  // we return will be serialized to the database.
+  $params = array(
+    'recipient' => $form_state['values']['recipient'],
+    'subject'   => $form_state['values']['subject'],
+    'message'   => $form_state['values']['message'],
+    'node_types_set' => $form_state['values']['node_types_set'],
+    'node_types_selected' => $form_state['values']['node_types_selected'],
+  );
+  return $params;
+}
+
+/**
+ * Implementation of a configurable Drupal action. Sends an email to specified role(s).
+ */
+function action_email_role_send_email_action($object, $context) {
+  if ($context['node_types_set'] == 'all' || $context['node_types_selected'][$object->type]) {
+    $from = variable_get('site_mail', ini_get('sendmail_from'));
+    $params['object'] = $object;
+    $params['context'] = $context;
+
+    foreach ($context['recipient'] as $rid => $rname) {
+      if (!empty($rname)) {
+        $roles[]=$rid;
+      }
+    }
+
+    $emailed = 0;
+    $result = db_query("SELECT ur.*, u.mail, u.name FROM {users_roles} ur LEFT JOIN {users} u ON ur.uid = u.uid WHERE ur.rid IN (%s) AND u.status = 1", implode(',', $roles));
+    while ($account = db_fetch_object($result)) {
+      // @@@ 'en' shouldn't be hardcoded
+      if (drupal_mail('action_email_role', 'email_roles', $account->mail, 'en', $params, $from)) {
+        watchdog('action_email_role', 'Sent email to %recipient', array('%recipient' => $account->mail));
+        $emailed++;
+      }
+      else {
+        watchdog('error', 'Unable to send email to %recipient from action_email_role', array('%recipient' => $account->mail));
+      }
+    }
+    watchdog('action_email_role', "!emailed users emailed successfuly.", array('!emailed' => $emailed));
+  }
+}
+
+/**
+ * Implementation of hook_mail().
+ */
+function action_email_role_mail($key, &$message, $params) {
+  $node = $params['object'];
+
+  $recipient = $params['context']['recipient'];
+  $subject = $params['context']['subject'];
+  $message_body = $params['context']['message'];
+
+  $variables = array(
+    '%site_name' => variable_get('site_name', 'Drupal'),
+    '%uid' => $node->uid,
+    '%node_url' => url('node/' . $node->nid, array('absolute' => TRUE)),
+    '%node_type' => node_get_types('name', $node),
+    '%title' => check_plain($node->title),
+    '%teaser' => check_markup($node->teaser),
+    '%body' => check_markup($node->body)
+  );
+
+  $subject = strtr($subject, $variables);
+  $message['subject'] = str_replace(array("\r", "\n"), '', $subject);
+  $message['body'] = strtr($message_body, $variables);
+}

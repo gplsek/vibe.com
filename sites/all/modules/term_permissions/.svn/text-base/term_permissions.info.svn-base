@@ -1,0 +1,12 @@
+; $Id: term_permissions.info,v 1.2 2009/01/17 21:24:22 deviantintegral Exp $
+name = Taxonomy Term Permissions
+description = Allows limiting the selection of specific taxonomy terms by user or role.
+core=6.x
+dependencies[] = taxonomy
+
+; Information added by drupal.org packaging script on 2009-12-02
+version = "6.x-1.0"
+core = "6.x"
+project = "term_permissions"
+datestamp = "1259789205"
+

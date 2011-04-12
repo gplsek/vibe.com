@@ -1,0 +1,20 @@
+INSTALLATION
+------------
+
+Decompress the related_block-n.x-n.n.tar.gz file into your Drupal modules
+directory (usually sites/all/modules, see http://drupal.org/node/176044 for
+more information).
+
+Enable the related_block module: Administer > Site building > Modules
+  (admin/build/modules)
+
+Enable the "similar block" block: Administer > Site Building > Blocks 
+  (admin/build/block)
+
+Configure the block: admin/build/configure/related_block/0
+
+
+NOTE: This module relies on the search_index table being fully populated, which
+typically requires a working cron job setup to function properly. See:
+http://drupal.org/getting-started/6/install/cron for more details on setting up
+your site's cron job.

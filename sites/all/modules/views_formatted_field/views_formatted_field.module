@@ -1,0 +1,12 @@
+<?php
+// $Id: views_formatted_field.module,v 1.1 2009/06/22 15:17:23 overall Exp $
+
+/**
+ * Implementation of hook_views_api().
+ */
+function views_formatted_field_views_api() {
+  return array(
+    'api' => 2,
+    'path' => drupal_get_path('module', 'views_formatted_field'),
+  );
+}

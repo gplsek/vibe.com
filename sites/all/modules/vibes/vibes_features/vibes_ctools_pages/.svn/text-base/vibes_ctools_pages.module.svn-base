@@ -1,0 +1,3 @@
+<?php
+
+include_once('vibes_ctools_pages.features.inc');

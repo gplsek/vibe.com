@@ -1,0 +1,15 @@
+; $Id: views_formatted_field.info,v 1.1 2009/06/22 15:17:23 overall Exp $
+name = Views Formatted Field
+description = Defines a field handlers which allow to use one of existing input format directly from view edit form to compose field output. Can be used for processing of real data field or for generation content based on values from another fields.
+core = 6.x
+dependencies[] = filter
+dependencies[] = views
+package = Views
+
+
+; Information added by drupal.org packaging script on 2009-06-22
+version = "6.x-1.0"
+core = "6.x"
+project = "views_formatted_field"
+datestamp = "1245684800"
+

@@ -1,0 +1,7 @@
+name = Jetpack Imagecache actions
+description = Jetpack Imagecache actions 
+package = Jetpack
+core = 6.x
+
+dependencies[] = imagecache
+dependencies[] = imageapi

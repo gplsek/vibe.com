@@ -1,0 +1,14 @@
+; $Id: imagefield_import.info,v 1.2.4.2 2008/12/15 02:32:15 vordude Exp $
+name = Imagefield Import
+description = Allows batches of images to be imported to your site from a directory on your server.
+package = CCK
+dependencies[] = imagefield
+dependencies[] = content
+core = 6.x
+
+; Information added by drupal.org packaging script on 2009-04-19
+version = "6.x-1.4-beta1"
+core = "6.x"
+project = "imagefield_import"
+datestamp = "1240176928"
+

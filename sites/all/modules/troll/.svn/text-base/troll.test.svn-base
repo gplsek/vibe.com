@@ -1,0 +1,183 @@
+<?php
+// $Id: troll.test,v 1.1.2.6 2009/04/24 18:30:40 deekayen Exp $
+
+class TrollFunctionalTest extends DrupalWebTestCase {
+  public static function getInfo() {
+    return array(
+      'name' => 'Troll unit tests',
+      'description' => "Tests the expected return values of functions.",
+      'group' => 'Troll'
+    );
+  }
+
+  function setUp() {
+    parent::setUp('troll');
+  }
+
+  function testTrollLongIP() {
+    $test_urls = array(
+      '127.0.0.1' => 2130706433,
+    );
+
+    foreach ($test_urls as $ip => $result) {
+      $this->assertTrue(_troll_longip($ip) == $result, t('!original was converted to !new', array('!original' => $ip, '!new' => $result)));
+    }
+  }
+
+  function testTrollPerms() {
+    $perms = troll_perm();
+    $this->assertTrue(is_array($perms) && sizeof($perms) > 0, t('Troll has special permissions.'));
+  }
+}
+
+class TrollWebTestCase extends DrupalWebTestCase {
+  public static function getInfo() {
+    return array(
+      'name' => 'Troll interface',
+      'description' => "Test the Troll interface.",
+      'group' => 'Troll'
+    );
+  }
+
+  function setUp() {
+    parent::setUp('troll');
+  }
+
+  function testTrollNonPrivInterfaceGrants() {
+    $non_priv_user = $this->drupalCreateUser();
+    $this->drupalLogin($non_priv_user);
+    $this->drupalGet('admin/user/troll');
+    $this->assertResponse(403, t('Access denied to Troll administration page.'));
+    $this->drupalGet('admin/user/troll/search');
+    $this->assertResponse(403, t('Access denied to Troll administration page.'));
+    $this->drupalGet('admin/user/troll/search/view');
+    $this->assertResponse(403, t('Access denied to Troll administration page.'));
+    $this->drupalGet('admin/user/troll/search/block');
+    $this->assertResponse(403, t('Access denied to Troll administration page.'));
+    $this->drupalGet('admin/user/troll/ip_ban');
+    $this->assertResponse(403, t('Access denied to Troll administration page.'));
+    $this->drupalGet('admin/user/troll/ip_ban/edit');
+    $this->assertResponse(403, t('Access denied to Troll administration page.'));
+    $this->drupalGet('admin/user/troll/ip_ban/user');
+    $this->assertResponse(403, t('Access denied to Troll administration page.'));
+    $this->drupalGet('admin/user/troll/ip_ban/delete');
+    $this->assertResponse(403, t('Access denied to Troll administration page.'));
+    $this->drupalGet('admin/user/troll/ip_blacklist');
+    $this->assertResponse(403, t('Access denied to Troll administration page.'));
+    $this->drupalGet('admin/user/troll/ip_blacklist/summary');
+    $this->assertResponse(403, t('Access denied to Troll administration page.'));
+    $this->drupalGet('admin/user/troll/ip_blacklist/punishment');
+    $this->assertResponse(403, t('Access denied to Troll administration page.'));
+    $this->drupalGet('admin/user/troll/ip_blacklist/import');
+    $this->assertResponse(403, t('Access denied to Troll administration page.'));
+    $this->drupalGet('admin/user/troll/ip_blacklist/search');
+    $this->assertResponse(403, t('Access denied to Troll administration page.'));
+    $this->drupalGet('admin/user/troll/ip_blacklist/deleteblack');
+    $this->assertResponse(403, t('Access denied to Troll administration page.'));
+    $this->drupalGet('admin/user/troll/ip_blacklist/whitelist');
+    $this->assertResponse(403, t('Access denied to Troll administration page.'));
+    $this->drupalGet('admin/user/troll/ip_blacklist/deletewhite');
+    $this->assertResponse(403, t('Access denied to Troll administration page.'));
+    $this->drupalGet('admin/user/troll/settings');
+    $this->assertResponse(403, t('Access denied to Troll administration page.'));
+    $this->drupalGet('user');
+    $this->assertNoLink('Troll Track');
+    $this->drupalGet('user/logout');
+  }
+
+  function testTrollPrivInterfaceGrants() {
+    $priv_user = $this->drupalCreateUser(array('administer troll', 'administer site configuration'));
+    $this->drupalLogin($priv_user);
+    $this->drupalGet('admin/user/troll');
+    $this->assertResponse(200, t('Access granted to Troll administration page.'));
+
+    $this->assertLink('Search Users');
+    $this->assertLink('IP Banning');
+    $this->assertLink('Blacklists');
+    $this->assertLink('Settings');
+    $this->assertText('Search Users', t('Fieldset found'));
+    $this->assertFieldByName('username', '');
+    $this->assertFieldByName('mail', '');
+    $this->assertFieldByName('ip_address', '');
+    $this->assertFieldByName('date_created', '');
+
+    $this->drupalGet('admin/user/troll');
+    $this->assertResponse(200, t('Access granted to Troll administration page.'));
+    $this->drupalGet('admin/user/troll/search');
+    $this->assertResponse(200, t('Access granted to Troll administration page.'));
+    $this->drupalGet('admin/user/troll/ip_ban');
+    $this->assertResponse(200, t('Access granted to Troll administration page.'));
+
+    $this->assertText('Add IP Ban', t('Fieldset found'));
+    $this->assertFieldByName('ip_address', '');
+    $this->assertFieldByName('domain_name', '');
+    $this->assertField('expires');
+    $this->assertField('month');
+    $this->assertField('day');
+    $this->assertField('year');
+    $this->assertText('Banned IPs', t('Fieldset found'));
+
+    $this->drupalGet('admin/user/troll/ip_blacklist');
+    $this->assertResponse(200, t('Access granted to Troll administration page.'));
+
+    $this->assertLink('Summary');
+    $this->assertLink('Visitor Punishment');
+    $this->assertLink('Import Blacklist');
+    $this->assertLink('Search Blacklisted IPs');
+    $this->assertLink('Whitelist');
+    $this->assertText('address blocks filtered');
+
+    $this->drupalGet('admin/user/troll/ip_blacklist/summary');
+    $this->assertResponse(200, t('Access granted to Troll administration page.'));
+    $this->drupalGet('admin/user/troll/ip_blacklist/punishment');
+    $this->assertResponse(200, t('Access granted to Troll administration page.'));
+
+    $this->assertField('stutter');
+    $this->assertField('mod_requests');
+    $this->assertField('alt_page');
+    $this->assertField('alt_url');
+
+    $this->drupalGet('admin/user/troll/ip_blacklist/import');
+    $this->assertResponse(200, t('Access granted to Troll administration page.'));
+
+    $this->assertField('truncate_list');
+    $this->assertField('select_list');
+    $this->assertField('custom_list');
+
+    $this->drupalGet('admin/user/troll/ip_blacklist/search');
+    $this->assertResponse(200, t('Access granted to Troll administration page.'));
+
+    $this->assertField('ip_address');
+
+    $this->drupalGet('admin/user/troll/ip_blacklist/whitelist');
+    $this->assertResponse(200, t('Access granted to Troll administration page.'));
+
+    $this->assertField('whitelist_addr1');
+    $this->assertField('whitelist_addr2');
+
+    $this->drupalGet('admin/user/troll/settings');
+    $this->assertResponse(200, t('Access granted to Troll administration page.'));
+
+    $this->assertField('troll_enable_ip_ban');
+    $this->assertField('troll_ip_ban_redirect');
+    $this->assertField('troll_block_role');
+
+    $this->drupalGet('user');
+    $this->assertLink('Troll Track');
+    $this->clickLink('Troll Track');
+
+    $this->assertText("Account Details for $priv_user->name");
+    $this->assertLink('Block User');
+    $this->assertLink('Ban IP');
+    $this->assertText($priv_user->mail);
+    $this->assertText($priv_user->name);
+    $this->assertText('IP History');
+    $this->assertText('Status');
+    $this->assertText('Last Access');
+    $this->assertText('First Access');
+    $this->assertText('Host Information');
+    $this->assertText('Recent Posts');
+    $this->drupalGet('user/logout');
+  }
+
+}

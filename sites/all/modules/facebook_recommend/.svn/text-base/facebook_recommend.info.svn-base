@@ -1,0 +1,4 @@
+; $Id$
+name = "Facebook Recommend"
+description = "Adds Facebook recommend/like button to the content of your choice."
+core = 6.x

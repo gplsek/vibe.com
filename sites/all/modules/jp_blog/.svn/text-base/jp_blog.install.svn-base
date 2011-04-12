@@ -1,0 +1,205 @@
+<?php
+// $Id: jp_blog.install,v 1.7.2.1 2009/01/06 15:46:38 goba Exp $
+
+/**
+ * Implementation of hook_schema().
+ */
+function jp_blog_schema() {
+ $schema['jp_blog'] = array(
+    'description' => 'Stores jetpack blog information.',
+    'fields' => array(
+      'bid' => array(
+        'type' => 'serial',
+        'unsigned' => TRUE,
+        'not null' => TRUE,
+        'description' => 'Primary Key: Unique blog ID.',
+      ),
+      'name' => array(
+        'type' => 'varchar',
+        'length' => 255,
+        'not null' => TRUE,
+        'default' => '',
+        'description' => 'Name of the blog.',
+      ),
+      'description' => array(
+        'type' => 'text',
+        'not null' => FALSE,
+        'size' => 'big',
+        'description' => 'Description of the blog.',
+      ),
+	  'header_image_path' => array(
+		 'type' => 'varchar',
+		 'length' => 255,
+		 'not_null' => FALSE,
+		 'default' => '',
+		 'description' => 'Header image that goes on top of the blog.',
+		),
+	  'editorial_image_path' => array(
+		 'type' => 'varchar',
+		 'length' => 255,
+		 'not_null' => FALSE,
+		 'default' => '',
+		 'description' => 'Editorial image associated to the blog for right side bar.',
+		),
+	  'editorial_info' => array(
+        'type' => 'text',
+        'not null' => FALSE,
+        'size' => 'big',
+        'description' => 'Editorial Info for right side bar.',
+      ),
+	  'celeb_image_path' => array(
+		 'type' => 'varchar',
+		 'length' => 255,
+		 'not_null' => FALSE,
+		 'default' => '',
+		 'description' => 'Celebrity image associated to the blog.',
+		),
+		'celeb_name_image_path' => array(
+		 'type' => 'varchar',
+		 'length' => 255,
+		 'not_null' => FALSE,
+		 'default' => '',
+		 'description' => 'Celebrity name image associated to the blog.',
+		),
+	  'celeb_name' => array(
+         'type' => 'varchar',
+         'length' => 255,
+         'not null' => FALSE,
+         'default' => '',
+         'description' => 'Name of the celebrity associated to the blog.',
+       ),
+	   'blog_type' => array(
+         'type' => 'int',
+         'length' => 1,
+         'not null' => FALSE,
+         'default' => '0',
+         'description' => 'Type of blog.',
+       ),
+	   'top_celeb_blog' => array(
+         'type' => 'int',
+         'length' => 1,
+         'not null' => FALSE,
+         'default' => '0',
+         'description' => 'Determines if blog is a top celebrity blog.',
+       ),
+	   'twitter_name' => array(
+         'type' => 'varchar',
+         'length' => 255,
+         'not null' => FALSE,
+         'default' => '',
+         'description' => 'Name of the celebrity associated to the blog.',
+       ),
+	   'celeb_twitter_image_path' => array(
+		 'type' => 'varchar',
+		 'length' => 255,
+		 'not_null' => FALSE,
+		 'default' => '',
+		 'description' => 'Celebrity twitter image.',
+		),
+	   'celeb_link' => array(
+         'type' => 'text',
+         'size' => 'big',
+         'not null' => FALSE,
+         'description' => 'Link to celebrity websites.',
+       ),
+	   'website_text' => array(
+         'type' => 'text',
+         'not null' => FALSE,
+         'size' => 'big',
+         'description' => 'Info about celebrity website.',
+       ),
+	   'celeb_website_image_path' => array(
+		 'type' => 'varchar',
+		 'length' => 255,
+		 'not_null' => FALSE,
+		 'default' => '',
+		 'description' => 'The image file you wish to associate with the celebrity website.',
+		),
+	  'base_uri' => array(
+        'type' => 'varchar',
+        'length' => 50,
+        'not null' => TRUE,
+        'default' => '',
+        'description' => 'Start URI of all posts for this blog.',
+      ),
+    ),
+	'indexes' => array(
+      'base_uri' => array('base_uri'),
+    ),
+    'primary key' => array('bid'),
+  );
+
+  $schema['jp_blog_node'] = array(
+    'description' => 'Stores the relationship of blogs to nodes.',
+    'fields' => array(
+      'nid' => array(
+        'type' => 'int',
+        'unsigned' => TRUE,
+        'not null' => TRUE,
+        'default' => 0,
+        'description' => 'Primary Key: The {node}.nid of the node.',
+      ),
+      'vid' => array(
+        'type' => 'int',
+        'unsigned' => TRUE,
+        'not null' => TRUE,
+        'default' => 0,
+        'description' => 'Primary Key: The {node}.vid of the node.',
+      ),
+      'bid' => array(
+        'type' => 'int',
+        'unsigned' => TRUE,
+        'not null' => TRUE,
+        'default' => 0,
+        'description' => 'Primary Key: The {jp_blog}.tid of a term assigned to the node.',
+      ),
+    ),
+    'indexes' => array(
+      'vid' => array('vid'),
+      'nid' => array('nid'),
+    ),
+    'primary key' => array('bid', 'vid'),
+  );
+  
+  $schema['jp_blog_user'] = array(
+    'description' => 'Stores which users can post to this blog.',
+    'fields' => array(
+      'bid' => array(
+        'type' => 'int',
+        'unsigned' => TRUE,
+        'not null' => TRUE,
+        'default' => 0,
+        'description' => 'Primary Key: the {jp_blog}.bid of the blog.',
+      ),
+      'uid' => array(
+        'type' => 'varchar',
+        'length' => 32,
+        'not null' => TRUE,
+        'default' => '',
+        'description' => 'The {user}.uid of the user that can post to this blog.',
+      ),
+    ),
+    'primary key' => array('uid', 'bid'),
+    'indexes' => array(
+      'bid' => array('bid'),
+    ),
+  );
+
+  return $schema;
+}
+ /**
+ * Implementation of hook_install()
+ */
+function jp_blog_install() {
+  drupal_install_schema('jp_blog');
+}
+
+
+
+ /**
+ * Implementation of hook_uninstall().
+ */
+function jp_blog_uninstall() {
+  drupal_uninstall_schema('jp_blog');
+}
+

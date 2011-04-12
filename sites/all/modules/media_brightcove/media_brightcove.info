@@ -1,0 +1,15 @@
+; $Id: media_brightcove.info,v 1.1 2009/03/10 19:37:09 aaron Exp $
+
+name = Media: Brightcove
+description = Embedded Video Field provider file for Brightcove.com.
+core = 6.x
+dependencies[] = emvideo
+package = Media
+
+
+; Information added by drupal.org packaging script on 2009-07-31
+version = "6.x-1.1-beta1"
+core = "6.x"
+project = "media_brightcove"
+datestamp = "1249070140"
+

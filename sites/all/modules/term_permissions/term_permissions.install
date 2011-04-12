@@ -1,0 +1,58 @@
+<?php
+
+// $Id: term_permissions.install,v 1.3 2009/12/02 17:12:55 deviantintegral Exp $
+
+/**
+ * Implementation of hook_install()
+ */
+function term_permissions_install() {
+  $ret = array();
+  $results = drupal_install_schema('term_permissions');
+  $install_pass = TRUE;
+  foreach ($results as $result) {
+    if (!$result['success']) {
+      $install_pass = FALSE;
+    }
+  }
+  if (!$install_pass) {
+    drupal_set_message(t('There was an error installing the Taxonomy Term Permissions module. The <a href="@watchdog-url">error log</a> may have more information about the error.', array('@watchdog-url' => url('admin/reports/dblog'))), 'error');
+  }
+}
+
+/**
+ * Implementation of hook_schema()
+ */
+function term_permissions_schema() {
+  $schema = array();
+
+  $schema['term_permissions_user'] = array(
+    'fields' => array(
+      'tid' => array('type' => 'int', 'unsigned' => TRUE, 'not null' => TRUE),
+      'uid' => array('type' => 'int', 'unsigned' => TRUE, 'not null' => TRUE),
+    ),
+    'primary key' => array(
+      'tid',
+      'uid',
+    ),
+  );
+
+  $schema['term_permissions_role'] = array(
+    'fields' => array(
+      'tid' => array('type' => 'int', 'unsigned' => TRUE, 'not null' => TRUE),
+      'rid' => array('type' => 'int', 'unsigned' => TRUE, 'not null' => TRUE),
+    ),
+    'primary key' => array(
+      'tid',
+      'rid',
+    ),
+  );
+
+  return $schema;
+}
+
+/**
+ * Implementation of hook_uninstall().
+ */
+function term_permissions_uninstall() {
+  drupal_uninstall_schema('term_permissions');
+}
