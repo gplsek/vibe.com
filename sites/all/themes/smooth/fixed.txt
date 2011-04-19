@@ -1,0 +1,15 @@
+		<div id="header-group" class="row <?php print $grid_width; ?>">
+			<div id="header-group-inner" class="header-group-inner inner clearfix">
+			<?php if ($logo): ?>
+			<div id="logo" class="grid16-4 nested">
+				<a href="<?php print check_url($front_page); ?>" title="<?php print t('Home'); ?>"><img src="<?php print $logo; ?>" alt="<?php print t('Home'); ?>" /></a>
+			</div>
+			<?php endif; ?>
+			<?php print theme('grid_row', $primary_links_tree, 'primary-menu','grid16-12 nested'); ?>
+			</div>
+		
+		</div>
+		
+	
+	background: url("../images/header-bg.png") repeat-x scroll 0 0 transparent;
+	height:90px;
