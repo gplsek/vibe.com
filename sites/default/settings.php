@@ -89,7 +89,7 @@
  *   $db_url = 'mysqli://username:password@localhost/databasename';
  *   $db_url = 'pgsql://username:password@localhost/databasename';
  */
-$db_url = 'mysqli://vibe:px3bjxemvexvdpUN@localhost/vibe';
+$db_url = 'mysql://stage_www:stage_www1@localhost/stage_www_vibe';
 $db_prefix = '';
 
 /**
