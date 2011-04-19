@@ -1,0 +1,129 @@
+
+/* Background colors */
+
+body.style-carmine #preface-top-wrapper,
+body.style-carmine #smooth-header,
+body.style-carmine #social-network,
+body.style-carmine #footer-group,
+body.style-carmine ul.pager li.pager-current,
+body.style-carmine  div.poll div.bar div.foreground ,
+body.style-carmine .block.nav-menu-list ul li a:hover,
+body.style-carmine .block.nav-menu-list ul li.active-trail a {
+    background-color: #80001C; /* 5 */
+}
+
+/* Text Colors Light */
+body.style-carmine .block-lightcolor ,
+body.style-carmine .block-lightcolor a,
+body.style-carmine .block-lightcolor a:link,
+body.style-carmine .block-lightcolor a:visited,
+body.style-carmine .lightcolor,
+body.style-carmine ul.pager li.pager-current,
+body.style-carmine #footer h2.title,
+body.style-carmine #social-network,
+body.style-carmine .block.nav-menu-list ul li a:hover,
+body.style-carmine .block.nav-menu-list ul li.active-trail a  {
+    color: #F2CCD4; /* 1 */
+}
+/* Light Background */
+body.style-carmine div.poll div.bar {
+	background-color: #BF002A; /*  4 */
+}
+
+
+/* Text Colors Highlights */
+body.style-carmine a,
+body.style-carmine a:link,
+body.style-carmine a:visited,
+
+body.style-carmine .block-highlight,
+body.style-carmine .block-highlight a,
+body.style-carmine #search input.form-text,
+.highlight {
+color: #80001C; /* 5 */
+}
+
+/* normal button style */
+body.style-carmine .node_read a,
+body.style-carmine .comment_add a,
+body.style-carmine .book_add_child a,
+body.style-carmine .book_printer a,
+body.style-carmine .upload_attachments a,
+body.style-carmine .comment_new_comments a,
+body.style-carmine .comment_comments a,
+body.style-carmine .node_read_more a,
+body.style-carmine .blog_usernames_blog a,
+body.style-carmine .comment_forbidden a,
+body.style-carmine ul.pager a:link, ul.pager a:visited,
+body.style-carmine .block-poll ul.links li a {
+/*	background-color:#FFF; 
+	border:1px solid #d3d3d3; */
+}
+
+body.style-carmine .node_read a:hover,
+body.style-carmine .comment_add a:hover,
+body.style-carmine .book_add_child a:hover,
+body.style-carmine .book_printer a:hover,
+body.style-carmine .upload_attachments a:hover,
+body.style-carmine .comment_new_comments a:hover,
+body.style-carmine .comment_comments a:hover,
+body.style-carmine .node_read_more a:hover,
+body.style-carmine .blog_usernames_blog a:hover,
+body.style-carmine .comment_forbidden a:hover,
+body.style-carmine ul.pager a:hover,
+body.style-carmine .block-poll ul.links li a:hover{
+/*	background-color:#80001C; 
+	border:1px solid #BF002A; 
+	color: #E599AA; */
+}
+/* normal button style end */
+
+/* LIGHTCOLOR button style */
+body.style-carmine .block-contact_form_blocks.block-lightcolor input,
+body.style-carmine .block-contact_form_blocks.block-lightcolor textarea,
+body.style-carmine .block-contact_form_blocks.block-lightcolor .resizable-textarea .grippie ,
+body.style-carmine .block-lightcolor .node_read a, body.style-carmine .block-lightcolor .node_read a:link,body.style-carmine .block-lightcolor .node_read a:visited,
+body.style-carmine .block-lightcolor .comment_add a, body.style-carmine .block-lightcolor .comment_add a:link,body.style-carmine .block-lightcolor .comment_add a:visited,
+body.style-carmine  .block-lightcolor.book_add_child a, body.style-carmine  .block-lightcolor.book_add_child a:link,body.style-carmine  .block-lightcolor.book_add_child a:visited,
+body.style-carmine .block-lightcolor.book_printer a, body.style-carmine .block-lightcolor.book_printer a:link,body.style-carmine .block-lightcolor.book_printer a:visited,
+body.style-carmine .block-lightcolor .upload_attachments a,body.style-carmine .block-lightcolor .upload_attachments a:link,body.style-carmine .block-lightcolor .upload_attachments a:visited,
+body.style-carmine .block-lightcolor.comment_new_comments a, body.style-carmine .block-lightcolor.comment_new_comments a:link, body.style-carmine .block-lightcolor.comment_new_comments a:visited ,
+body.style-carmine .block-lightcolor .comment_comments a, body.style-carmine .block-lightcolor .comment_comments a:link,body.style-carmine .block-lightcolor .comment_comments a:visited,
+body.style-carmine .block-lightcolor .node_read_more a, body.style-carmine .block-lightcolor .node_read_more a:link,body.style-carmine .block-lightcolor .node_read_more a:visited,
+body.style-carmine .block-lightcolor .blog_usernames_blog a, body.style-carmine .block-lightcolor .blog_usernames_blog a:link, body.style-carmine .block-lightcolor .blog_usernames_blog a:visited,
+body.style-carmine .block-lightcolor .comment_forbidden a, body.style-carmine .block-lightcolor .comment_forbidden a:link, body.style-carmine .block-lightcolor .comment_forbidden a:visited,
+body.style-carmine .block-lightcolor.block-poll ul.links li a,body.style-carmine .block-lightcolor.block-poll ul.links li a:link,body.style-carmine .block-lightcolor.block-poll ul.links li a:visited   {
+	background-color:#80001C; /* 5 */
+	border:1px solid #BF002A; /*  4 */
+	color: #F2CCD4;	/* 1 */
+}
+
+body.style-carmine .block-lightcolor .node_read a:hover,
+body.style-carmine .block-lightcolor .comment_add a:hover,
+body.style-carmine .block-lightcolor .book_add_child a:hover,
+body.style-carmine .block-lightcolor .book_printer a:hover,
+body.style-carmine .block-lightcolor .upload_attachments a:hover,
+body.style-carmine .block-lightcolor .comment_new_comments a:hover,
+body.style-carmine .block-lightcolor .comment_comments a:hover,
+body.style-carmine .block-lightcolor .node_read_more a:hover,
+body.style-carmine .block-lightcolor .blog_usernames_blog a:hover,
+body.style-carmine .block-lightcolor .comment_forbidden a:hover,
+body.style-carmine .block-lightcolor.block-poll ul.links li a:hover{
+	background-color:#BF002A; /*  4 */
+	border:1px solid #80001C; /* 5 */
+	color: #F2CCD4; /* 1 */
+}
+
+/* Border Bottom */
+body.style-carmine div.tweet-hr,
+body.style-carmine .block.menu-list2 ul li {
+    border-bottom: 1px solid #80001C;
+}
+	
+
+/* LIGHTCOLOR button style end */
+
+/* Search block forum backgrund image */
+body.style-carmine #search {
+    background-image: url("../images/search-box.png");
+	}

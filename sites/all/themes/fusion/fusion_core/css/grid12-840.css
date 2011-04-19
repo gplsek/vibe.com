@@ -1,0 +1,47 @@
+/* $Id: grid12-960.css,v 1.1.2.1 2009/12/02 00:47:46 sociotech Exp $ */
+
+/* Layout - 12 column grid, 960px fixed width, 20px gutters
+-------------------------------------------------------------- */
+
+/* grid widths */
+.grid12-1 {width: 70px;}
+.grid12-2 {width: 140px;}
+.grid12-3 {width: 210px;}
+.grid12-4 {width: 280px;}
+.grid12-5 {width: 350px;}
+.grid12-6 {width: 420px;}
+.grid12-7 {width: 490px;}
+.grid12-8 {width: 560px;}
+.grid12-9 {width: 630px;}
+.grid12-10 {width: 700px;}
+.grid12-11 {width: 770px;}
+.grid12-12 {width: 840px;}
+
+/* block indents */
+.grid12-indent-1 {margin-left: 70px;}
+.grid12-indent-2 {margin-left: 140px;}
+.grid12-indent-3 {margin-left: 210px;}
+.grid12-indent-4 {margin-left: 280px;}
+.grid12-indent-5 {margin-left: 350px;}
+.grid12-indent-6 {margin-left: 420px;}
+.grid12-indent-7 {margin-left: 490px;}
+.grid12-indent-8 {margin-left: 560px;}
+.grid12-indent-9 {margin-left: 630px;}
+.grid12-indent-10 {margin-left: 700px;}
+.grid12-indent-11 {margin-left: 770px;}
+
+/* gutters (2 x margin) */
+.block .inner {
+  margin-left: 10px;
+  margin-right: 10px;
+}
+
+/* hack to fix node-top & node-bottom being off-grid */
+#content-content .node .first .inner {
+    margin-right: 10px;
+}
+
+body,
+div.full-width {
+  min-width: 840px;
+}

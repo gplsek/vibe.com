@@ -1,0 +1,1613 @@
+/* $Id: fusion-starter-style.css,v 1.1.2.7 2010/07/04 01:51:31 sociotech Exp $ */
+
+/* Basic Typography & Colors
+-------------------------------------------------------------- */
+/* Add general site styling here for typography and background */
+body {
+  font-size: 75%;   /* also set in fusion_starter.info: settings[base-font-size] = font-size-12 */
+  background: none repeat scroll 0 0 #dfe2e3;
+  color: #404040;
+}
+
+/* Default link styles - separate a:visited for a different visited link style */
+a,
+a:link,
+a:visited {
+}
+
+/* Hover/active link styles. Don't forget :focus for accessibility */
+a:hover,
+a:focus,
+a:active {
+text-decoration:none;
+}
+
+/* Specific Typography
+-------------------------------------------------------------- */
+#site-name {
+  font-size: 300%;
+  line-height: 150%;
+}
+
+.footer-message {
+  font-size: 90%;
+}
+
+
+/* HTML Elements
+-------------------------------------------------------------- */
+body {
+
+}
+
+/* Site Info
+-------------------------------------------------------------- */
+/* Wrapper around logo, site name, and slogan */
+.header-site-info span {
+  display: block;
+}
+
+/* Add float here to put logo and site name side by side, also add margins as
+  needed */
+#logo {
+	
+}
+
+#logo-link {
+	margin-left: 8px;
+}
+
+/* Link and hover styles for site name */
+#site-name a:link,
+#site-name a:visited,
+#site-name a:hover,
+#site-name a:active {
+}
+
+/* Typography for site slogan */
+#slogan {
+}
+
+
+/* Regions
+
+  Classes (.region-name) should always be used instead of IDs (#region-name) so
+  that Skinr styles can override them with a class later
+-------------------------------------------------------------- */
+
+/* All Regions
+-------------------------------------------------------------- */
+/* By default this wrapper is set to 100% width and centered -- override here to
+  narrow wrapper or align left or right */
+.page {
+}
+
+/* The 0 values here remove padding and spacing at the bottom of the page.
+  Remove to add a gap at the very bottom of the page */
+.page-inner {
+  border: 0;
+  margin-bottom: 0;
+  padding: 0;
+}
+
+
+/* Header Regions
+-------------------------------------------------------------- */
+/* Header Top region to the bottom of Header region */
+/* For full-width header background, add background image/color here */
+.header-group-wrapper {
+}
+
+.header-group {
+}
+.header-group-inner {
+}
+
+/* Header Top region which sits above the header */
+/* Works well with inline login or inline menu block style */
+.header-top-wrapper {
+	position: relative;
+	/* background: url("../images/toggle-bg.png") repeat-x 0 0 transparent; */
+}
+.header-top-wrapper span.toggle{
+	position: absolute;
+	right:15px;
+	top:3px;
+}
+.header-top-wrapper span.toggle a {
+	background: url("../images/toggle.png") no-repeat 0 -21px transparent;
+	width:74px;
+	height:20px;
+	display:block;
+}
+.header-top-wrapper span.toggle.active a {
+	background: url("../images/toggle.png") no-repeat 0 0 transparent;
+}
+
+
+.header-top {
+	height:28px;
+}
+.header-top-inner{
+	line-height:28px;
+}
+.header-top .block {
+	margin-bottom:0;
+}
+.header-top .block  .content p{
+	margin:0;
+}
+
+
+#smooth-header {
+	background:url("../images/light.png") repeat-x scroll center top transparent;
+ }
+#smooth-header-nav {
+	/* background: url("../images/header-bg.png") repeat-x scroll 0 0 transparent; */
+	/* height:90px; */
+}
+#smooth-header-nav-inner {
+	padding-top:8px;
+	background: #FFF;
+}
+
+#nav-bar{
+	float: left;
+	margin-top: -2px;
+}
+
+.bar {
+	height: 8px;
+	margin: 0 10px 10px 10px;
+	background: #28AAE1;
+}
+
+#smooth-header-nav-inner div.vibe-blast .fRight {
+	padding: 0 10px 0 0;
+}
+
+#header-links {
+	background: url("../images/bg-header-links.png") repeat-x scroll 0 0 #FFF;
+	height: 30px;
+}
+
+
+/* Primary Menu
+/-------------------------------------------------------------- */
+/* Add general styles for primary menu here, such as typography, borders, floats,
+  or spacing above/below */
+#primary-menu {}
+
+  
+.fusion-right-content ul.menu {
+	text-align:right;
+}  
+  
+.primary-menu {
+
+}
+
+
+/* styles for Superfish primary menu */
+.primary-menu-inner ul.sf-menu {
+	float:right;
+	margin: 0;
+	clear: both;
+}
+
+.primary-menu-inner ul.sf-menu>li.sfHover>a,
+.primary-menu-inner ul.sf-menu>li:hover>a,
+.primary-menu-inner ul.sf-menu>li.active-trail>a {
+	/* background:url("../images/nav-bg-L.png") no-repeat scroll left top transparent; */
+	color: #28AAE1;
+}
+
+.primary-menu-inner ul.sf-menu>li.sfHover>a>span.link,
+.primary-menu-inner ul.sf-menu>li:hover>a>span.link,
+.primary-menu-inner ul.sf-menu>li.active-trail>a>span.link {
+    /* background: url("../images/nav-bg-R.png") no-repeat scroll right top transparent;    */
+ }
+ 
+ .primary-menu-inner ul.sf-menu>li.expanded:hover>a{
+ 	/* background:url("../images/nav-bg-L.png") no-repeat scroll left -37px transparent; */
+ }
+ .primary-menu-inner ul.sf-menu>li.expanded:hover>a>span.link {
+	/* background: url("../images/nav-bg-R.png") no-repeat scroll right -37px transparent;  */
+ }
+
+.primary-menu-inner ul.sf-menu>li>a>span.link {
+   /* background: url("../images/nav-bg-R.png") no-repeat scroll right top transparent; */
+    display: block;
+    /* line-height: 25px; */
+    margin-left: 6px;
+    padding: 0 10px 0 5px;
+	font-size: 18px;
+/*	font-family: "HattoriHanzoLight",Calibri,sans-serif; */
+}
+
+.primary-menu-inner ul.sf-menu span.link {
+    display: block;
+    margin-left: 10px;
+}
+.primary-menu-inner ul.sf-menu>li>a > .sf-sub-indicator {
+    top: 1.2em;
+}
+.primary-menu-inner ul.sf-menu>li>ul.menu li a > .sf-sub-indicator {
+    top: 1.2em;
+}
+.primary-menu-inner ul.sf-menu>li>ul.menu li a {
+	font-size:15px;
+}
+
+/* Link style for top level menu items, add padding here */
+.primary-menu-inner ul.sf-menu a,
+.primary-menu-inner ul.sf-menu a:visited  {
+	color:#000;
+	padding:0;
+	font-weight: bold;
+}
+
+.primary-menu-inner ul.sf-menu a:hover,
+.primary-menu-inner ul.sf-menu a:active,
+.primary-menu-inner ul.sf-menu a:focus {
+	color:#28AAE1;
+}
+
+/* These are the top level menu items, add border-right here for separators */
+.primary-menu-inner ul.sf-menu>li {
+	/* padding-right:5px; */
+}
+
+/* Add border-right: 0; here to remove separator on last menu item */
+.primary-menu-inner ul.sf-menu li.last {
+}
+
+/* Style for container of dropdown, add background or border */
+.primary-menu-inner ul.sf-menu ul {
+}
+.primary-menu-inner ul.sf-menu>li.expanded>a.sf-with-ul>span.link  {
+	padding-right: 25px;
+}
+.primary-menu-inner ul.sf-menu>li.expanded>a.sf-with-ul{
+
+}
+
+
+.primary-menu-inner ul.sf-menu>li>ul.menu {
+	margin:7px 0 0 0;
+	background:url("../images/nav-bg.png") repeat 0 0 transparent;
+}
+.primary-menu-inner ul.sf-menu>li>ul.menu li {
+	padding-right:0;
+/*	border-bottom:1px solid #10010c; /* menu bottom line */
+}
+.primary-menu-inner ul.sf-menu>li>ul.menu li.last {
+	border-bottom:none;
+}
+
+
+.primary-menu-inner ul.sf-menu>li>ul.menu li a {
+	padding:10px 0;
+}
+/* Style for individual dropdown menu items, add border-bottom for separators */
+.primary-menu-inner ul.sf-menu li li {
+  background-color: none;
+}
+
+.primary-menu-inner ul.sf-menu li li.last {
+
+}
+
+.primary-menu-inner ul.sf-menu li li li {
+background:url("../images/nav-bg.png") repeat scroll 0 0 transparent;
+}
+
+/* Style for hover of dropdown menu items (add background-color here) */
+.primary-menu-inner ul.sf-menu li ul li:hover,
+.primary-menu-inner ul.sf-menu li ul li.sfHover {
+}
+
+
+/* Secondary menu
+-------------------------------------------------------------- */
+/* This menu usually appears in the header as a set of simple text links */
+.secondary-menu {
+}
+
+/* Set general style for menu here -- background, alignment, etc. */
+.secondary-menu-inner ul.links {
+}
+
+/* Add a border-right here for a separator */
+.secondary-menu-inner ul.links li {
+}
+
+/* Add border-right: 0; here to remove right separator on last menu item */
+.secondary-menu-inner ul.links li.last {
+}
+
+/* Styles for links */
+.secondary-menu-inner ul.links li a:link,
+.secondary-menu-inner ul.links li a:visited {
+  padding: 3px;
+  color:#d3d3d3;
+}
+
+.secondary-menu-inner ul.links li a:hover,
+.secondary-menu-inner ul.links li a:focus,
+.secondary-menu-inner ul.links li a.active {
+	color:#c94c9b;
+}
+
+
+/* Header - Search
+-------------------------------------------------------------- */
+#search.focus {}
+
+#search.hover {}
+#search {
+	float: right;
+	margin: 10px 0 0 0;
+	height: 50px;
+}
+#search .form-item {
+}
+#search .form-item input {
+}
+
+#search input.search-input {
+	border: 1px solid #CDCED0;
+	height: 22px;
+	padding-top: 2px;
+	vertical-align: top;
+	width: 180px;
+	float: left;
+	font-size: 13px;
+}
+
+#search input.search_submit{
+	border: 1px solid #504F5B;
+	background: #504F5B;
+	height: 22px;
+	padding-top: 2px;
+	vertical-align: top;
+	float: left;
+	color: #DEDFDE;
+	height: 28px;
+	font-size: 13px;
+	margin-left: 5px;
+	padding: 0 5px;
+	font-weight: bold;
+	cursor: pointer;
+}
+
+
+.search-box {
+}
+
+.search-box-inner {
+}
+
+.search-box-inner form#search-theme-form {
+}
+
+.search-box-inner input#edit-search-theme-form-header {
+}
+
+
+/*  Preface Regions
+-------------------------------------------------------------- */
+/* The Preface Top region sits between the header and the Main Area
+ (columns, sidebars, and main content).  The Preface Bottom region
+ is inside the Main Area. */
+.preface-top-wrapper {
+	padding:10px 0;
+/* 	background:url("../images/preface-top.png") repeat-x scroll 0 0 transparent; */
+	height:108px;
+	/*margin-bottom:20px;*/
+}
+
+.preface-top {
+}
+
+.preface-top-inner {
+}
+
+.preface-bottom {
+}
+
+.preface-bottom-inner {
+}
+
+
+/*  Main Area (content + sidebars + preface bottom + postscript top)
+-------------------------------------------------------------- */
+.main-wrapper {
+ min-height: 450px;
+}
+div.main {
+}
+
+#main .grid12-12 {
+	background: #FFF;
+}
+
+
+.smooth-quotes {
+	
+}
+.smooth-quotes .views-slideshow-controls-bottom {
+	margin-top:15px;
+}
+
+/* Sidebar Regions
+-------------------------------------------------------------- */
+/* Sidebar widths can be controlled through theme settings */
+.sidebar-first {
+}
+
+.sidebar-last {
+    
+}
+
+
+/* Content Regions
+-------------------------------------------------------------- */
+.content-top {
+}
+
+.content {
+	margin-bottom:5px;
+}
+
+.content-inner {
+}
+
+.content-bottom {
+}
+
+/* This region only appears on full node pages. It's useful for ads or other
+  content between the body of the node and its comments */
+.node-bottom {
+}
+
+#content-content .node ul.links li.comment_forbidden a {
+    padding-right: 5px;;
+}
+/* node buttons */
+.node_read a,
+.comment_add a, 
+.book_add_child a,
+.book_printer a,
+.upload_attachments a,
+.comment_new_comments a,
+.comment_comments a,
+.node_read_more a,
+.blog_usernames_blog a,
+.comment_forbidden a,
+.block-poll ul.links li a {
+	display:inline-block;
+	padding-right:5px;
+	height:33px;
+	line-height:33px;
+	background: url("../images/node-button-right.png") no-repeat scroll right center transparent
+}
+.node_read a span,
+.comment_add a span, 
+.book_add_child a span,
+.book_printer a span,
+.upload_attachments a span,
+.comment_new_comments a span,
+.comment_comments a span,
+.node_read_more a span,
+.blog_usernames_blog a span,
+.comment_forbidden a span,
+.block-poll ul.links li a span {
+    background: url("../images/node-button-left.png") no-repeat scroll 0 0 transparent;
+    display: block;
+    padding-left: 10px;
+    padding-right: 5px;
+}
+.node_read a:hover span,
+.comment_add a:hover span, 
+.book_add_child a:hover span,
+.book_printer a:hover span,
+.upload_attachments a:hover span,
+.comment_new_comments a:hover span,
+.comment_comments a:hover span,
+.node_read_more a:hover span,
+.blog_usernames_blog a:hover span,
+.comment_forbidden a:hover span,
+.block-poll ul.links li a:hover span {
+	background: url("../images/node-button-left-hover.png") no-repeat 0 0 transparent ;
+}
+
+.node_read a:hover,
+.comment_add a:hover, 
+.book_add_child a:hover,
+.book_printer a:hover,
+.upload_attachments a:hover,
+.comment_new_comments a:hover,
+.comment_comments a:hover,
+.node_read_more a:hover,
+.blog_usernames_blog a:hover,
+.comment_forbidden a:hover,
+.block-poll ul.links li a:hover {
+	background: url("../images/node-button-right-hover.png") no-repeat scroll right center transparent
+}
+
+
+
+/*  Postscript & Footer Regions
+-------------------------------------------------------------- */
+.postscript-top {
+}
+
+.postscript-top-inner {
+}
+
+.postscript-bottom-wrapper {
+}
+
+.postscript-bottom {
+}
+
+.postscript-bottom-inner {
+}
+
+#footer-group{ 
+    font-size: 13px;
+    position: relative;
+	}
+.footer-wrapper {
+	background:url("../images/footer-bg.png") repeat-x scroll center top transparent;
+}
+
+.footer {
+}
+
+.footer-inner {
+}
+
+.footer-message-wrapper {
+}
+
+.footer-message {
+}
+
+.footer-message-inner {
+}
+
+.footer-message-text {
+    height: 30px;
+    line-height: 30px;
+}
+/* Footer Block */
+.footer .block {
+margin-top:25px;
+}
+.footer .block .content  {
+margin-top:30px;
+}
+#social-network {
+	font-size:10px;
+}
+#social-network-wrapper {
+/*background: url("../images/footer-bg.png") repeat-x scroll 0 0 transparent;*/
+}
+#social-network .block {
+	margin-top:5px;
+	margin-bottom:3px;
+}
+a.social {
+    display: inline;
+    margin: 0 2px;
+}
+
+/* Page titles
+/-------------------------------------------------------------- */
+/* Page and full node titles */
+h1.title {
+}
+
+
+/* Default node styles
+/-------------------------------------------------------------- */
+/* Change unpublished and preview colors for dark background themes */
+.node-unpublished {
+/*  background-color: #fff4f4; */
+	background:none;
+}
+.preview{}
+.preview .node {
+  background:none;
+}
+
+/* Typography for node titles */
+h2.title {
+	
+}
+
+/* Colors and styles for linked node titles, ie. teaser listing at /node */
+h2.title a:link,
+h2.title a:visited {
+}
+
+h2.title a:hover,
+h2.title a:focus,
+h2.title a:active {
+}
+
+/* Separators and padding for node teasers */
+.teaser {
+}
+
+/* Author/date info */
+.meta {
+}
+
+.submitted {
+    display: inline-block;
+	text-align:right;
+    width: 100%;
+}
+.teaser .submitted {
+	margin-bottom:1em;
+}
+.submitted .date {
+	background:url("../images/icons/16/calendar.png") no-repeat 0 0 transparent;
+	height: 20px;
+    line-height: 20px;
+    padding: 2px 10px 0 20px;
+}
+.submitted .author {
+	background:url("../images/icons/16/users.png") no-repeat 0 0 transparent;
+	height: 20px;
+    line-height: 20px;
+    padding: 2px 10px 0 20px;
+}
+.submitted .comment_count {
+	background:url("../images/icons/16/spechbubble.png") no-repeat 0 0 transparent;
+	height: 20px;
+    line-height: 20px;
+    padding: 2px 10px 0 20px ;
+}
+
+/* Links for nodes (taxonomy, commenting, read more, etc) */
+div.terms ul.links li a {
+	background: url("../images/tag-blue.png") no-repeat 0 0 transparent;
+	padding-left:20px;
+}
+.node ul.links li {
+	padding-left:5px;
+}
+.node ul.links a {
+}
+
+
+
+/* Only more/read more links */
+div.node .read-more a,
+div.node .more-link a {
+}
+
+/* Drupal Messages
+/-------------------------------------------------------------- */
+/* General style for all errors/messages (border, padding, etc.) */
+div.content-messages div.messages,
+div.content-help div.help {
+}
+
+/* Status messages: green */
+div.content-messages-inner div.status {
+}
+
+/* Warning messages: yellow */
+div.content-messages-inner div.warning {
+}
+
+/* Error messages: red */
+div.content-messages-inner div.error {
+}
+
+/* Help messages: blue */
+div.content-help-inner div.help {
+}
+
+/* Error that appears when a required form field is not filled out */
+.form-item input.error,
+.form-item textarea.error,
+.form-item select.error {
+  border: 1px solid #aa1144;
+}
+
+/* "New" text and required form field asterisk (default = red) */
+.marker,
+.form-required {
+  color: #aa1144;
+}
+
+
+/* Default block title styles
+/-------------------------------------------------------------- */
+h2.block-title {
+}
+.white-block .inner {
+	background-color: #ffffff;
+	
+}
+.white-block .inner {
+	padding:10px;
+}
+/**/
+.white-two-block .inner {
+	background-color: #F6F6F6;
+	border: 1px solid #D4D4D4;
+	
+	-webkit-border-radius: 4px;
+	-moz-border-radius: 4px;
+	border-radius: 4px;
+}
+.white-two-block .inner {
+	padding:10px;
+}
+
+
+div.gallery-item {
+	float:left;
+	margin:0 12px;
+}
+
+/* Breadcrumbs
+-------------------------------------------------------------- */
+#breadcrumbs-wrapper { margin-bottom:10px;}
+.breadcrumb span.seperator {
+	background: url("../images/arrow.png") no-repeat scroll 0 0px transparent;
+    display: inline-block;
+    height: 20px;
+    width: 14px;
+}
+.breadcrumb div.home {
+    background: url("../images/home.png") no-repeat scroll 0 0 transparent;
+    display: inline-block;
+    height: 10px;
+    width: 10px;
+}
+
+.breadcrumb {
+padding:0;
+}
+.breadcrumbs {
+}
+#breadcrumbs-inner {
+margin:0 10px;
+margin-top:15px;
+}
+
+.breadcrumbs a:link,
+.breadcrumbs a:visited {
+}
+
+/* Grid Block Styles
+/-------------------------------------------------------------- */
+div.bar-left { float:left; margin-top:21px; max-width:80px;}
+div.bar-middle { float:left; margin-top:30px; max-width:662px;}
+div.bar-right{ float:right; margin-top:21px; height:85px; line-height:85px;}
+
+/* Tab Menus
+/-------------------------------------------------------------- */
+#content-tabs {
+  background-color: transparent;
+  float: left; /* LTR */
+  margin: 20px 0;
+  padding: 0;
+}
+
+#content-tabs ul.primary,
+#content-tabs ul.secondary {
+  border-bottom: 1px solid #000;
+  clear: both;
+  float: left; /* LTR */
+  margin: 0;
+  padding: 0 10px;
+}
+
+#content-tabs ul.secondary {
+  border-bottom: 1px solid #555;
+  margin-top: 10px;
+  text-transform: lowercase;
+}
+
+#content-tabs ul.primary li,
+#content-tabs ul.secondary li {
+  border-style: none;
+  display: inline;
+  float: left; /* LTR */
+  list-style: none;
+  margin: 0 10px;
+  padding: 0;
+}
+
+#content-tabs ul.primary li a:link,
+#content-tabs ul.primary li a:visited,
+#content-tabs ul.secondary li a:link,
+#content-tabs ul.secondary li a:visited {
+  background-color: transparent;
+  border: none;
+  color: #000;
+  float: left; /* LTR */
+  font-weight: bold;
+  margin: 0;
+  padding: 0 0 6px 0;
+  text-decoration: none;
+  white-space: nowrap;
+}
+
+#content-tabs ul.secondary li a:link,
+#content-tabs ul.secondary li a:visited {
+  color: #555;
+}
+
+#content-tabs ul.primary li a.active:link,
+#content-tabs ul.primary li a.active:visited {
+  border-bottom: 4px solid #000;
+  color: #555;
+  padding-bottom: 2px;
+}
+
+#content-tabs ul.secondary li a.active:link,
+#content-tabs ul.secondary li a.active:visited {
+  border-bottom: 4px solid #555;
+  color: #777;
+  padding-bottom: 2px;
+}
+
+#content-tabs ul.primary li a:hover,
+#content-tabs ul.primary li a:focus,
+#content-tabs ul.secondary li a:hover,
+#content-tabs ul.secondary li a:focus {
+  border-bottom: 4px solid #777;
+  color: #777;
+  padding-bottom: 2px;
+}
+
+/* Pagers
+-------------------------------------------------------------- */
+.block ul.links {
+    display: inline-block;
+    margin-left: 0;
+}
+
+ul.pager {
+}
+
+ul.pager li {
+}
+
+ul.pager a,
+ul.pager li.pager-current {
+  border-color: #333;
+}
+
+ul.pager li.pager-current {
+  background-color: #777;
+  color: #fff;
+}
+
+ul.pager a:hover,
+ul.pager a:active,
+ul.pager a:focus {
+  background-color: #777;
+  border-color: #333;
+  color: #fff;
+}
+
+/* Forms
+/-------------------------------------------------------------- */
+/* Typography and backgrounds for all form buttons */
+form input.form-submit {
+  margin: 2px;
+  padding: 3px 5px;
+}
+
+/* Hover style for form buttons */
+form input.form-submit:hover,
+form input.form-submit.hover,
+form input.form-submit:focus {
+}
+
+/* Typography, background, borders, padding for form fields */
+.form-item input,
+.form-item select,
+.form-item textarea {
+}
+
+/* Remove backgrounds and border on radios and checkboxes */
+.form-item .form-radio,
+.form-item .form-checkbox {
+  background: none;
+  border: none !important;
+}
+
+/* Fieldset wrapper around groups of form elements -- add border here */
+fieldset {
+}
+fieldset.captcha {
+    background-color: #F1F1F1;
+    border: 1px solid #D1D1D1;
+}
+/* Typography and spacing for legend of fieldsets */
+fieldset legend {
+}
+
+/* Link style for legend of fieldsets */
+fieldset legend,
+legend.collapse-processed,
+legend.collapse-processed a:link,
+legend.collapse-processed a:visited {
+}
+
+/* Custom icons on (open) collapsible fieldsets */
+html.js fieldset.collapsible legend a:link,
+html.js fieldset.collapsible legend a:visited {
+}
+
+/* Custom icons on (closed) collapsible fieldsets */
+html.js fieldset.collapsed legend a:link,
+html.js fieldset.collapsed legend a:visited {
+}
+
+/* Tables
+-------------------------------------------------------------- */
+table {
+}
+
+/* Body of tables */
+tbody {
+  border-top: 1px solid #ccc;
+}
+
+/* Header of tables */
+thead th,
+th {
+  border-bottom: 3px solid #ccc;
+}
+
+tbody th {
+  border-bottom: 1px solid #ccc;
+}
+
+/* Alternating row background styles */
+tr.even,
+tr.even td {
+  background-color: #eee;
+  border-bottom: 1px solid #ccc;
+}
+
+tr.odd,
+tr.odd td {
+  background-color: #fff;
+  border-bottom: 1px solid #ccc;
+}
+
+td.active {
+}
+
+tr.drag td,
+tr.drag-previous td {
+  color: #000;
+}
+
+
+/* Maintenance Page
+/-------------------------------------------------------------- */
+/* Maintenance page tpl file in Fusion Core has simplified layout, but you can
+  also add specific styles, such as a background, just for your offline page */
+.in-maintenance  {
+}
+#maintenance-content {
+	background: url("../images/coffecup.png") no-repeat 0 0 scroll transparent;
+	min-height: 130px;
+	display:block;
+}
+#maintenance-content .message {
+    display: block;
+    font-family: "Cuprum";
+    font-size: 18px;
+    font-style: normal;
+    font-weight: normal;
+    padding-left: 135px;
+    padding-top: 25px;
+}
+
+/*--------------------------------------------------------------*/
+/* Module styles
+/-------------------------------------------------------------- */
+
+
+/* Book
+/-------------------------------------------------------------- */
+.book-navigation .menu {
+  border-top: 1px solid #ccc;
+}
+
+.book-navigation .page-links {
+  border-top: 1px solid #ccc;
+  border-bottom: 1px solid #ccc;
+}
+
+
+/* Comments
+ * ------------------------------------------------------------ */
+#comments { 
+
+} 
+.comment {
+    border-bottom: 2px solid #D4D4D4;
+    min-height: 95px;
+    position: relative;
+	background-color: #eff0f0;
+	-webkit-border-radius: 5px;
+	-moz-border-radius: 5px;
+	border-radius: 5px;
+ }
+.indented .comment {
+	background-color: #f6f6f6;
+}
+ 
+ 
+.comment-body {
+	margin-left:110px;
+}
+.comment-title {
+    display: block;
+    margin-left: 110px;
+}
+
+ .comments div.comment-by-author {
+   
+}
+ 
+ 
+div.comment h3.title {
+	clear:both;
+}
+span.new {
+	
+}
+
+.comment-links {
+	display:block;
+	text-align:right;
+}
+.comment-links  ul { margin:0;}
+
+div.submitted {
+	border-bottom:1px solid #CCCCCC;
+	display:table;
+	margin-bottom:5px;
+	text-align:left;
+	width:100%;
+}
+span.submitted-info {
+    display: block;
+    font-size: 11px;
+    margin-left: 110px;
+}
+.comment-title a:hover {
+	border-bottom: 2px solid #00AA86;
+}
+
+div.comment .picture {
+	position:absolute;
+	top:10px;
+}
+div.comment .picture img {
+	background: none repeat scroll 0 0 #FCFCFC;
+    border: 1px solid #D9D9D9;
+    display: block;
+    height: 80px;
+    padding: 4px;
+    width: 80px;
+}
+span.comment_delete {
+/*	background-image: url(../images/comment-delete.png); */
+	background-repeat:no-repeat;
+	background-position:left;
+	padding-left:5px;
+}
+span.comment_edit {
+/*	background-image: url(../images/comment-edit.png); */
+	background-repeat:no-repeat;
+	background-position:left;
+	padding-left:5px;
+}
+span.comment_reply {
+/*	background-image: url(../images/comment-reply.png); */
+	background-repeat:no-repeat;
+	background-position:left;
+	padding-left:5px;
+	
+}
+
+
+/* Style for each individual comment */
+div.comment {
+}
+
+/* Subject (title) of each comment */
+div.comment h3.title {
+}
+
+/* Links (edit, reply, delete) for each comment */
+div.comment div.links a,
+div.comment ul.links a {
+}
+
+/* Alternating styles for even/odd comments */
+.comments div.odd {
+
+}
+
+.comments div.even {
+  
+}
+
+/* A special highlight style for a comment by the author of the node */
+.comments div.comment-by-author {
+ 
+}
+
+/* Comment signatures */
+.signature {
+  border-top: 1px solid #d6ddb9;
+}
+
+/* User avatars in comments */
+.comment-wrapper .picture img {
+}
+
+
+/* Forum
+/-------------------------------------------------------------- */
+#forum tr td.forum {
+    padding-left: 30px; 
+}
+#forum tr td.forum { 
+    background-image: url("../images/icons/20/forum/forum-default.png");
+	background-position: 2px 8px;
+}
+#forum .description {
+}
+
+.forum-topic-navigation {
+  border-top: 1px solid #888;
+  border-bottom: 1px solid #888;
+}
+
+
+/* Poll
+/-------------------------------------------------------------- */
+div.poll div.bar {
+  background-color: #ddd;
+}
+
+div.poll div.bar div.foreground {
+  background-color: #999;
+}
+.block-poll .poll div.title {
+    font-weight: normal;
+	font-size:145%;
+}
+.block-poll ul.links li {
+    display: inline-block;
+}
+.poll .vote-form .choices .title {
+font-weight: normal;
+}
+
+/* Profiles
+/-------------------------------------------------------------- */
+.profile .picture {
+  float: none;
+}
+
+/* Styles for sub-headings on user profiles */
+.profile dt {
+  background-color: #ccc;
+}
+
+
+/* Ubercart - catalog
+/-------------------------------------------------------------- */
+
+/* Horizontal list of subcategories in catalog */
+ul.uc-categories {
+}
+
+.uc-categories li a {
+  font-weight: bold;
+  padding: 0 5px 0 3px;
+}
+
+/* Product and category names */
+.catalog-grid-title a:link,
+.catalog-grid-title a:visited,
+.category a:link,
+.category a:visited {
+}
+
+.catalog-grid-title a:hover,
+.catalog-grid-title a:focus,
+.category a:hover,
+.category a:focus {
+}
+
+/* Sell price in Ubercart catalog */
+.category-grid-products .catalog-grid-sell-price {
+}
+
+/* Ubercart - add to cart buttons
+/-------------------------------------------------------------- */
+
+/* Add to cart buttons */
+input.node-add-to-cart,
+input.list-add-to-cart {
+}
+
+/* Hover and focus styles, with .hover class added for IE6 support */
+input.node-add-to-cart:hover,
+input.node-add-to-cart.hover,
+input.node-add-to-cart:focus,
+input.list-add-to-cart:hover,
+input.list-add-to-cart.hover,
+input.list-add-to-cart:focus {
+}
+
+/* Ubercart - product nodes
+/-------------------------------------------------------------- */
+
+#field-group {
+}
+
+#price-group {
+}
+
+/* Product images */
+.product-image a img {
+}
+
+.product-image a:hover img,
+.product-image a:focus img {
+}
+
+/* Display price on full product nodes */
+.full-node .product-group .uc-price-display {
+}
+
+/* Product attributes on full nodes */
+.full-node .product-group .attributes {
+}
+
+/* Ubercart - general / checkout
+/-------------------------------------------------------------- */
+
+/* For optional "Powered by Ubercart" footer message */
+#store-footer {
+}
+
+#store-footer a:link,
+#store-footer a:visited {
+}
+
+/* View cart/Checkout links in Ubercart cart block */
+.cart-block-summary-links ul.links li a {
+}
+
+.cart-block-summary-links ul.links li.cart-block-checkout a:link,
+.cart-block-summary-links ul.links li.cart-block-checkout a:visited {
+}
+
+/* Key checkout process buttons: Checkout, Continue, and Submit Order */
+#uc-cart-view-form #edit-checkout,
+#uc-cart-checkout-form #edit-continue,
+#uc-cart-checkout-review-form #edit-submit {
+}
+
+/* Table on final order review page */
+.order-review-table {
+}
+
+#cart-form-products table th {
+  border-bottom: 3px solid #dec2c3;
+}
+
+
+/* Skinr
+/-------------------------------------------------------------- */
+#contact-mail-page input.form-text {
+ /*   background: url("../images/input-bg.png") repeat-x scroll 0 0 transparent; */
+    border: 1px solid #FFFFFF;
+    height: 25px;
+    outline: 1px solid #D3D3D3;
+}
+
+.block-contact_form_blocks.block-lightcolor input {
+    -moz-border-radius: 3px 3px 3px 3px;
+    background-color: #242424;
+    border: 1px solid #393838;
+    color: #D4D4D4;
+    height: 22px;
+    line-height: 22px;
+	font-size:10px;
+}
+.block-contact_form_blocks.block-lightcolor textarea {
+	background-color: #242424;
+    border: 1px solid #393838;
+    color: #D4D4D4;
+}
+
+.block-contact_form_blocks.block-lightcolor .resizable-textarea { width: 97%; }
+.block-contact_form_blocks.block-lightcolor .resizable-textarea .grippie {
+    background: url("../images/grippie.png") no-repeat scroll center 2px #252525;
+    border-color: #242424;
+    border-right: 1px solid #242424;
+    border-style: solid;
+    border-width: 0 1px 1px;
+    cursor: s-resize;
+    height: 9px;
+    overflow: hidden;
+}
+.block-contact_form_blocks.block-lightcolor .compact-form-label {
+    font-size: 0.9em;
+    left: 5px;
+    position: absolute;
+    top: 4px;
+    z-index: 1;
+}
+
+/* This is a sample Skinr style to get you started. See fusion_starter.info */
+.fusion-example-stylename .inner {
+  /* When setting the background color, also set foreground colors for text and
+    links, even if it's similar to the default body style. Remember, this block
+    style may be used in regions with other foreground colors, thus making text
+    invisible if left unspecified */
+  background-color: #ccc;
+  color: #000;
+  /* All padding and borders should go on the .inner div, so as not to break
+    the widths of the grid */
+  border: 3px solid #000;
+  padding: 10px;
+}
+/* Local styles */
+.toRight {text-align:right;}
+.toLeft {text-align:left;}
+.fRight {float:right;}
+.feft{float:left;}
+div.hr {
+    background: url("../images/hr-bg.gif") repeat-x scroll left bottom transparent;
+    clear: both;
+    display: block;
+    height: 5px;
+	margin: 10px 0;
+}
+
+.block-l {
+    float: left;
+    height: 114px;
+    margin-right: 5px;
+    width: 48px;
+}
+.block-r {
+    display: inline-block;
+    float: left;
+    width: 247px;
+}
+
+/* Fancybox Hover image | zoom */
+a.disable-zoom { background:none!important;}
+a.imagefield-fancybox {
+	background: url("../images/zoom.png") no-repeat scroll center center transparent ;
+	display:inline-block;
+	float:left;
+}
+.preload {
+	display:inline-block;
+	background:transparent url(../images/loader.gif) no-repeat center center !important;
+	}
+
+	
+	
+/*  Views  */
+select { width: 125px; }
+.views-exposed-widgets.clear-block { float:right; margin-right:15px;}
+.views-exposed-form{
+    background: url("../images/hr-bg.gif") repeat-x scroll left bottom transparent;
+    display: inline-block;
+    margin-bottom: 10px;
+    padding-bottom: 5px;
+    width: 100%;
+
+}
+.views-exposed-form .views-exposed-widget {float: left; padding:0;}
+.views-exposed-form .views-exposed-widget:first-child{ margin-top:3px;}
+.views-exposed-form .views-exposed-widget{}
+.views-exposed-form .views-exposed-widget label{ float:left; display:inline-black; margin-right:5px;}
+.views-exposed-form .views-exposed-widget .views-widget{ float:left;}
+.views-exposed-form .views-exposed-widget .form-submit { margin-top: 0;}
+
+/* Slideshow */
+div.views-slideshow-controls-bottom {
+    height: 20px;
+    line-height: 20px;
+    text-align: center;
+	margin-top:5px;
+    vertical-align: middle;
+    z-index: 10;
+}
+
+a.views_slideshow_previous,
+a.views_slideshow_pause,
+a.views_slideshow_next,
+a.views_slideshow_play {
+	background-color: #ffffff;
+	display: inline-block;
+	margin-right:5px;
+	font-size:x-small;
+}
+a.views_slideshow_previous {
+	padding-left:15px;
+	padding-right:5px;
+}
+a.views_slideshow_next{
+	padding-right:15px;
+	padding-left:5px;
+}
+a.views_slideshow_pause,
+a.views_slideshow_play {
+	padding: 0 5px;
+}
+
+.pngfix img {
+    background: transparent;
+    -ms-filter: "progid:DXImageTransform.Microsoft.gradient(startColorstr=#00FFFFFF,endColorstr=#00FFFFFF)"; /* IE8 */   
+    filter: progid:DXImageTransform.Microsoft.gradient(startColorstr=#00FFFFFF,endColorstr=#00FFFFFF);   /* IE6 & 7 */      
+    zoom: 1;
+
+}
+
+.views_slideshow_singleframe_pager div {
+	display:inline;
+	padding-left:0px;
+}
+div.pager-item a {
+	background:url("../images/pager-item.png") no-repeat scroll 0 -13px transparent;
+	cursor:pointer;
+	display:inline-block;
+	height:13px;
+	margin-right:7px;
+	outline:medium none;
+	text-indent:-999px;
+	width:13px;
+}
+div.pager-item.activeSlide a {
+	background:url("../images/pager-item.png") no-repeat scroll 0 0 transparent;
+}
+div.pager-item a:hover {
+	background:url("../images/pager-item.png") no-repeat scroll 0 0 transparent;
+}
+
+/* Fancy Login */
+#block-menu-menu-accountmenu {
+	font-size:11px;
+
+}
+
+
+#fancy_login_close_button {
+	background: url("../images/popupClose.png") no-repeat 0 0 transparent;
+	float:right;
+	font-size:15px;
+	font-weight:bold;
+	margin-right:-10px;
+	margin-top:3px;
+	padding-left:3px;
+	padding-right:3px;
+	background-color: none;
+    border: none;
+    color: #FFFFFF;
+	width: 9px;
+}
+#fancy_login_close_button:hover {
+	background-position: 0 -17px;
+}
+#fancy_login_login_box{}
+#fancy_login_login_box form#user-login{
+	display:inline-block;
+	float:left;
+	margin-top:25px;
+}
+#fancy_login_login_box .item-list {
+	clear:both;
+}
+#fancy_login_login_box .item-list ul {
+	display:block;
+	text-align:center;
+}
+#fancy_login_login_box .item-list ul li {
+    display: inline-block;
+    list-style: none outside none;
+    margin-right: 5px;
+}
+
+#fancy_login_login_box .ff-login-img {
+	background: url("../images/password.png") no-repeat 0 0 transparent;
+    display: inline-block;
+    float: left;
+    height: 128px;
+    margin-bottom: 15px;
+    margin-right: 15px;
+    margin-top: 15px;
+    width: 128px;
+}
+
+#fancy_login_login_box  label {
+	/*display:none;*/
+}
+
+#fancy_login_login_box input.fancy-password {
+	background: url("../images/small-password.png") no-repeat scroll 0 5px transparent;
+    border: 1px solid #B3B3B3;
+    padding-left: 25px;
+	width: 190px;
+	height:25px;
+	line-height:25px;
+}
+
+#fancy_login_login_box #edit-name-wrapper input,
+#fancy_login_login_box input.fancy-username {
+    background: url("../images/user-info.png") no-repeat scroll 2px 1px transparent;
+    border: 1px solid #B3B3B3;
+    padding-left: 25px;
+	width: 190px;
+	height:25px;
+	line-height:25px;
+}
+#fancy_login_form_contents label.compact-form-label {
+	margin-left:25px;
+	line-height:31px;
+}
+
+/* Portfolio Book Block */
+.pf-book-block .views-row {
+	width:265px;
+	float:left;
+}
+.pf-book-block .views-row.views-row-1 {
+	margin-left:72px;
+	margin-right:72px;
+}
+
+/* Twweter Pull */
+div.tweet-hr {
+	display:inline-block;
+	width:100%;
+	border-bottom:1px solid #343230;
+}
+div.tweet {
+    background: url("../images/socials/twitter_16_dark.png") no-repeat scroll 0 3px transparent;
+    padding-left: 26px;
+}
+div.tweet .tweet-text a {
+
+}
+div.tweet .tweet-text a:hover {
+	border-bottom:2px solid #00aa86;
+	padding-bottom: 1px;
+}
+
+/* bef checkboxes */
+.form-checkboxes.bef-select-as-checkboxes { margin:0;} 
+.views-exposed-widget .bef-checkboxes {}
+.views-exposed-widget .bef-checkboxes label { float:none;}
+.views-exposed-widget .bef-checkboxes .form-item { float:left;}
