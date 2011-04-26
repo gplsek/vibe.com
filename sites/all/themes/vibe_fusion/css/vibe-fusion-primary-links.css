@@ -1,0 +1,200 @@
+
+/* Primary Menu
+/-------------------------------------------------------------- */
+
+
+
+/* Add general styles for primary menu here, such as typography, borders, floats,
+  or spacing above/below */
+.primary-menu {
+	/* background: url("../images/nav-bg-R.png") no-repeat scroll right top transparent;    */
+	
+}
+
+/* styles for Superfish primary menu */
+.primary-menu-inner ul.sf-menu {
+	float: right;
+}
+
+.primary-menu-inner ul.sf-menu a span.link {
+	display: none;
+}
+
+.primary-menu ul li a, .primary-menu ul li .nolink {
+	padding: 0 10px;
+	margin: 0;
+}
+
+.sf-menu {
+	margin: 0;
+}
+
+.sf-menu a {
+	padding: 0;
+	margin: 0;
+}
+
+/* Link style for top level menu items, add padding here */
+.primary-menu-inner ul.sf-menu a,
+.primary-menu-inner ul.sf-menu a:visited  {
+	height: 35px;
+	z-index: 99;
+}
+
+.primary-menu-inner ul.sf-menu a.menu-news,
+.primary-menu-inner ul.sf-menu a.menu-news:visited  {
+	background: url('../images/nav/news-off.png') no-repeat scroll center top transparent;
+	width: 55px;
+
+}
+
+.primary-menu-inner ul.sf-menu a.menu-news:hover,
+.primary-menu-inner ul.sf-menu a.menu-news:active,
+.primary-menu-inner ul.sf-menu a.menu-news:focus,
+.primary-menu-inner ul.sf-menu li.active-trail a.menu-news{
+	background: url('../images/nav/news-on.png') no-repeat scroll center top transparent;
+	width: 55px;
+
+}
+
+
+.primary-menu-inner ul.sf-menu a.menu-music,
+.primary-menu-inner ul.sf-menu a.menu-music:visited  {
+	background: url('../images/nav/music-off.png') no-repeat scroll center top transparent;
+	width: 60px;
+
+}
+
+.primary-menu-inner ul.sf-menu a.menu-music:hover,
+.primary-menu-inner ul.sf-menu a.menu-music:active,
+.primary-menu-inner ul.sf-menu a.menu-music:focus,
+.primary-menu-inner ul.sf-menu li.active-trail a.menu-music{
+	background: url('../images/nav/music-on.png') no-repeat scroll center top transparent;
+	width: 60px;
+
+}
+
+.primary-menu-inner ul.sf-menu a.menu-movies-tv,
+.primary-menu-inner ul.sf-menu a.menu-movies-tv:visited  {
+	background: url('../images/nav/movies-tv-off.png') no-repeat scroll center top transparent;
+	width: 95px;
+
+}
+
+.primary-menu-inner ul.sf-menu a.menu-movies-tv:hover,
+.primary-menu-inner ul.sf-menu a.menu-movies-tv:active,
+.primary-menu-inner ul.sf-menu a.menu-movies-tv:focus, 
+.primary-menu-inner ul.sf-menu li.active-trail a.menu-movies-tv{
+	background: url('../images/nav/movies-tv-on.png') no-repeat scroll center top transparent;
+	width: 95px;
+
+}
+
+
+.primary-menu-inner ul.sf-menu a.menu-blogs,
+.primary-menu-inner ul.sf-menu a.menu-blogs:visited  {
+	background: url('../images/nav/blogs-off.png') no-repeat scroll center top transparent;
+	width: 55px;
+
+}
+
+.primary-menu-inner ul.sf-menu a.menu-blogs:hover,
+.primary-menu-inner ul.sf-menu a.menu-blogs:active,
+.primary-menu-inner ul.sf-menu a.menu-blogs:focus,
+.primary-menu-inner ul.sf-menu li.active-trail a.menu-blogs{
+	background: url('../images/nav/blogs-on.png') no-repeat scroll center top transparent;
+	width: 55px;
+
+}
+
+.primary-menu-inner ul.sf-menu a.menu-photos,
+.primary-menu-inner ul.sf-menu a.menu-photos:visited  {
+	background: url('../images/nav/photos-off.png') no-repeat scroll center top transparent;
+	width: 60px;
+
+}
+
+.primary-menu-inner ul.sf-menu a.menu-photos:hover,
+.primary-menu-inner ul.sf-menu a.menu-photos:active,
+.primary-menu-inner ul.sf-menu a.menu-photos:focus,
+.primary-menu-inner ul.sf-menu li.active-trail a.menu-photos{
+	background: url('../images/nav/photos-on.png') no-repeat scroll center top transparent;
+	width: 60px;
+
+}
+
+.primary-menu-inner ul.sf-menu a.menu-vixen,
+.primary-menu-inner ul.sf-menu a.menu-vixen:visited  {
+	background: url('../images/nav/vixen-off.png') no-repeat scroll center top transparent;
+	width: 80px;
+
+}
+
+.primary-menu-inner ul.sf-menu a.menu-vixen:hover,
+.primary-menu-inner ul.sf-menu a.menu-vixen:active,
+.primary-menu-inner ul.sf-menu a.menu-vixen:focus,
+.primary-menu-inner ul.sf-menu li.active-trail a.menu-vixen {
+	background: url('../images/nav/vixen-on.png') no-repeat scroll center top transparent;
+	width: 80px;
+
+}
+
+.primary-menu-inner ul.sf-menu a.menu-video,
+.primary-menu-inner ul.sf-menu a.menu-video:visited  {
+	background: url('../images/nav/video-off.png') no-repeat scroll center top transparent;
+	width: 60px;
+
+}
+
+.primary-menu-inner ul.sf-menu a.menu-video:hover,
+.primary-menu-inner ul.sf-menu a.menu-video:active,
+.primary-menu-inner ul.sf-menu a.menu-video:focus,
+.primary-menu-inner ul.sf-menu li.active-trail a.menu-video{
+	background: url('../images/nav/video-on.png') no-repeat scroll center top transparent;
+	width: 60px;
+
+}
+
+.primary-menu-inner ul.sf-menu a.menu-culture,
+.primary-menu-inner ul.sf-menu a.menu-culture:visited  {
+	background: url('../images/nav/culture-off.png') no-repeat scroll center top transparent;
+	width: 70px;
+
+}
+
+.primary-menu-inner ul.sf-menu a.menu-culture:hover,
+.primary-menu-inner ul.sf-menu a.menu-culture:active,
+.primary-menu-inner ul.sf-menu a.menu-culture:focus,
+.primary-menu-inner ul.sf-menu li.active-trail a.menu-culture {
+	background: url('../images/nav/culture-on.png') no-repeat scroll center top transparent;
+	width: 70px;
+}
+
+/* These are the top level menu items, add border-right here for separators */
+.primary-menu-inner ul.sf-menu li {
+}
+
+/* Add border-right: 0; here to remove separator on last menu item */
+.primary-menu-inner ul.sf-menu li.last {
+}
+
+/* Style for container of dropdown, add background or border */
+.primary-menu-inner ul.sf-menu ul {
+}
+
+/* Style for individual dropdown menu items, add border-bottom for separators */
+.primary-menu-inner ul.sf-menu li li {
+	background-color: #fff;
+}
+
+.primary-menu-inner ul.sf-menu li li.last {
+
+}
+
+.primary-menu-inner ul.sf-menu li li li {
+}
+
+/* Style for hover of dropdown menu items (add background-color here) */
+.primary-menu-inner ul.sf-menu li ul li:hover,
+.primary-menu-inner ul.sf-menu li ul li.sfHover {
+}
