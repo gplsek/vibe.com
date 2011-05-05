@@ -20,7 +20,7 @@
  */
  
  $img_icon = "/sites/all/themes/vibe/images/".$fields[type]->raw."_icon.png";
-  $contentBody = ($fields["field_excerpt_value"] && $fields["field_excerpt_value"]->content) ? $fields["field_excerpt_value"]->content : ellipse($fields["body"]->raw, 165);
+  /* $contentBody = ($fields["field_excerpt_value"] && $fields["field_excerpt_value"]->content) ? $fields["field_excerpt_value"]->content : ellipse($fields["body"]->raw, 165); */
 ?>
 
 <?//var_dump(array_keys($fields));?>
@@ -44,8 +44,7 @@
 			</span>
 		</div>
 		<div class="latest_on_vibe_teaser">
-			<?php $teaser = $fields["teaser"];?>
-			<?php print $contentBody;?>
+			<?php print $fields['teaser']->content;?>
 			<div><b><a href="<?php print $link?>" style="text-decoration: none; color: #000000;"><?php print get_more_text($fields[type]->raw);?></a></b></div>
 		</div>
 		<div class="latest_on_vibe_info">
