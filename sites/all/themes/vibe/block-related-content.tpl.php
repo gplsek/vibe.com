@@ -5,11 +5,11 @@
 <?php
 			global $node;
 		//sets memcache object	
-			node_init();
-			global $memcache;
+			//node_init();
+			//global $memcache;
 
-			$key = "related_content_".$node->nid;
-			$related_content = $memcache->get($key);
+			//$key = "related_content_".$node->nid;
+			//$related_content = $memcache->get($key);
 			
 			//$related_keys = $memcache->get('related_keys');			
 			
@@ -33,7 +33,7 @@
 				//$message = "Not Cached";
 				//var_dump($message);
 				$block = module_invoke('similar', 'block', 'view', 0);
-				$memcache->set($key,$block['content'],0,rand(21600,43200));
+				//$memcache->set($key,$block['content'],0,rand(21600,43200));
 				print $block['content'];
 			//}
 			//else{

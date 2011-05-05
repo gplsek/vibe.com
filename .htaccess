@@ -105,7 +105,10 @@ DirectoryIndex index.php
   # If your site is running in a VirtualDocumentRoot at http://example.com/,
   # uncomment the following line:
   # RewriteBase /
-
+  RewriteCond %{REQUEST_FILENAME} !-f
+  RewriteCond %{REQUEST_FILENAME} !-d
+  RewriteCond %{REQUEST_URI} \.(png|gif|jpe?g|s?html?|ico|swf|flv|jpgpub.*)$
+  RewriteRule ^(.*)$ http://www.vibe.com/$1 [L,QSA]
   # Rewrite URLs of the form 'x' to the form 'index.php?q=x'.
   RewriteCond %{REQUEST_FILENAME} !-f
   RewriteCond %{REQUEST_FILENAME} !-d

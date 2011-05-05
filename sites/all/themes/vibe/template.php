@@ -668,9 +668,9 @@ function vibe_related_block_block( $node, $nodes ) {
 	return theme_render_template("sites/all/themes/vibe/block-related-block.tpl.php",array("node"=>$node, "nodes"=>$nodesarg));
 }
 
-function debug($var, $type = TRUE) {
-  drupal_set_message('<pre>'.var_export($var, TRUE).'</pre>', $type?'status':'error');
-} 
+//function debug($var, $type = TRUE) {
+  //drupal_set_message('<pre>'.var_export($var, TRUE).'</pre>', $type?'status':'error');
+//}
 
 function vibe_preprocess_box(&$vars, $hook) {
   switch($vars['title']) {

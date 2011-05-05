@@ -1,11 +1,11 @@
 <?php
 
-function jetpack_init() {
+/*function jetpack_init() {
 	$check_node_access = db_result(db_query("SELECT grant_view FROM {node_access} WHERE realm = 'all' AND nid = 0 AND grant_view = 1"));
   if(!$check_node_access) {
     db_query("INSERT INTO node_access (nid, gid, realm, grant_view, grant_update, grant_delete) VALUES (0, 0, 'all', 1, 0, 0)");
   }
-}
+}*/
 
 
 function get_more_text($type) {
