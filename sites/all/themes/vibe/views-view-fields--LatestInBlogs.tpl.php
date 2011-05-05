@@ -19,8 +19,10 @@
  * @ingroup views_templates
  */
  
- $img_icon = "/sites/all/themes/vibe/images/".$fields[type]->raw."_icon.png";
-  $contentBody = ($fields["field_excerpt_value"] && $fields["field_excerpt_value"]->content) ? $fields["field_excerpt_value"]->content : ellipse($fields["body"]->raw, 165);
+ $img_icon = "/sites/all/themes/vibe/images/".$fields['type']->raw."_icon.png";
+ /*
+ $contentBody = ($fields["field_excerpt_value"] && $fields["field_excerpt_value"]->content) ? $fields["field_excerpt_value"]->content : ellipse($fields["body"]->raw, 165);
+*/
 ?>
 <?php 
   	$blog_name = $fields["phpcode"];
@@ -69,9 +71,8 @@
 			</span>
 		</div>
 		<div class="latest_on_vibe_teaser">
-			<?php $teaser = $fields["teaser"];?>
-			<a href="<?php print $link; ?>"><?php print $contentBody;?></a>
-			<span style='margin-left: 4px'><b>&gt;&gt; <a href="<?php print $link?>" style="color: #000000; text-decoration:underline;"><?php print get_more_text($fields[type]->raw);?></a></b></span>
+			<?php print $fields['teaser']->content;?>
+			<span style='margin-left: 4px'><b>&gt;&gt; <a href="<?php print $link?>" style="color: #000000; text-decoration:underline;"><?php print get_more_text($fields['type']->raw);?></a></b></span>
 		</div>
 		<div class="latest_on_vibe_info" >
 			<?php $comment_count = $fields["comment_count"]?>
