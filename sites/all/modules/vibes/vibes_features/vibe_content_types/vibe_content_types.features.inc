@@ -120,6 +120,17 @@ function vibe_content_types_node_info() {
       'min_word_count' => '0',
       'help' => '',
     ),
+    'post_up' => array(
+      'name' => t('Post Up'),
+      'module' => 'features',
+      'description' => t('content from external sources/feeds'),
+      'has_title' => '1',
+      'title_label' => t('Title'),
+      'has_body' => '1',
+      'body_label' => t('Body'),
+      'min_word_count' => '0',
+      'help' => '',
+    ),
     'questions' => array(
       'name' => t('User Submitted Question'),
       'module' => 'features',
