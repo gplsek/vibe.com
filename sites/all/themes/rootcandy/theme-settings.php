@@ -1,5 +1,5 @@
 <?php
-// $Id: theme-settings.php,v 1.6.2.19 2009/09/11 16:41:57 sign Exp $
+// $Id: theme-settings.php,v 1.6.2.20 2010/04/23 18:44:58 sign Exp $
 
 /**
  * @file
@@ -179,6 +179,11 @@ function rootcandy_settings($saved_settings, $subtheme_defaults = array()) {
     '#type' => 'checkbox',
     '#title' => t('Disable help'),
     '#default_value' => $settings['rootcandy_help_display'],
+  );
+  $form['Misc']['rootcandy_hide_author'] = array(
+    '#type' => 'checkbox',
+    '#title' => t('Hide author footer message'),
+    '#default_value' => $settings['rootcandy_hide_author'],
   );
 
   $max_weight = (isset($max_weight)) ? $max_weight : 100;

@@ -1,21 +1,10 @@
 <?php
-// $Id: template.php,v 1.36.2.36 2009/09/11 18:26:20 sign Exp $
+// $Id: template.php,v 1.36.2.50 2010/06/07 07:19:59 sign Exp $
 
 /**
  * @file
  * The theme template.php file
  */
-
-function _rootcandy_admin_links() {
-  global $user;
-  if ($user->uid) {
-    $links[] = '<a href="'. url('user') .'" class="user-name">'. $user->name .'</a>';
-    $links[] = '<a href="'. url('logout') .'">'. t('Logout') .'</a>';
-    $links = implode(' | ', $links);
-
-    return $links;
-  }
-}
 
 function rootcandy_body_class($left = NULL, $right = NULL) {
   $class = '';
@@ -33,7 +22,7 @@ function rootcandy_body_class($left = NULL, $right = NULL) {
   $class .= rootcandy_get_page_classes();
 
   if (isset($class)) {
-    print ' class="'. $class .'"';
+    return ' class="'. $class .'"';
   }
 }
 
@@ -58,6 +47,7 @@ function _rootcandy_admin_navigation() {
     }
   }
 
+  $menu_tree = array();
   if (!$rootcandy_navigation) {
     if (!$user->uid) {
       $menu_tree[] = array('href' => 'user/login', 'title' => t('User login'));
@@ -85,8 +75,7 @@ function _rootcandy_admin_navigation() {
   if ($menu_tree) {
     $size = theme_get_setting('rootcandy_navigation_icons_size');
     $icons_disabled = theme_get_setting('rootcandy_navigation_icons');
-    $class = ' class = "i'. $size .'"';
-    $output = '<ul'. $class .'>';
+    $list_class = 'i'. $size;
 
     $custom_icons = rootcandy_custom_icons();
     if (!isset($custom_icons)) {
@@ -94,7 +83,12 @@ function _rootcandy_admin_navigation() {
     }
 
     $match = _rootcandy_besturlmatch($_GET['q'], $menu_tree);
+    $items = array();
     foreach ($menu_tree as $key => $item) {
+      $router_item = menu_get_item($item['href']);
+      if (!$router_item['access']) {
+        continue;
+      }
       $id = '';
       $icon = '';
       $class= '';
@@ -107,22 +101,44 @@ function _rootcandy_admin_navigation() {
         if ($icon) $icon = $icon .'<br />';
       }
       if ($key == $match) {
-        $id = ' id="current"';
+        $id = 'current';
         if (!$icons_disabled && $size) {
-          $id = ' id="current-'. $size .'"';
+          $id = 'current-'. $size;
         }
       }
 
       // add a class to li
-      $class = ' class="'. implode($arg, '-') .'"';
+      $class = "";
+      if (is_array($arg)) {
+        $class = implode($arg, '-');
+      }
 
-      $output .= '<li'. $id . $class .'><a href="'. url($item['href']) .'">'. $icon . $item['title'] .'</a>';
-      $output .= '</li>';
+      $item['data'] = l($icon . $item['title'], $item['href'], array('html' => TRUE));
+      if (!empty($id)) $item['id'] = $id;
+      if (!empty($class)) $item['class'] = $class;
+      if (!empty($item['attributes'])) {
+        unset($item['attributes']);
+      }
+      $items[] = $item;
+
     }
-    $output .= '</ul>';
-  }
 
-  return $output;
+    $level = 1;
+    if ($rootcandy_navigation == '_rootcandy_default_navigation') {
+      $rootcandy_navigation = 'navigation';
+      $level = 2;
+    }
+
+    return array(
+      'navigation' => theme('admin_navigation', $items, $list_class),
+      'menu' => $rootcandy_navigation,
+      'level' => $level,
+    );
+  }
+}
+
+function rootcandy_admin_navigation($items, $class) {
+  return theme('item_list', $items);
 }
 
 function _rootcandy_besturlmatch($needle, $menuitems) {
@@ -161,6 +177,12 @@ function rootcandy_preprocess_page(&$vars) {
   if (arg(0) == 'admin' AND arg(1) == 'settings' AND arg(2) == 'admin' AND ($admin_theme == 'rootcandy' OR $admin_theme == 'rootcandy_fixed' OR $admin_theme == 'rootcandy_dark')) {
     $message = t('Thank you for using RootCandy.<br />Did you know, that Root Candy has advanced settings (Theme-specific settings fieldset)? You can change these settings at <a href="@configure-page">theme configuration page</a>.', array('@configure-page' => url('admin/build/themes/settings/'. $admin_theme)));
     $vars['messages'] .= '<div class="messages rootcandy">'. $message .'</div>';
+    // display a warning message if the theme has not been enabled
+    global $theme_info;
+    if (!$theme_info->status) {
+      $warning_message = t('RootCandy theme has not been enabled. You won\'t be able to see theme updates on update page! Please enable the theme on <a href="@themes-page">themes page</a>.', array('@themes-page' => url('admin/build/themes')));
+      $vars['messages'] .= '<div class="messages warning">'. $warning_message .'</div>';
+    }
   }
 
   if (arg(0) == 'admin' || ((arg(0) == 'node' AND is_numeric(arg(1)) AND arg(2) == 'edit') || (arg(0) == 'node' AND arg(1) == 'add'))) {
@@ -172,7 +194,9 @@ function rootcandy_preprocess_page(&$vars) {
   $vars['hide_panel'] = theme_get_setting('rootcandy_hide_panel');
 
   // append legal notice
-  $vars['closure'] .= '<div id="legal-notice">Theme created by <a href="http://sotak.co.uk" rel="external">Marek Sotak</a></div>';
+  if (!theme_get_setting('rootcandy_hide_author')) {
+    $vars['closure'] .= '<div id="legal-notice">Theme created by <a href="http://sotak.co.uk" rel="external">Marek Sotak</a></div>';
+  }
 
   $vars['hide_content'] = '';
 
@@ -217,6 +241,49 @@ function rootcandy_preprocess_page(&$vars) {
 
   $vars['panel_navigation'] = '<a id="open" class="open" href="#"><span class="panel-open">'. t('Open Panel') .'</span></a>';
   $vars['panel_navigation'] .= '<a id="close" style="display: none;" class="close" href="#"><span class="panel-close">'. t('Close Panel') .'</span></a>';
+
+  $rootcandy_nav = _rootcandy_admin_navigation();
+  $vars['rootcandy_navigation'] = $rootcandy_nav['navigation'];
+
+  // get admin links into the region
+  if (arg(0) == 'admin' AND arg(2)) {
+    $menu = menu_navigation_links($rootcandy_nav['menu'], $rootcandy_nav['level']);
+    $menu_links = _rootcandy_links($menu, array('id' => 'rootcandy-menu'));
+    if ($vars['language']->direction) {
+      $vars['admin_right'] = $menu_links . $vars['admin_right'];
+    }
+    else {
+      $vars['admin_left'] = $menu_links . $vars['admin_left'];
+    }
+  }
+
+  $vars['body_class'] = rootcandy_body_class($vars['admin_left'], $vars['admin_right']);
+
+  $icons_disabled = theme_get_setting('rootcandy_navigation_icons');
+  $rootcandy_navigation_class = array();
+
+  if (!$icons_disabled) {
+    $rootcandy_navigation_class[] = 'i'.theme_get_setting('rootcandy_navigation_icons_size');
+  }
+
+  if (!$vars['hide_header']) {
+    $rootcandy_navigation_class[] = 'header-on';
+  }
+
+  $vars['rootcandy_navigation_class'] = '';
+
+  if ($rootcandy_navigation_class) {
+    $vars['rootcandy_navigation_class'] .= ' '. implode(' ', $rootcandy_navigation_class);
+  }
+
+  global $user;
+  if ($user->uid) {
+    $links[] = '<a href="'. url('user') .'" class="user-name">'. $user->name .'</a>';
+    $links[] = '<a href="'. url('logout') .'">'. t('Logout') .'</a>';
+    $links = implode(' | ', $links);
+
+    $vars['rootcandy_user_links'] = $links;
+  }
 }
 
 function rootcandy_admin_block_content($content) {
@@ -274,6 +341,7 @@ function rootcandy_menu_local_tasks() {
 
 function _rootcandy_icon($name, $size = '16', $subdir = '', $icons = '') {
   $url = implode("/", $name);
+  $alias = drupal_get_path_alias($url);
   $name = implode("-", $name);
   $path = path_to_theme();
   if ($subdir) {
@@ -282,6 +350,9 @@ function _rootcandy_icon($name, $size = '16', $subdir = '', $icons = '') {
 
   if (isset($icons[$url])) {
     $icon = $icons[$url];
+  }
+  else if (isset($icons[$alias])) {
+    $icon = $icons[$alias];
   }
   else {
     $icon = $path .'/icons/i'. $size .'/'. $subdir . $name .'.png';
@@ -366,21 +437,29 @@ if (arg(0) == 'admin' && arg(2) == 'themes' && arg(4)) {
 function rootcandy_get_page_classes($path = NULL) {
   if (!isset($path)) $path = $_GET['q'];
   if ($path) {
-    $classes = '';
-    $menu_item = explode('/', $path);
-    if (count($menu_item)) {
-      foreach ($menu_item as $key => $page) {
-        $menu_item[$key] = strtr($page, '-', '_');
-      }
-
-      do {
-        $classes .= ' '. implode('-', $menu_item);
-        array_pop($menu_item);
-      } while (count($menu_item));
-    }
+    $path = ' '. rootcandy_id_safe($path);
   }
+  return $path;
+}
 
-  return $classes;
+/**
+ * Converts a string to a suitable html ID attribute. Borrowed from Zen theme
+ *
+ * http://www.w3.org/TR/html4/struct/global.html#h-7.5.2 specifies what makes a
+ * valid ID attribute in HTML. This function:
+ *
+ * - Ensure an ID starts with an alpha character by optionally adding an 'id'.
+ * - Replaces any character except alphanumeric characters with dashes.
+ * - Converts entire string to lowercase.
+ *
+ * @param $string
+ *   The string
+ * @return
+ *   The converted string
+ */
+function rootcandy_id_safe($string) {
+  // Replace with dashes anything that isn't A-Z, numbers, dashes, or underscores.
+  return check_plain(strtolower(preg_replace('/[^a-zA-Z0-9-]+/', '-', $string)));
 }
 
 function rootcandy_breadcrumb($breadcrumb) {
@@ -504,6 +583,9 @@ function rootcandy_theme() {
   return array(
     'system_settings_form' => array(
       'arguments' => array('form' => NULL),
+    ),
+    'admin_navigation' => array(
+      'arguments' => array('items' => NULL, 'class' => NULL),
     ),
   );
 }

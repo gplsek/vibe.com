@@ -1,5 +1,5 @@
 <?php
-// $Id: page.tpl.php,v 1.23.2.16 2009/06/20 16:53:25 sign Exp $
+// $Id: page.tpl.php,v 1.23.2.21 2010/04/25 10:59:48 sign Exp $
 
 ?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN"
   "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd">
@@ -10,33 +10,30 @@
     <?php print $styles ?>
     <?php print $scripts ?>
   </head>
-  <?php
-  // get admin links into the region
-  if (arg(0) == 'admin' AND arg(2)) {
-    $menu = menu_navigation_links('navigation', 2);
-    $menu_links = _rootcandy_links($menu, array('id' => 'rootcandy-menu'));
-    if ($language->direction) {
-      $admin_right = $menu_links . $admin_right;
-    }
-    else {
-      $admin_left = $menu_links . $admin_left;
-    }
-  }
-  ?>
-  <body<?php print rootcandy_body_class($admin_left, $admin_right); ?>>
+
+  <body<?php print $body_class ?>>
 
     <!-- Layout -->
     <?php if (!$hide_header) { ?>
     <div id="toppanel">
       <div id="panel">
-        <?php print $slider ?>
+       <?php print $slider ?>
+        <div id="slider-left">
+          <?php if ($slider_left) print $slider_left; ?>
+        </div>
+         <div id="slider-right">
+          <?php if ($slider_right) print $slider_right; ?>
+        </div>
+        <div id="slider-middle">
+          <?php if ($slider_middle) print $slider_middle; ?>
+        </div>
       </div> <!-- /login -->
       <div id="toppanel-head">
         <div id="go-home">
           <?php if (isset($go_home)) print $go_home; ?>
         </div>
         <div id="admin-links">
-          <?php print _rootcandy_admin_links() ?>
+          <?php print $rootcandy_user_links ?>
         </div>
         <?php if (!$hide_panel) { ?>
         <div id="header-title" class="clearfix">
@@ -48,8 +45,8 @@
     <?php } ?>
     <div id="page-wrapper"><div id="page-wrapper-content">
       <?php print $header ?>
-      <div id="navigation" <?php if (!$hide_header) print 'class="header-on"' ?>>
-        <?php print _rootcandy_admin_navigation() ?>
+      <div id="navigation" class="clearfix<?php print $rootcandy_navigation_class ?>">
+        <?php print $rootcandy_navigation ?>
 
       <?php
       if ($logo) {

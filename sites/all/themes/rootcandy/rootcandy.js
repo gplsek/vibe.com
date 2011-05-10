@@ -14,6 +14,8 @@ $(function()
 )
 
 $(document).ready(function() {
+  $('body.admin-build-modules tr:has(:checkbox:disabled)').addClass('module-disabled');
+
   $("a[rel=external]").click(function() {
     this.target = "_blank";
   });

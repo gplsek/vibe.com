@@ -1,11 +1,11 @@
-/* $Id: icons-rtl.css,v 1.1.2.1 2009/04/19 09:05:16 sign Exp $
+/* $Id: icons-rtl.css,v 1.1.2.2 2010/01/01 14:56:01 sign Exp $
  * based on Joakim Stai's css from icon module
  */
 
 /**
  * Messages
  */
-.messages, .help {
+div.messages, .help {
   background-repeat: no-repeat !important;
   background-position: 10px 13px !important;
   padding-right: 44px !important;
@@ -14,15 +14,15 @@
 
 }
 
-.messages.status {
+div.messages.status {
   background-image: url(icons/i24/status/status-info.png) !important;
 }
 
-.messages.error {
+div.messages.error {
   background-image: url(icons/i24/status/status-error.png) !important;
 }
 
-.messages.warning {
+div.messages.warning {
   background-image: url(icons/i24/status/status-warning.png) !important;
 }
 
