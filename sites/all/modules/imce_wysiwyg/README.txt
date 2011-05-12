@@ -1,4 +1,4 @@
-/* $Id: README.txt,v 1.1 2009/02/23 12:49:16 sun Exp $ */
+/* $Id: README.txt,v 1.3 2009/07/06 22:27:13 sun Exp $ */
 
 -- SUMMARY --
 
@@ -24,8 +24,9 @@ To submit bug reports and feature suggestions, or to track changes:
 * Install as usual, see http://drupal.org/node/70151 for further information.
 
 
-
 -- CONFIGURATION --
+
+* Enable the Image button (as IMCE is accessed from the Image plugin).
 
 * Enable the IMCE plugin in the plugins/buttons configuration of the wysiwyg
   profiles of your choice.

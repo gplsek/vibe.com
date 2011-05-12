@@ -1,5 +1,5 @@
 <?php
-// $Id: imce_wysiwyg.module,v 1.4 2009/03/04 15:52:16 sun Exp $
+// $Id: imce_wysiwyg.module,v 1.4.4.1 2010/02/21 00:07:04 sun Exp $
 
 /**
  * @file
@@ -43,6 +43,19 @@ function imce_wysiwyg_plugin($editor, $version) {
           'options' => array(
             'file_browser_callback' => 'imceImageBrowser',
             'inline_styles' => TRUE,
+          ),
+          'load' => FALSE,
+        ),
+      );
+
+   case 'ckeditor':
+      $integrated[$editor] = TRUE;
+      return array(
+        'imce' => array(
+          'extensions' => array('imce' => t('IMCE')),
+          'url' => 'http://drupal.org/project/imce',
+          'options' => array(
+            'filebrowserBrowseUrl' => url('imce', array('query' => array('app' => $editor . '|sendto@imceCkeditSendTo|params@'))),
           ),
           'load' => FALSE,
         ),
