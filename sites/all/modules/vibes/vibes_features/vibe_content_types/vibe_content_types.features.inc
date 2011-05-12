@@ -25,8 +25,8 @@ function vibe_content_types_imagecache_default_presets() {
       'actions' => array(
         '0' => array(
           'weight' => '0',
-          'module' => 'jetpack',
-          'action' => 'jetpack_imagecache_scale_and_crop',
+          'module' => 'imagecache',
+          'action' => 'imagecache_scale_and_crop',
           'data' => array(
             'width' => '100',
             'height' => '100',
