@@ -95,10 +95,10 @@ if($node->taxonomy){
 	$keywords_string = implode(',',$keywords);
 }
 ?>
-<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd">
-<html xmlns="http://www.w3.org/1999/xhtml" xml:lang="<?php print $language->language; ?>" lang="<?php print $language->language; ?>" dir="<?php print $language->dir; ?>">
-<html xmlns="http://www.w3.org/1999/xhtml" xmlns:fb="http://www.facebook.com/2008/fbml" xmlns:og="http://opengraphprotocol.org/schema/">
 
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN"
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml" xml:lang="<?php print $language->language; ?>" lang="<?php print $language->language; ?>" dir="<?php print $language->dir; ?>" xmlns:fb="http://www.facebook.com/2008/fbml" xmlns:og="http://opengraphprotocol.org/schema/">
 <head>
 	<meta name="description" content="<?php print $description; ?>" />
     <meta name="keywords" content="<?php print $keywords_string;?>"  />
@@ -289,9 +289,6 @@ Meebo('makeEverythingSharable', {shadow:'none'});
 	  <div id="main-content">
 	  	<div class="content-inner">
 	  		<?php print $content; ?>
-	  		<?php if (!empty($content_bottom)): ?>
-	  			<?php print $content_bottom; ?>
-	  		<?php endif; ?>
 	  	</div>
 	  </div>
 	  
