@@ -1,5 +1,5 @@
 # translation of rootcandy.po to
-# $Id: de.po,v 1.1.2.2 2009/05/10 19:46:44 sign Exp $
+# $Id: de.po,v 1.1.2.3 2010/02/05 19:00:26 sign Exp $
 # LANGUAGE translation of Drupal (general)
 # Copyright YEAR NAME <EMAIL@ADDRESS>
 # Generated from files:
@@ -59,7 +59,7 @@ msgstr "Hilfe"
 
 #: template.php:132
 msgid "Go Back to Homepage"
-msgstr "Zur�ck zur Seite"
+msgstr "Zurück zur Seite"
 
 #: theme-settings.php:27 rootcandy.info:0 rootcandy_fixed/rootcandy_fixed.info:0
 msgid "Header"
@@ -103,11 +103,11 @@ msgstr "Icons der Navigations deaktivieren"
 
 #: theme-settings.php:85
 msgid "Set icons size for main navigation"
-msgstr "Gr��e der Navigations Icons einstellen"
+msgstr "Größe der Navigations Icons einstellen"
 
 #: theme-settings.php:91
 msgid "Menu source by role"
-msgstr "Men� Quelle pro Rolle"
+msgstr "Menü Quelle pro Rolle"
 
 #: theme-settings.php:98
 msgid "default navigation"
@@ -119,7 +119,7 @@ msgstr "@role Navigation"
 
 #: theme-settings.php:107
 msgid "Select what should be displayed as the navigation menu for role @role."
-msgstr "Ausw�hlen was als Navigationsmen� f�r die Rolle @role angezeigt wird"
+msgstr "Auswählen was als Navigationsmen� f�r die Rolle @role angezeigt wird"
 
 #: theme-settings.php:113;121
 msgid "Custom icons"
@@ -147,7 +147,7 @@ msgstr "Rechte Seiteleiste"
 
 #: rootcandy.info:0 rootcandy_fixed/rootcandy_fixed.info:0
 msgid "Footer"
-msgstr "Fu�bereich"
+msgstr "Fußbereich"
 
 #: rootcandy.info:0 rootcandy_fixed/rootcandy_fixed.info:0
 msgid "Dashboard Left"
@@ -187,7 +187,7 @@ msgstr "frostiger Tag"
 
 #: color/color.inc:16 rootcandy_fixed/color/color.inc:16
 msgid "Greenbeam"
-msgstr "Gr�ner Strahl"
+msgstr "Grüner Strahl"
 
 #: color/color.inc:17 rootcandy_fixed/color/color.inc:17
 msgid "Mediterrano"
@@ -199,7 +199,7 @@ msgstr "Mercury"
 
 #: color/color.inc:19 rootcandy_fixed/color/color.inc:19
 msgid "Nocturnal"
-msgstr "N�chtlich"
+msgstr "Nächtlich"
 
 #: color/color.inc:20 rootcandy_fixed/color/color.inc:20
 msgid "Olivia"
@@ -211,7 +211,7 @@ msgstr "Pinkes Plastik"
 
 #: color/color.inc:22 rootcandy_fixed/color/color.inc:22
 msgid "Shiny Tomato"
-msgstr "gl�nzende Tomate"
+msgstr "glänzende Tomate"
 
 #: color/color.inc:23 rootcandy_fixed/color/color.inc:23
 msgid "Teal Top"
