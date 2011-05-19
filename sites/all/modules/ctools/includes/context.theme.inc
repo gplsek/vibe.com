@@ -1,5 +1,5 @@
 <?php
-// $Id: context.theme.inc,v 1.7.2.1 2009/10/13 20:55:30 merlinofchaos Exp $
+// $Id: context.theme.inc,v 1.7.2.4 2010/09/10 18:25:13 merlinofchaos Exp $
 
 /**
  * @file
@@ -117,7 +117,7 @@ function theme_ctools_context_item_form($form) {
  *
  * Contexts must be preloaded.
  */
-function theme_ctools_context_list($object, $header = '') {
+function theme_ctools_context_list($object, $header = '', $description = '') {
   $titles = array();
   $output = '';
   $count  = 1;
@@ -133,7 +133,7 @@ function theme_ctools_context_list($object, $header = '') {
       if (isset($context->keyword)) {
         $desc .= '<div class="description">' . t('Keyword: %@keyword', array('@keyword' => $context->keyword));
         foreach (ctools_context_get_converters('%' . $context->keyword . ':', $context) as $keyword => $title) {
-          $desc .= '<br />' . t('@keyword --&gt; @title', array('@context' => $keyword, '@title' => $title));
+          $desc .= '<br />' . t('@keyword --&gt; @title', array('@keyword' => $keyword, '@title' => $title));
         }
         $desc .= '</div>';
 
@@ -144,7 +144,6 @@ function theme_ctools_context_list($object, $header = '') {
       $output .= '<td>' . $desc . '</td>';
       $output .= '</tr>';
       $titles[$id] = $context->identifier;
-      $count++;
     }
   }
 
@@ -195,7 +194,17 @@ function theme_ctools_context_list($object, $header = '') {
   if (!empty($object->relationships)) {
     foreach ($object->relationships as $relationship) {
       $output .= '<tr>';
-      $output .= '<td valign="top"><em>' . t('From "@title"', array('@title' => $titles[$relationship['context']])) . '</em></td>';
+      if (is_array($relationship['context'])) {
+        $rtitles = array();
+        foreach ($relationship['context'] as $cid) {
+          $rtitles[$cid] = $titles[$cid];
+        }
+        $title = implode(' + ', $rtitles);
+      }
+      else {
+        $title = $titles[$relationship['context']];
+      }
+      $output .= '<td valign="top"><em>' . t('From "@title"', array('@title' => $title)) . '</em></td>';
       $desc = check_plain($relationship['identifier']);
       if (isset($relationship['keyword'])) {
         $desc .= '<div class="description">' . t('Keyword: %@keyword', array('@keyword' => $relationship['keyword']));
@@ -213,6 +222,9 @@ function theme_ctools_context_list($object, $header = '') {
 
   $head = '';
   if ($header) {
+    if ($description) {
+      $header .= '<div class="description">' . $description . '</div>';
+    }
     $head .= '<thead><tr>';
     $head .= '<th colspan="2">' . $header . '</th>';
     $head .= '</tr></thead>';
@@ -284,7 +296,18 @@ function theme_ctools_context_list_no_table($object) {
   if (!empty($object->relationships)) {
     foreach ($object->relationships as $relationship) {
       $output .= '<div class="ctools-context-holder clear-block">';
-      $output .= '<div class="ctools-context-title">' . t('From "@title"', array('@title' => $titles[$relationship['context']])) . '</div>';
+      if (is_array($relationship['context'])) {
+        $rtitles = array();
+        foreach ($relationship['context'] as $cid) {
+          $rtitles[$cid] = $titles[$cid];
+        }
+        $title = implode(' + ', $rtitles);
+      }
+      else {
+        $title = $titles[$relationship['context']];
+      }
+
+      $output .= '<div class="ctools-context-title">' . t('From "@title"', array('@title' => $title)) . '</div>';
       $desc = check_plain($relationship['identifier']);
       if (isset($relationship['keyword'])) {
         $desc .= '<div class="description">' . t('Keyword: %@keyword', array('@keyword' => $relationship['keyword'])) . '</div>';

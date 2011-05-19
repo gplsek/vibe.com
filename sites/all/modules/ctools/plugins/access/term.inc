@@ -1,5 +1,5 @@
 <?php
-// $Id: term.inc,v 1.1.2.3 2009/10/01 22:26:30 merlinofchaos Exp $
+// $Id: term.inc,v 1.1.2.6 2010/10/15 22:44:31 merlinofchaos Exp $
 
 /**
  * @file
@@ -7,21 +7,20 @@
  */
 
 /**
- * Implementation of specially named hook_ctools_access().
+ * Plugins are described by creating a $plugin array which will be used
+ * by the system that includes this file.
  */
-function ctools_term_ctools_access() {
-  return array(
-    'title' => t("Taxonomy: term"),
-    'description' => t('Control access by a specific term.'),
-    'callback' => 'ctools_term_ctools_access_check',
-    'default' => array('vids' => array()),
-    'settings form' => 'ctools_term_ctools_access_settings',
-    'settings form validation' => 'ctools_term_ctools_access_settings_validate',
-    'settings form submit' => 'ctools_term_ctools_access_settings_submit',
-    'summary' => 'ctools_term_ctools_access_summary',
-    'required context' => new ctools_context_required(t('Term'), array('term', 'terms')),
-  );
-}
+$plugin = array(
+  'title' => t("Taxonomy: term"),
+  'description' => t('Control access by a specific term.'),
+  'callback' => 'ctools_term_ctools_access_check',
+  'default' => array('vids' => array()),
+  'settings form' => 'ctools_term_ctools_access_settings',
+  'settings form validation' => 'ctools_term_ctools_access_settings_validate',
+  'settings form submit' => 'ctools_term_ctools_access_settings_submit',
+  'summary' => 'ctools_term_ctools_access_summary',
+  'required context' => new ctools_context_required(t('Term'), array('term', 'terms')),
+);
 
 /**
  * Settings form for the 'by term' access plugin
@@ -108,17 +107,17 @@ function ctools_term_ctools_access_check($conf, $context) {
   if (!isset($conf[$vid])) {
     return FALSE;
   }
-  $terms = array_filter($conf[$vid]);
 
   $return = FALSE;
   // Tags get saved as an imploded array of strings.
-  if (!is_array($terms)) {
-    $terms = expand(', ', $terms);
+  if (!is_array($conf[$vid])) {
+    $terms = explode(', ', $conf[$vid]);
     // For multi-term with names, we'll only accept the first term because
     // that is the name we have.
     return in_array($context->data->name, $terms);
   }
   else {
+    $terms = array_filter($conf[$vid]);
     // For multi-term if any terms coincide, let's call that good enough:
     if (isset($context->tids)) {
       return (bool) array_intersect($terms, $context->tids);
