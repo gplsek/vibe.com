@@ -1,5 +1,5 @@
 <?php
-// $Id: contemplate.module,v 1.8.4.63 2009/12/03 16:25:02 jrglasgow Exp $
+// $Id: contemplate.module,v 1.8.4.65 2010/07/21 03:19:28 jrglasgow Exp $
 // by Jeff Robbins - Lullabot - www.lullabot.com
 
 define('CONTEMPLATE_TEASER_ENABLED', 0x0001);
@@ -17,7 +17,7 @@ define('CONTEMPLATE_RSS_ENABLED', 0x0004);
 function contemplate_help($path, $arg) {
   switch ($path) {
     case 'admin/content/node-type/'. $arg[3] .'/template':
-      return t('<p>Enable the textareas by enabling the checkbox above each. Expand the variables section to display. Then click on content attributes to insert the appropriate PHP <code>print</code> statements at your cursor position in the textarea.</p><p>It is also possible to create disk-based templates.') .
+      return t('<p>Enable the textareas by enabling the checkbox above each. Expand the variables section to display. Then click on content attributes to insert the appropriate PHP <code>print</code> statements at your cursor position in the textarea.</p><p>It is also possible to create disk-based templates. ') .
         (module_exists('help')
           ? t('Find more information about that <a href="!link">here</a>', array('!link' => url('admin/help/contemplate', array('fragment' => 'disk-based'))))
           : t('For help on this enable the \'help\' module, and you will find a link here.')) .
@@ -280,7 +280,7 @@ function contemplate_edit_type_form(&$form_state, $type = NULL) {
       '#type' => 'checkbox',
       '#title' => '<strong>'. t('Affect teaser output') .'</strong>',
       '#default_value' => CONTEMPLATE_TEASER_ENABLED & $template['flags'] ? TRUE : FALSE,
-      '#attributes' => array('toggletarget' => '#edit-teaserfield'),
+      '#attributes' => array('rel' => '#edit-teaserfield'),
     );
     $form['teaser']['teaserfield'] = array(
       '#type' => 'textarea',
@@ -323,7 +323,7 @@ function contemplate_edit_type_form(&$form_state, $type = NULL) {
       '#type' => 'checkbox',
       '#title' => '<strong>'. t('Affect body output') .'</strong>',
       '#default_value' => CONTEMPLATE_BODY_ENABLED & $template['flags'] ? TRUE : FALSE,
-      '#attributes' => array('toggletarget' => '#edit-bodyfield'),
+      '#attributes' => array('rel' => '#edit-bodyfield'),
     );
 
     $form['body']['bodyfield'] = array(
@@ -370,7 +370,7 @@ function contemplate_edit_type_form(&$form_state, $type = NULL) {
       '#type' => 'checkbox',
       '#title' => '<strong>'. t('Affect RSS output') .'</strong>',
       '#default_value' => CONTEMPLATE_RSS_ENABLED & $template['flags'] ? TRUE : FALSE,
-      '#attributes' => array('toggletarget' => '#edit-rss'),
+      '#attributes' => array('rel' => '#edit-rssfield'),
       '#description' => t('Note that if you do not enable this, Drupal will use either the teaser or body as specified in your <a href="@url">RSS publishing settings</a>.', array('@url' => url('admin/content/rss-publishing'))),
     );
 
@@ -690,7 +690,7 @@ function contemplate_array_variables($array, $target, $parents = FALSE, $object 
   global $_contemplate_fids;
 
   if ($depth >= variable_get('contemplate_max_recursion_depth', 10)) {
-    #drupal_set_message(t('Contemplate exceeded max recursion depth. There are more variables available that have not been listed.'), 'error');
+    //drupal_set_message(t('Contemplate exceeded max recursion depth. There are more variables available that have not been listed.'), 'error');
     $recursion_limit_hit++;
     return '';
   }
@@ -753,7 +753,7 @@ function contemplate_array_variables($array, $target, $parents = FALSE, $object 
           $insert = "'<?php print \$node->". addslashes($field) ." ?>'";
         }
 
-        $output .= "<dt><a href=\"#\" onclick=\"insertAtCursor(document.getElementById('edit-$target'), $insert);return FALSE;\" title=\"insert this variable into $target\">\$node->$field</a>{$security}{$type}</dt>\n";
+        $output .= "<dt><a href=\"#\" onclick=\"insertAtCursor(document.getElementById('edit-$target'), $insert);return false;\" title=\"insert this variable into $target\">\$node->$field</a>{$security}{$type}</dt>\n";
       }
       else {
         $output .= "<dt>\$node->$field$type</dt>\n";

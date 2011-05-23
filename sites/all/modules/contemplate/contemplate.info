@@ -4,9 +4,9 @@ description = Create templates to customize output of teaser and body content.
 package = CCK
 core = 6.x
 
-; Information added by drupal.org packaging script on 2009-12-04
-version = "6.x-1.x-dev"
+; Information added by drupal.org packaging script on 2010-07-21
+version = "6.x-1.2"
 core = "6.x"
 project = "contemplate"
-datestamp = "1259885006"
+datestamp = "1279686006"
 
