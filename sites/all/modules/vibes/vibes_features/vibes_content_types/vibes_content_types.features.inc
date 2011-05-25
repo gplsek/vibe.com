@@ -3,7 +3,7 @@
 /**
  * Implementation of hook_imagecache_default_presets().
  */
-function vibe_content_types_imagecache_default_presets() {
+function vibes_content_types_imagecache_default_presets() {
   $items = array(
     'image-full-size' => array(
       'presetname' => 'image-full-size',
@@ -25,11 +25,20 @@ function vibe_content_types_imagecache_default_presets() {
       'actions' => array(
         '0' => array(
           'weight' => '0',
-          'module' => 'imagecache',
-          'action' => 'imagecache_scale_and_crop',
+          'module' => 'jetpack',
+          'action' => 'jetpack_imagecache_scale_and_crop',
           'data' => array(
             'width' => '100',
             'height' => '100',
+          ),
+        ),
+        '1' => array(
+          'weight' => '0',
+          'module' => 'imagecache',
+          'action' => 'imagecache_scale_and_crop',
+          'data' => array(
+            'width' => '140',
+            'height' => '105',
           ),
         ),
       ),
@@ -41,7 +50,7 @@ function vibe_content_types_imagecache_default_presets() {
 /**
  * Implementation of hook_node_info().
  */
-function vibe_content_types_node_info() {
+function vibes_content_types_node_info() {
   $items = array(
     'audio' => array(
       'name' => t('Audio'),
@@ -73,6 +82,17 @@ function vibe_content_types_node_info() {
       'title_label' => t('Title'),
       'has_body' => '1',
       'body_label' => t('Body'),
+      'min_word_count' => '0',
+      'help' => '',
+    ),
+    'celebrity' => array(
+      'name' => t('Celebrity'),
+      'module' => 'features',
+      'description' => '',
+      'has_title' => '1',
+      'title_label' => t('Name'),
+      'has_body' => '1',
+      'body_label' => t('Bio'),
       'min_word_count' => '0',
       'help' => '',
     ),
