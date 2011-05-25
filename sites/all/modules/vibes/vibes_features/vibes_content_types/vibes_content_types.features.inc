@@ -32,15 +32,6 @@ function vibes_content_types_imagecache_default_presets() {
             'height' => '100',
           ),
         ),
-        '1' => array(
-          'weight' => '0',
-          'module' => 'imagecache',
-          'action' => 'imagecache_scale_and_crop',
-          'data' => array(
-            'width' => '140',
-            'height' => '105',
-          ),
-        ),
       ),
     ),
   );

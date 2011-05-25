@@ -957,6 +957,72 @@ function vibes_content_types_content_default_fields() {
     ),
   );
 
+  // Exported field: field_celebrity_birth_date
+  $fields['celebrity-field_celebrity_birth_date'] = array(
+    'field_name' => 'field_celebrity_birth_date',
+    'type_name' => 'celebrity',
+    'display_settings' => array(
+      'label' => array(
+        'format' => 'above',
+        'exclude' => 0,
+      ),
+      '5' => array(
+        'format' => 'default',
+        'exclude' => 0,
+      ),
+      'teaser' => array(
+        'format' => 'default',
+        'exclude' => 0,
+      ),
+      'full' => array(
+        'format' => 'default',
+        'exclude' => 0,
+      ),
+      '4' => array(
+        'format' => 'default',
+        'exclude' => 0,
+      ),
+      '2' => array(
+        'format' => 'default',
+        'exclude' => 0,
+      ),
+      '3' => array(
+        'format' => 'default',
+        'exclude' => 0,
+      ),
+      'token' => array(
+        'format' => 'default',
+        'exclude' => 0,
+      ),
+    ),
+    'widget_active' => '1',
+    'type' => 'text',
+    'required' => '0',
+    'multiple' => '0',
+    'module' => 'text',
+    'active' => '1',
+    'text_processing' => '0',
+    'max_length' => '',
+    'allowed_values' => '',
+    'allowed_values_php' => '',
+    'widget' => array(
+      'rows' => 5,
+      'size' => '12',
+      'default_value' => array(
+        '0' => array(
+          'value' => '',
+          '_error_element' => 'default_value_widget][field_celebrity_birth_date][0][value',
+        ),
+      ),
+      'default_value_php' => NULL,
+      'label' => 'Date of Birth',
+      'weight' => '-4',
+      'description' => 'mm/dd/yyyy',
+      'type' => 'text_textfield',
+      'module' => 'text',
+    ),
+  );
+
   // Exported field: field_celebrity_birth_place
   $fields['celebrity-field_celebrity_birth_place'] = array(
     'field_name' => 'field_celebrity_birth_place',
@@ -1016,154 +1082,10 @@ function vibes_content_types_content_default_fields() {
       ),
       'default_value_php' => NULL,
       'label' => 'Birth Place',
-      'weight' => '-2',
+      'weight' => '-3',
       'description' => '',
       'type' => 'text_textfield',
       'module' => 'text',
-    ),
-  );
-
-  // Exported field: field_celebrity_dob
-  $fields['celebrity-field_celebrity_dob'] = array(
-    'field_name' => 'field_celebrity_dob',
-    'type_name' => 'celebrity',
-    'display_settings' => array(
-      'label' => array(
-        'format' => 'above',
-        'exclude' => 0,
-      ),
-      '5' => array(
-        'format' => 'default',
-        'exclude' => 0,
-      ),
-      'teaser' => array(
-        'format' => 'default',
-        'exclude' => 0,
-      ),
-      'full' => array(
-        'format' => 'default',
-        'exclude' => 0,
-      ),
-      '4' => array(
-        'format' => 'default',
-        'exclude' => 0,
-      ),
-      '2' => array(
-        'format' => 'default',
-        'exclude' => 0,
-      ),
-      '3' => array(
-        'format' => 'default',
-        'exclude' => 0,
-      ),
-      'token' => array(
-        'format' => 'default',
-        'exclude' => 0,
-      ),
-    ),
-    'widget_active' => '1',
-    'type' => 'date',
-    'required' => '0',
-    'multiple' => '0',
-    'module' => 'date',
-    'active' => '1',
-    'granularity' => array(
-      'year' => 'year',
-      'month' => 'month',
-      'day' => 'day',
-    ),
-    'timezone_db' => '',
-    'tz_handling' => 'none',
-    'todate' => 'optional',
-    'repeat' => 0,
-    'repeat_collapsed' => '',
-    'default_format' => 'medium',
-    'widget' => array(
-      'default_value' => 'blank',
-      'default_value_code' => '',
-      'default_value2' => 'blank',
-      'default_value_code2' => '',
-      'input_format' => 'F j, Y',
-      'input_format_custom' => '',
-      'increment' => '1',
-      'text_parts' => array(),
-      'year_range' => '-50:+50',
-      'label_position' => 'above',
-      'label' => 'Date of Birth',
-      'weight' => '-3',
-      'description' => '',
-      'type' => 'date_popup',
-      'module' => 'date',
-    ),
-  );
-
-  // Exported field: field_celebrity_main_image
-  $fields['celebrity-field_celebrity_main_image'] = array(
-    'field_name' => 'field_celebrity_main_image',
-    'type_name' => 'celebrity',
-    'display_settings' => array(
-      'label' => array(
-        'format' => 'above',
-        'exclude' => 0,
-      ),
-      '5' => array(
-        'format' => 'image_plain',
-        'exclude' => 0,
-      ),
-      'teaser' => array(
-        'format' => 'image_plain',
-        'exclude' => 0,
-      ),
-      'full' => array(
-        'format' => 'image_plain',
-        'exclude' => 0,
-      ),
-      '4' => array(
-        'format' => 'image_plain',
-        'exclude' => 0,
-      ),
-      '2' => array(
-        'format' => 'image_plain',
-        'exclude' => 0,
-      ),
-      '3' => array(
-        'format' => 'image_plain',
-        'exclude' => 0,
-      ),
-      'token' => array(
-        'format' => 'image_plain',
-        'exclude' => 0,
-      ),
-    ),
-    'widget_active' => '1',
-    'type' => 'filefield',
-    'required' => '0',
-    'multiple' => '0',
-    'module' => 'filefield',
-    'active' => '1',
-    'list_field' => '0',
-    'list_default' => 1,
-    'description_field' => '0',
-    'widget' => array(
-      'file_extensions' => 'png gif jpg jpeg',
-      'file_path' => '',
-      'progress_indicator' => 'bar',
-      'max_filesize_per_file' => '',
-      'max_filesize_per_node' => '',
-      'max_resolution' => '0',
-      'min_resolution' => '0',
-      'alt' => '',
-      'custom_alt' => 0,
-      'title' => '',
-      'custom_title' => 0,
-      'title_type' => 'textfield',
-      'default_image' => NULL,
-      'use_default_image' => 0,
-      'label' => 'Main Image',
-      'weight' => '-1',
-      'description' => '',
-      'type' => 'imagefield_widget',
-      'module' => 'imagefield',
     ),
   );
 
@@ -1230,10 +1152,76 @@ function vibes_content_types_content_default_fields() {
       'default_image' => NULL,
       'use_default_image' => 0,
       'label' => 'Thumbnail',
-      'weight' => 0,
+      'weight' => '-2',
       'description' => '',
       'type' => 'imagefield_widget',
       'module' => 'imagefield',
+    ),
+  );
+
+  // Exported field: field_celebrity_twitter
+  $fields['celebrity-field_celebrity_twitter'] = array(
+    'field_name' => 'field_celebrity_twitter',
+    'type_name' => 'celebrity',
+    'display_settings' => array(
+      'label' => array(
+        'format' => 'above',
+        'exclude' => 0,
+      ),
+      '5' => array(
+        'format' => 'default',
+        'exclude' => 0,
+      ),
+      'teaser' => array(
+        'format' => 'default',
+        'exclude' => 0,
+      ),
+      'full' => array(
+        'format' => 'default',
+        'exclude' => 0,
+      ),
+      '4' => array(
+        'format' => 'default',
+        'exclude' => 0,
+      ),
+      '2' => array(
+        'format' => 'default',
+        'exclude' => 0,
+      ),
+      '3' => array(
+        'format' => 'default',
+        'exclude' => 0,
+      ),
+      'token' => array(
+        'format' => 'default',
+        'exclude' => 0,
+      ),
+    ),
+    'widget_active' => '1',
+    'type' => 'text',
+    'required' => '0',
+    'multiple' => '0',
+    'module' => 'text',
+    'active' => '1',
+    'text_processing' => '0',
+    'max_length' => '',
+    'allowed_values' => '',
+    'allowed_values_php' => '',
+    'widget' => array(
+      'rows' => 5,
+      'size' => '20',
+      'default_value' => array(
+        '0' => array(
+          'value' => '',
+          '_error_element' => 'default_value_widget][field_celebrity_twitter][0][value',
+        ),
+      ),
+      'default_value_php' => NULL,
+      'label' => 'Twitter Tag',
+      'weight' => '-1',
+      'description' => '',
+      'type' => 'text_textfield',
+      'module' => 'text',
     ),
   );
 
@@ -2807,9 +2795,9 @@ Yes',
   t('Link');
   t('Link Source');
   t('MT Entry ID');
-  t('Main Image');
   t('Source');
   t('Thumbnail');
+  t('Twitter Tag');
   t('User Submitted');
   t('Video');
   t('Video Id');
