@@ -122,54 +122,22 @@
  <div class="clear-block"></div> 
   
  <div id="story_data_celeb_wrapper" style="width:100%;display:block;">
-  <?php if(isset($node->field_celebrity_main_image[0]['view'])) {?>
-  <div id="story_image_celeb" style="float:left;"><?php print $node->field_celebrity_main_image[0]["view"]?></div>
+  <?php if(isset($node->field_celebrity_thumbnail[0]['view'])) {?>
+  <div id="story_image_celeb" style="float:left;"><?php print $node->field_celebrity_thumbnail[0]["view"]?></div>
   <?php } ?>
   <div id="story_data_celeb" style="float:left;margin-left:10px;">
     <p><label>NAME:</label><br/><?php print $node->title;?></p>
-     <p><label>DATE OF BIRTH:<br/></label><?php print $node->field_celebrity_dob[0]['view'];?></p>
+     <p><label>DATE OF BIRTH:<br/></label><?php print $node->field_celebrity_birth_date[0]['view'];?></p>
      <p><label>BIRTH PLACE:</label><br/><?php print $node->field_celebrity_birth_place[0]['view'];?></p>
+     <p><label>Twitter Handle:</label><br/><?php print $node->field_celebrity_twitter[0]['view'];?></p>
+     
   </div>
  </div>
  <div class="clear-block"></div>
-  <div id="story_body"><?php print preg_replace("/&lt;!--.*endif.*?-->/","",preg_replace("/&lt;!--/","<!--",$node->content["body"]["#value"]))?></div>
+  <div id="story_body"><label>Bio:</label><?php print preg_replace("/&lt;!--.*endif.*?-->/","",preg_replace("/&lt;!--/","<!--",$node->content["body"]["#value"]))?></div>
 	<div id="story_pages"><?php print $node->paging; ?></div> 
 
 
-<?php
-/*print_r($node);
-$photo_node_array = array();
-for($f=0; $f<count($node->field_celebrity_nref); $f++){
-	if($node->field_celebrity_nref[$f]['nid'] != NULL){
-		//var_dump($node->field_nref[$f]);
-		$photo_node_array[] = $node->field_celebrity_nref[$f]['nid'];
-	}
-}
-if(count($photo_node_array) > 0){
-for($g=0; $g<count($photo_node_array);$g++){	
-	$photo_node = node_load($photo_node_array[$g]);
-	$nodeCount = count($photo_node->nodes);
-	$node_url = url($photo_node->path);
-	$photoNode_title = $photo_node->title;
-	$thumbnail_path = $photo_node->field_img_src[0]['filepath'];
-	
- ?>
-<!--<div id="featured_photo_gallery">
-	<div id="fg_wrapper">
-        <div id="fg_header">Featured Gallery</div>
-        <div id="fg_title"><a href="<?php print $node_url; ?>"><? print $photoNode_title; ?></a></div>
-        <div id="fg_photo"><a href="<?php print $node_url; ?>" class="Hover"><img src="<?php print url($thumbnail_path); ?>" /></a></div>
-        <div id="fg_teaser_count_wrapper">
-            <div id="fg_teaser"><? print $photo_node->teaser; ?></div>
-            <div id="fg_photo_gallery">
-            	<div id="fg_photo_count"><?php echo count($photo_node->nodes); ?> Photos </div>
-                <div id="fg_photo_arrows"><a href="<?php print $node_url; ?>" ><div id="photo_arrows"></div></a></div>
-            </div>
-        </div>
-        
-    </div>
-</div>-->
-<div class="clear-block"></div>
-<? }}*/ ?>
-<?php //print theme_render_template("sites/all/themes/vibe/block-node-footer.tpl.php", array("links"=>$links, "node"=>$node));?>
+
+
 
