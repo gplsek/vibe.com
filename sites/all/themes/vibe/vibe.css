@@ -1148,12 +1148,20 @@
   	height: auto;
   	padding: 15px;
   }
+	.vln-col {
+		float: left;
+		width: 260px;
+	}
+	
+	#vln-col-middle {
+		margin: 0 5px;
+	}
   
   .vibe-lifestyle-network-site {
-  	width: 25%;
+  	/* width: 25%; */
   	height: 220px;
   	float: left;
-	margin-left:-7px;
+	/* margin-left:-7px; */
   }
   .vibe-lifestyle-network-site-content_top {
   	width: 100%;
