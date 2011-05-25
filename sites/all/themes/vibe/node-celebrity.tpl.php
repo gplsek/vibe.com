@@ -123,7 +123,7 @@
   
  <div id="story_data_celeb_wrapper" style="width:100%;display:block;">
   <?php if(isset($node->field_celebrity_thumbnail[0]['view'])) {?>
-  <div id="story_image_celeb" style="float:left;"><?php print $node->field_celebrity_main_image[0]["view"]?></div>
+  <div id="story_image_celeb" style="float:left;"><?php print $node->field_celebrity_thumbnail[0]["view"]?></div>
   <?php } ?>
   <div id="story_data_celeb" style="float:left;margin-left:10px;">
     <p><label>NAME:</label><br/><?php print $node->title;?></p>
@@ -138,6 +138,6 @@
 	<div id="story_pages"><?php print $node->paging; ?></div> 
 
 
-?>
+
 
 
