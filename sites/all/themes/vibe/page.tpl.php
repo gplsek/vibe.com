@@ -289,6 +289,7 @@ Meebo('makeEverythingSharable', {shadow:'none'});
 	  <div id="main-content">
 	  	<div class="content-inner">
 	  		<?php print $content; ?>
+	        <?php print $content_bottom ?>
 	  	</div>
 	  </div>
 	  
