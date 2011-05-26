@@ -1126,11 +1126,14 @@
 	position: absolute;
   }
   
-  #vibe-lifestyle-newtork-title {
+  #vibe-lifestyle-network-title {
+		background: transparent url(/sites/all/themes/vibe/images/VIBE_FOOTER/VLN-FOOTER-BG.jpg) no-repeat top;
+/*
 	  font:Arial, Helvetica, sans-serif;
 	  font-size: 22pt;
 	  font-weight:bold;
 	  color:#000000;
+*/
   	
   }
   
@@ -1148,25 +1151,61 @@
   	height: auto;
   	padding: 15px;
   }
+  
+ 	
+ 	#vln-footer-top, #vln-footer-middle, #vln-footer-bottom {
+ 		float: left;
+ 		margin: 0 10px;
+ 		width: 830px;
+ 	}
+ 	
+ 	#vln-footer-top {
+ 		height: 40px; 		
+ 		background: transparent url(/sites/all/themes/vibe/images/VIBE_FOOTER/BG-VLN-FOOTER-TOP-TEXT.jpg) no-repeat;
+ 	}
+ 	
+ 	#vln-footer-middle { 	
+ 		background: transparent url(/sites/all/themes/vibe/images/VIBE_FOOTER/BG-VLN-FOOTER-MID.jpg) repeat-y;
+ 		width: 810px;
+ 		padding: 10px;
+ 	}
+ 	
+ 	#vln-footer-bottom {
+ 		height: 10px;
+ 		background: transparent url(/sites/all/themes/vibe/images/VIBE_FOOTER/BG-VLN-FOOTER-BOT.jpg) no-repeat;
+ 	}
+ 	
 	.vln-col {
 		float: left;
-		width: 260px;
-	}
+		width: 250px;
+		padding: 10px;
+	}	
 	
-	#vln-col-middle {
-		margin: 0 5px;
+	#vln-col-left {
+		
 	}
-  
+  	
+	#vln-col-middle {
+		padding: 10px 5px;
+		border-right: 1px dotted;
+		border-left: 1px dotted;
+  	}
+  	
+	#vln-col-right {
+		
+	}
+
+  	
+	  
   .vibe-lifestyle-network-site {
   	/* width: 25%; */
-  	height: 220px;
+  	height: 200px;
   	float: left;
 	/* margin-left:-7px; */
   }
   .vibe-lifestyle-network-site-content_top {
   	width: 100%;
-  	margin: 0 auto;
-  	padding: 10px 5px 10px 10px;
+  	margin: 0 auto;  	
   	text-align: center;
 	margin-top:14px;
 	line-height:14px;
@@ -4511,7 +4550,7 @@ margin-left:0px;
 }
 
 #vln-footer{
-	margin-top: 20px;
+	margin: 20px 0px;
 }
 
 .article_arrows{
