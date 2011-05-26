@@ -1744,6 +1744,91 @@ Yes',
     ),
   );
 
+  // Exported field: field_node_gallery_image
+  $fields['node_gallery_image-field_node_gallery_image'] = array(
+    'field_name' => 'field_node_gallery_image',
+    'type_name' => 'node_gallery_image',
+    'display_settings' => array(
+      'label' => array(
+        'format' => 'above',
+        'exclude' => 0,
+      ),
+      '5' => array(
+        'format' => 'image_plain',
+        'exclude' => 0,
+      ),
+      'teaser' => array(
+        'format' => 'image_plain',
+        'exclude' => 0,
+      ),
+      'full' => array(
+        'format' => 'image_plain',
+        'exclude' => 0,
+      ),
+      '4' => array(
+        'format' => 'image_plain',
+        'exclude' => 0,
+      ),
+      '2' => array(
+        'format' => 'image_plain',
+        'exclude' => 0,
+      ),
+      '3' => array(
+        'format' => 'image_plain',
+        'exclude' => 0,
+      ),
+      'token' => array(
+        'format' => 'image_plain',
+        'exclude' => 0,
+      ),
+    ),
+    'widget_active' => '1',
+    'type' => 'filefield',
+    'required' => '1',
+    'multiple' => '0',
+    'module' => 'filefield',
+    'active' => '1',
+    'list_field' => '0',
+    'list_default' => 1,
+    'description_field' => '0',
+    'widget' => array(
+      'file_extensions' => NULL,
+      'file_path' => NULL,
+      'progress_indicator' => NULL,
+      'max_filesize_per_file' => NULL,
+      'max_filesize_per_node' => NULL,
+      'max_resolution' => NULL,
+      'min_resolution' => NULL,
+      'alt' => NULL,
+      'custom_alt' => NULL,
+      'title' => NULL,
+      'custom_title' => NULL,
+      'title_type' => NULL,
+      'default_image' => NULL,
+      'use_default_image' => NULL,
+      'maintitle' => NULL,
+      'maintitle_help' => NULL,
+      'custom_maintitle' => NULL,
+      'custom_maintitle_style' => NULL,
+      'custom_maintitle_required' => NULL,
+      'subtitle' => NULL,
+      'subtitle_help' => NULL,
+      'custom_subtitle' => NULL,
+      'custom_subtitle_style' => NULL,
+      'custom_subtitle_required' => NULL,
+      'billboardurl' => NULL,
+      'billboardurl_help' => NULL,
+      'custom_billboardurl' => NULL,
+      'custom_billboardurl_style' => NULL,
+      'custom_billboardurl_required' => NULL,
+      'label' => 'Images',
+      'weight' => '31',
+      'description' => '',
+      'type' => 'imagefield_widget',
+      'module' => 'imagefield',
+    ),
+  );
+
   // Exported field: field_excerpt
   $fields['photo_gallery-field_excerpt'] = array(
     'field_name' => 'field_excerpt',
@@ -1960,6 +2045,95 @@ Yes',
       'description' => '',
       'type' => 'imagefield_widget',
       'module' => 'imagefield',
+    ),
+  );
+
+  // Exported field: field_article_celebrity
+  $fields['story-field_article_celebrity'] = array(
+    'field_name' => 'field_article_celebrity',
+    'type_name' => 'story',
+    'display_settings' => array(
+      'label' => array(
+        'format' => 'above',
+        'exclude' => 0,
+      ),
+      '5' => array(
+        'format' => 'default',
+        'exclude' => 0,
+      ),
+      'teaser' => array(
+        'format' => 'default',
+        'exclude' => 0,
+      ),
+      'full' => array(
+        'format' => 'default',
+        'exclude' => 0,
+      ),
+      '4' => array(
+        'format' => 'default',
+        'exclude' => 0,
+      ),
+      '2' => array(
+        'format' => 'default',
+        'exclude' => 0,
+      ),
+      '3' => array(
+        'format' => 'default',
+        'exclude' => 0,
+      ),
+      'token' => array(
+        'format' => 'default',
+        'exclude' => 0,
+      ),
+    ),
+    'widget_active' => '1',
+    'type' => 'nodereference',
+    'required' => '0',
+    'multiple' => '1',
+    'module' => 'nodereference',
+    'active' => '1',
+    'referenceable_types' => array(
+      'celebrity' => 'celebrity',
+      'audio' => 0,
+      'billboard' => 0,
+      'advpoll_binary' => 0,
+      'event' => 0,
+      'feed' => 0,
+      'feed_item' => 0,
+      'node_gallery_gallery' => 0,
+      'node_gallery_image' => 0,
+      'img' => 0,
+      'jp_collection' => 0,
+      'link' => 0,
+      'book' => 0,
+      'page' => 0,
+      'panel' => 0,
+      'photo_gallery' => 0,
+      'post_up' => 0,
+      'advpoll_ranking' => 0,
+      'single_column_page' => 0,
+      'story' => 0,
+      'questions' => 0,
+      'video' => 0,
+      'webform' => 0,
+    ),
+    'advanced_view' => '--',
+    'advanced_view_args' => '',
+    'widget' => array(
+      'autocomplete_match' => 'contains',
+      'size' => '60',
+      'default_value' => array(
+        '0' => array(
+          'nid' => NULL,
+          '_error_element' => 'default_value_widget][field_article_celebrity][0][nid][nid',
+        ),
+      ),
+      'default_value_php' => NULL,
+      'label' => 'Celebrity',
+      'weight' => '26',
+      'description' => '',
+      'type' => 'nodereference_autocomplete',
+      'module' => 'nodereference',
     ),
   );
 
@@ -2782,6 +2956,7 @@ Yes',
   // Included for use with string extractors like potx.
   t('Audio File Title');
   t('Birth Place');
+  t('Celebrity');
   t('Cover Image');
   t('Date of Birth');
   t('Excerpt');
