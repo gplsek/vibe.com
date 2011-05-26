@@ -7,11 +7,10 @@
 $feed_nodes = get_feed_nodes(array("DJ Booth Feed","All Hip Hop Feed","Datpiff Feed","All Music Feed","Baller Status Feed","Ring TV Feed","Singers Room Feed","PopEater Feed","BlackBox Voices Feed","Hello Beautiful Feed","Huffington Post Feed", "Carlton Jordan"),2); 
 //var_dump($feed_nodes);
 ?>
-<div id="vibe-lifestyle-network-footer">
-	<div id="vibe-lifestyle-network-header">
-		<div id="vibe-lifestyle-newtork-title">Friends of <span>VIBE</span></div>
-	</div>	
-	<div id="vibe-lifestyle-network-sites">
+
+	<div id="vln-footer-top">
+	</div>
+	<div id="vln-footer-middle">
 		<div id="vln-col-left" class="vln-col">
 			<div class="vibe-lifestyle-network-site">
 				<div class="vibe-lifestyle-network-site-content_top">
@@ -91,4 +90,5 @@ $feed_nodes = get_feed_nodes(array("DJ Booth Feed","All Hip Hop Feed","Datpiff F
 			</div>		
 		</div>
     </div><!-- /#vibe-lifestyle-network-sties -->
-</div>
+    <div id="vln-footer-bottom">
+	</div>
