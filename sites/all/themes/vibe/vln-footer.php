@@ -92,3 +92,4 @@ $feed_nodes = get_feed_nodes(array("DJ Booth Feed","All Hip Hop Feed","Datpiff F
     </div><!-- /#vibe-lifestyle-network-sties -->
     <div id="vln-footer-bottom">
 	</div>
+	<div class="clear-block"></div>
