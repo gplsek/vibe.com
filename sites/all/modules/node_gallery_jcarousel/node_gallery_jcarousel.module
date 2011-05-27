@@ -1,0 +1,109 @@
+<?php
+// $Id: node_gallery_jcarousel.module,v 1.1.2.1 2010/12/23 03:20:55 justintime Exp $
+
+/**
+ * @file
+ * Node Gallery jcarousel module file.
+ */
+
+/**
+ * Implementation of hook_form_FORM_ID_alter().
+ */
+function node_gallery_jcarousel_form_node_gallery_relationship_settings_form_alter(&$form, &$form_state) {
+  $relationship = $form['#relationship'];
+  $viewdisplays = node_gallery_build_views_select('node_gallery_images');
+  $defaults = array();
+  node_gallery_jcarousel_node_gallery_relationship_default_settings_alter($defaults);
+  $form['node_gallery_image_view']['node_gallery_jcarousel_settings'] = array(
+    '#type' => 'fieldset',
+    '#title' => t('jCarousel settings'),
+    '#description' => t('This area defines Node Gallery jcarousel settings.'),
+    '#collapsible' => TRUE,
+    '#collapsed' => FALSE,
+  );
+  $form['node_gallery_image_view']['node_gallery_jcarousel_settings']['jcarousel_enabled'] = array(
+    '#type' => 'checkbox',
+    '#title' => t('Enable jcarousel on image node pages?'),
+    '#default_value' => isset($relationship['settings']['jcarousel_enabled']) ? $relationship['settings']['jcarousel_enabled'] : $defaults['jcarousel_enabled'],
+  );  
+  $form['node_gallery_image_view']['node_gallery_jcarousel_settings']['view_gallery_jcarousel_display'] = array(
+    '#type' => 'select',
+    '#title' => t('jCarousel view definition'),
+    '#description' => t('Select the display of the images which will used to display the jCarousel.  Views tagged with \'node_gallery_images\' are displayed here.'),
+    '#options' => $viewdisplays,
+    '#default_value' => isset($relationship['settings']['view_gallery_jcarousel_display']) ? $relationship['settings']['view_gallery_jcarousel_display'] : $defaults['view_gallery_jcarousel_display'],
+  );
+}
+
+/**
+ * Implements hook_node_gallery_relationship_default_settings_alter().
+ */
+function node_gallery_jcarousel_node_gallery_relationship_default_settings_alter(&$settings) {
+  $settings['jcarousel_enabled'] = FALSE;
+  $settings['view_gallery_jcarousel_display'] = serialize(array('name' => 'node_gallery_gallery_image_views', 'display_id' => 'page_81'));
+}
+
+/**
+ * Implementation of hook_nodeapi().
+ *
+ * @param &$node The node the action is being performed on.
+ * @param $op What kind of action is being performed. Possible values: alter, delete, delete revision, insert, load, prepare, prepare translation, print, rss item, search result, presave, update, update index, validate, view
+ * @param $a3
+ * @param $a4
+ */
+function node_gallery_jcarousel_nodeapi(&$node, $op, $a3 = NULL, $a4 = NULL) {
+  switch ($op) {
+    case 'view':
+      if (in_array($node->type, (array)node_gallery_get_types('image'))) {
+        $relationship = node_gallery_get_relationship(NULL, $node->type);
+        if ($relationship['settings']['jcarousel_enabled']) {
+          $viewkey = unserialize($relationship['settings']['view_gallery_jcarousel_display']);
+          $node->content['jcarousel'] = array('#value' => theme('node_gallery_jcarousel', $node, $viewkey), '#weight' => -10);
+          $node->content['image_navigator']['#weight'] = 1;
+        }
+      }
+      break;
+  }
+}
+
+/**
+ * Implementation of hook_theme().
+ */
+function node_gallery_jcarousel_theme() {
+  $path = drupal_get_path('module', 'node_gallery_jcarousel') ."/theme";
+  $file = 'theme.inc';
+
+  $themes = array(
+    'node_gallery_jcarousel' => array(
+        'arguments' => array('image' => NULL, 'viewkey' => NULL),
+        'path' => $path,
+        'file' => $file,
+    ),
+  );
+  return $themes;
+}
+
+/**
+ * Implementation of hook_help().
+ *
+ * @param $path A Drupal menu router path the help is being requested.
+ * @param $arg An array that corresponds to the return of the arg() function.
+ * @return A localized string containing the help text.
+ */
+function node_gallery_jcarousel_help($path, $arg) {
+  $output = '';
+  switch ($path) {
+    case "admin/help#node_gallery_jcarousel":
+      $output = file_get_contents(drupal_get_path('module', 'node_gallery_jcarousel') .'/README.txt');
+      return '<pre>'. check_plain($output) .'</pre>';
+      break;
+  }
+  return $output;
+}
+
+/**
+ * Implementation hook_views_api().
+ */
+function node_gallery_jcarousel_views_api() {
+  return array('api' => 2.0, 'path' => drupal_get_path('module', 'node_gallery_jcarousel'));
+}

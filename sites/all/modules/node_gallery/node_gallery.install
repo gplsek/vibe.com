@@ -1,0 +1,412 @@
+<?php
+// $Id: node_gallery.install,v 1.16.4.22 2010/05/08 14:02:30 justintime Exp $
+
+/**
+ * @file
+ * Node gallery install file. 
+ *
+ */
+
+/**
+ * Implementation of hook_schema()
+ *
+ * @return unknown
+ */
+function node_gallery_schema() {
+  $schema = array();
+  
+  $schema['node_galleries'] = array(
+    'fields' => array(
+      'gid' => array(
+        'type' => 'int',
+        'unsigned' => TRUE,
+        'not null' => TRUE,
+        'default' => 0,
+        'description' => t('Gallery node id.'),
+      ),
+      'nid' => array(
+        'type' => 'int',
+        'unsigned' => TRUE,
+        'not null' => TRUE,
+        'default' => 0,
+        'description' => t('Image node id.'),
+      ),
+      'fid' => array(
+        'type' => 'int',
+        'unsigned' => TRUE,
+        'not null' => TRUE,
+        'default' => 0,
+        'description' => t('Image node file id.'),
+      ),
+      'weight' => array(
+        'type' => 'int',
+        'size' => 'small',
+        'not null' => FALSE,
+        'default' => 0,
+      ),
+      'is_cover' => array(
+        'type' => 'int',
+        'size' => 'tiny',
+        'not null' => TRUE,
+        'default' => 0,
+      ),
+    ),
+    'primary key' => array('nid'),
+  );
+  
+  return $schema;
+}
+
+/**
+ * Implementation of hook_requirements()
+ */
+function node_gallery_requirements($phase) {
+  $requirements = array();
+  $t = get_t();
+
+  switch ($phase) {
+    case 'install':
+      $error = FALSE;
+      // If ImageCache is not installed already, node_gallery.install code will fail and the system will be in a 'broken' state.
+      if (!module_exists('imagecache')) {
+        $requirements['node_gallery'] = array(
+          'title' => $t('Node Gallery requires'),
+          'value' => $t(' ImageCache module to be pre-installed. If ImageCache is now installed, please enable Node Gallery again.'),
+          'severity' => REQUIREMENT_ERROR,
+        );
+      }
+    break;
+  }
+
+  return $requirements;
+}
+
+/**
+ * Implementation of hook_install()
+ *
+ */
+function node_gallery_install() {
+  $ret = drupal_install_schema('node_gallery');
+  _node_gallery_install_type_create();
+  _node_gallery_install_imagecache_presets();
+  _node_gallery_set_imagecache_permissions();
+  _node_gallery_install_default();
+}
+
+/**
+ * Implementation of hook_uninstall()
+ *
+ */
+function node_gallery_uninstall() {
+  global $conf;
+  $types = node_get_types();
+  foreach (array('node_gallery_gallery', 'node_gallery_image') as $content_type) {
+    if (in_array($content_type, array_keys($types))) {
+      drupal_set_message(t('The !content_type content type is still present.  You may !delete_link.', array('!content_type' => $content_type, '!delete_link' => l(t('delete it'), 'admin/content/node-type/'. str_replace('_', '-', $content_type) .'/delete', array('attributes' => array('target' => '_blank'))))));
+    }
+  }
+  // Remove our imagecache presets
+  foreach (array('node-gallery-cover', 'node-gallery-display', 'node-gallery-thumbnail') as $preset_name) {
+    $preset = imagecache_preset_by_name($preset_name);
+    if ($preset['presetid']) {
+      drupal_set_message(t('The !preset_name imagecache preset is still present.  You may !delete_link.', array('!preset_name' => $preset_name, '!delete_link' => l(t('delete it'), 'admin/build/imagecache/'. $preset['presetid'] .'/delete', array('attributes' => array('target' => '_blank'))))));
+    }
+  }
+  $ret = drupal_uninstall_schema('node_gallery');
+  foreach ($conf as $key => $value) {
+    if (strpos($key, 'node_gallery') === 0) {
+      variable_del($key);
+    }
+  }
+  cache_clear_all();
+}
+
+function _node_gallery_install_type_create() {
+  // During install profiles, node and user modules aren't yet loaded.
+  // Ensure they're loaded before calling node_get_types().
+  include_once './'. drupal_get_path('module', 'node') .'/node.module';
+  include_once './'. drupal_get_path('module', 'user') .'/user.module';
+  $types = node_get_types();
+  $types = array_change_key_case($types, CASE_LOWER);
+
+  if (!in_array('node_gallery_gallery', array_keys($types))) {
+    // Create the comment content type.
+    $node_gallery_node_type = array(
+      'type' => 'node_gallery_gallery',
+      'name' => t('Gallery'),
+      'module' => 'node',
+      'description' => t('This is a gallery (album). This will be the parent of your individual images.'),
+      'title_label' => t('Gallery Name'),
+      'body_label' => t('Description'),
+      'custom' => TRUE,
+      'modified' => TRUE,
+      'locked' => FALSE,
+    );
+    $node_gallery_node_type = (object)_node_type_set_defaults($node_gallery_node_type);
+    node_type_save($node_gallery_node_type);
+    drupal_set_message(t('Node type "Gallery (Node Gallery)" created.'));
+  }
+  if (!in_array('node_gallery_image', array_keys($types))) {
+    // Create the comment content type.
+    $node_gallery_image_node_type = array(
+      'type' => 'node_gallery_image',
+      'name' => t('Gallery Image'),
+      'module' => 'node',
+      'description' => t('This is an individual image that will be linked to a gallery. This should not be accessed via node/add/node_gallery_image'),
+      'title_label' => t('Title'),
+      'body_label' => t('Caption'),
+      'custom' => TRUE,
+      'modified' => TRUE,
+      'locked' => FALSE,
+    );
+    $node_gallery_image_node_type = (object)_node_type_set_defaults($node_gallery_image_node_type);
+    node_type_save($node_gallery_image_node_type);
+    drupal_set_message(t('Node type "Gallery Image (Node Gallery)" created.'));
+  }
+  if (!in_array('node_gallery_gallery', array_keys($types)) || !in_array('node_gallery_image', array_keys($types))) {
+    cache_clear_all();
+    system_modules();
+    menu_rebuild();
+    node_types_rebuild();
+  }
+}
+
+function _node_gallery_install_default() {
+  /* Set the defaults for a node_gallery relationship */
+  $default = array(
+   'gallery_type' => 'node_gallery_gallery', 
+   'image_type' => 'node_gallery_image', 
+   'name' => 'Node Gallery Default', 
+   'gallery_directory' => '', 
+   'default_cover' => '', 
+   'number_uploads' => '5', 
+   'display_fields' => array('title' => 'title', 'body_field' => 'body_field', ), 
+   'content_display' => 'image', 
+   'view_original' => '0', 
+   'view_original_text' => 'Download the Original Image', 
+   'lightbox2' => 'node-gallery-display', 
+   'image_size' => array('cover' => 'node-gallery-cover', 'thumbnail' => 'node-gallery-thumbnail', 'preview' => 'node-gallery-display'), 
+   'teaser' => array('gallery_display_type' => 'thumbnails', 'thumbnails_num' => '6', 'lightbox2_gallery' => 'node-gallery-display', 'image' => 'node-gallery-thumbnail'), 
+   'upload_limits' => array('general' => array('file_extension' => 'jpg jpeg gif png', 'file_resolution' => '0', 'file_max_size' => '1', 'user_max_size' => '2'), 'roles' => array(3 => 'editor', ), 'role_3' => array('role_name' => 'editor', 'file_max_size' => '1', 'user_max_size' => '2', ), ), 
+   'gallery' => array('gallery_display_type' => 'thumbnails', 'lightbox2_gallery_preset' => 'node-gallery-display'));
+  
+  variable_set('node_gallery_node_gallery_gallery', $default);
+  variable_set('node_options_node_gallery_image', array('status'));
+}
+
+function _node_gallery_install_imagecache_presets() {
+  // First, build an array of all the preset names so we do not make duplicates
+  // Set the argument to TRUE to reset the cache
+  $presets = imagecache_presets(TRUE);
+  $preset_names = array();
+  
+  //If there are any presets
+  if ($presets != '') {
+    foreach ($presets as $preset) {
+      $preset_names[] = $preset['presetname'];
+    }
+  }
+  
+  
+  // Prepare to install ImageCache presets
+  $imagecache_presets = array();
+  $imagecache_actions = array();
+  
+  // We are checking to make sure the preset name does not exist before creating
+  if (!in_array('node-gallery-thumbnail', $preset_names)) {
+    $imagecache_presets[] = array(
+      'presetname' => 'node-gallery-thumbnail',
+    );
+    $imagecache_actions['node-gallery-thumbnail'][] = array(
+      'action' => 'imagecache_scale_and_crop',
+      'data' => array(
+        'width' => 100,
+        'height' => 100,
+      ),
+      'weight' => 0,
+    );
+  }
+  
+  if (!in_array('node-gallery-cover', $preset_names)) {
+    $imagecache_presets[] = array(
+      'presetname' => 'node-gallery-cover',
+    );
+    $imagecache_actions['node-gallery-cover'][] = array(
+      'action' => 'imagecache_scale_and_crop',
+      'data' => array(
+        'width' => 150,
+        'height' => 150,
+      ),
+      'weight' => 0,
+    );
+  }
+  
+  if (!in_array('node-gallery-display', $preset_names)) {
+    $imagecache_presets[] = array(
+      'presetname' => 'node-gallery-display',
+    );
+    $imagecache_actions['node-gallery-display'][] = array(
+      'action' => 'imagecache_scale',
+      'data' => array(
+        'height' => 1500,
+      ),
+      'weight' => 0,
+    );
+    $imagecache_actions['node-gallery-display'][] = array(
+      'action' => 'imagecache_scale',
+      'data' => array(
+        'width' => 600,
+      ),
+      'weight' => 1,
+    );
+  }
+  
+  // Need to install preset, id will be returned by function,
+  // Then install action add presetid to action prior to install:
+  foreach ($imagecache_presets as $preset) {
+    $preset = imagecache_preset_save($preset);
+    foreach ($imagecache_actions[$preset['presetname']] as $action) {
+      $action['presetid'] = $preset['presetid'];
+      imagecache_action_save($action);
+    }
+    drupal_set_message(t('ImageCache preset %id: %name and corresponding actions saved.', array('%id' => $preset['presetid'], '%name' => $preset['presetname'])));
+  }
+}
+
+function _node_gallery_set_imagecache_permissions() {
+  $query = db_query("SELECT rid, perm FROM {permission} ORDER BY rid");
+  while ($role = db_fetch_object($query)) {
+    $role->perm .= ', view imagecache node-gallery-cover, view imagecache node-gallery-thumbnail, view imagecache node-gallery-display';
+    update_sql("UPDATE {permission} SET perm = '$role->perm' WHERE rid = $role->rid");
+  }
+}
+
+/**
+ * Implementation of hook_update_N()
+ * Directly installing the default imagecache presets
+ */
+function node_gallery_update_6100() {
+  $ret = array();
+  _node_gallery_install_imagecache_presets();
+  _node_gallery_set_imagecache_permissions();
+  return $ret;
+}
+
+/**
+ * Implementation of hook_update_N()
+ * Updating the database for the changing options for "view original"
+ */
+function node_gallery_update_6101() {
+  $ret = array();
+  $result = db_query("SELECT * FROM {ng_gallery_config} WHERE 1");
+  $t = drupal_unpack(db_fetch_object($result));
+  while ($t = drupal_unpack(db_fetch_object($result))) {
+    if (!empty($t)) {
+      $relationship = new gallery_config($t);
+      if (!$relationship->lightbox2) {
+        $relationship->lightbox2 = 'node-gallery-display';
+      }
+      if (!$relationship->view_original_text) {
+        $relationship->view_original_text = '';
+      }
+      if ($relationship->view_original == '1') {
+        $relationship->view_original = 'default';
+      }
+      unset($relationship->data);
+      
+      $relationship->save();
+    }
+  }
+  return $ret;
+}
+
+/**
+ * Implementation of hook_update_N()
+ * Updating the database for the changing options for "view teaser"
+ */
+function node_gallery_update_6102() {
+  $ret = array();
+  $result = db_query("SELECT * FROM {ng_gallery_config} WHERE 1");
+  $t = drupal_unpack(db_fetch_object($result));
+  while ($t = drupal_unpack(db_fetch_object($result))) {
+    if (!empty($t)) {
+      $relationship = new gallery_config($t);
+      if ($relationship->teaser['gallery_display_type'] == '0') {
+        $relationship->teaser['gallery_display_type'] = 'cover';
+      }
+      elseif ($relationship->teaser['gallery_display_type'] == '1') {
+        $relationship->teaser['gallery_display_type'] = 'thumbnails';
+      }
+      $relationship->gallery = array(
+        'gallery_display' => 'thumbnails',
+        'lightbox2_gallery_preset' => 'node-gallery-display',
+      );
+      unset($relationship->data);
+      $relationship->save();
+    }
+  }
+  return $ret;
+}
+
+/**
+ * Implementation of hook_update_N()
+ * Updating the database so we can custom select the number of uploads
+ */
+function node_gallery_update_6103() {
+  $ret = array();
+  $result = db_query("SELECT * FROM {ng_gallery_config} WHERE 1");
+  $t = drupal_unpack(db_fetch_object($result));
+  while ($t = drupal_unpack(db_fetch_object($result))) {
+    if (!empty($t)) {
+      $relationship = new gallery_config($t);
+      $relationship->upload_settings = array(
+        'number_uploads' => '5',
+      );
+      unset($relationship->data);
+      $relationship->save();
+    }
+  }
+  return $ret;
+}
+
+function node_gallery_update_6201() {
+  $ret = array();
+  
+  db_drop_primary_key($ret, 'node_galleries');
+  db_add_primary_key($ret, 'node_galleries', array('nid'));
+  return $ret;
+}
+
+/**
+ * Implementation of hook_update_N()
+ * Alerting the users that we have potentially broken their views
+ */
+function node_gallery_update_6202() {
+  $ret = array();
+  drupal_set_message(t('Node Gallery had to change some of our views code to <a href="http://drupal.org/node/547982">fix a bug relating to the "Gallery Operations" field</a>.  If you used this field, you may be required to rebuild any views using that field.  %broken.', array('%broken' => l(t('Read this information on how to fix any broken views'), 'http://drupal.org/node/547982', array('fragment' => 'comment-2199342')))), 'warning');
+  return $ret;
+}
+
+function node_gallery_update_6203() {
+  $ret = array();
+  drupal_set_message(t('Node Gallery Access has been removed from core, and migrated to it\'s own module - you may download the new version from !url.', array('url' => l('http://drupal.org/project/node_gallery_access', 'http://drupal.org/project/node_gallery_access'))));
+  $contribdir = drupal_get_path('module', 'node_gallery') . '/contrib/node_gallery_access';
+  //Does the contrib node_gallery_access exist?
+  if (is_dir($contribdir)) {
+    //Is it enabled?
+    if (module_exists('node_gallery_access')) {
+      module_disable(array('node_gallery_access'));
+      drupal_set_message(t('Node Gallery Access (contrib version) has been disabled, but your data is still there.  Simply download the new version after removing the old one, and everything will upgrade automatically.'));
+    }
+    //We could go to the trouble to try a recursive delete, but most modules/* files aren't writable by Apache anyways.
+    $ret['#abort'] = array('success' => FALSE, 'query' => 'Old contrib version of Node Gallery Access was found at ' . $contribdir . '.  Please remove that directory and all of it\'s subfolders then rerun ' . l('update.php', 'update.php'));
+  }
+  return $ret;
+}
+
+function node_gallery_update_6204() {
+  $ret = array();
+  menu_rebuild();
+  return $ret;
+}
+

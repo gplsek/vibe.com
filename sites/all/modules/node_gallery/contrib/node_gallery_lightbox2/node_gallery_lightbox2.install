@@ -1,0 +1,46 @@
+<?php
+// $Id$
+
+/**
+ * @file node_gallery_lightbox2.install
+ *
+ * Node gallery lightbox2 install file.
+ */
+
+/**
+ * Implementation of hook_requirements()
+ */
+function node_gallery_lightbox2_requirements($phase) {
+  $requirements = array();
+  $t = get_t();
+
+  switch ($phase) {
+    case 'install':
+      $error = FALSE;
+      // Comments: see node_gallery_access.install
+      if (!module_exists('imagecache')) {
+        $requirements['node_gallery_lightbox2'] = array(
+          'title' => $t('Node Gallery Lightbox2 requires'),
+          'value' => $t(' ImageCache module to be pre-installed. If ImageCache is now installed, please enable Node Gallery Lightbox2 again.  If ImageCache and Node Gallery Lightbox2 are both enabled and Node Gallery is disabled and grayed out unchecked, saving the module settings page again will install Node Gallery.'),
+          'severity' => REQUIREMENT_ERROR,
+        );
+      }
+      else {
+        $msgs = drupal_set_message();
+        if ($msgs && isset($msgs['error'])) {
+          foreach ($msgs['error'] as $msg) {
+            if (strpos($msg, 'Node Gallery requires') !== FALSE) {
+              $requirements['node_gallery_lightbox2'] = array(
+                'title' => $t('Node Gallery Lightbox2 requires'),
+                'value' => $t(' ImageCache module to be pre-installed. If ImageCache is now installed, please enable Node Gallery Lightbox2 again.  If ImageCache and Node Gallery Lightbox2 are both enabled and Node Gallery both disabled and grayed out unchecked, saving the module settings page again will install Node Gallery.'),
+                'severity' => REQUIREMENT_ERROR,
+              );
+            }
+          }
+        }
+      }
+    break;
+  }
+
+  return $requirements;
+}
