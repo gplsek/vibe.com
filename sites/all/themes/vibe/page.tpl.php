@@ -387,7 +387,6 @@ if (window.location.hostname.indexOf('cache.vibe') == -1 ) {
 	</div>
 </div>
 
-		<script type="text/javascript">setupSubscribe();</script>
         
  <div id="lightbox-panel" >  
   			<div id="signup_paragraph">Sign Up for the latest news and exclusive offers from VIBE!</div>
