@@ -1,9 +1,8 @@
 <?php
-// $Id: filefield_meta_handler_field_duration.inc,v 1.2 2009/03/19 03:43:37 quicksketch Exp $
 
 /**
  * @file
- * A special handler that properly formats duration fields as minutes:seconds.
+ * A special handler that properly formats bit rate fields as Kbps.
  */
 
 /**
@@ -11,15 +10,14 @@
  *
  * @ingroup views_field_handlers
  */
-class filefield_meta_handler_field_duration extends views_handler_field_numeric {
+class filefield_meta_handler_field_bitrate extends views_handler_field_numeric {
   function option_definition() {
     $options = parent::option_definition();
 
     $options['format'] = array('default' => 'default', 'translatable' => TRUE);
 
-    // Remove the separator and alter options since we don't need them.
+    // Remove the separator options since we don't need them.
     unset($options['separator']);
-    unset($options['alter']);
 
     return $options;
   }
@@ -29,41 +27,34 @@ class filefield_meta_handler_field_duration extends views_handler_field_numeric 
 
     // Remove the separator and alter options since we don't need them.
     unset($form['separator']);
-    unset($form['alter']);
 
     $form['prefix']['#weight'] = 10;
     $form['suffix']['#weight'] = 10;
     $form['format'] = array(
       '#type' => 'select',
-      '#title' => t('Time format'),
+      '#title' => t('Format'),
       '#default_value' => $this->options['format'],
       '#options' => array(
-        'default' => t('Default (usually mm:ss)'),
-        'hours' => t('Hours: h'),
-        'minutes' => t('Minutes: mm'),
-        'seconds' => t('Seconds: ss'),
-        'total' => t('Total seconds'),
+        'default' => t('Default (Mbps or Kbps)'),
+        'raw' => t('Raw numberic value'),
       ),
     );
   }
 
   function render($values) {
     $value = $values->{$this->field_alias};
+
+    // Check to see if hiding should happen before adding prefix and suffix.
+    if ($this->options['hide_empty'] && empty($value) && ($value !== 0 || $this->options['empty_zero'])) {
+      return '';
+    }
+
     switch ($this->options['format']) {
-      case 'hours':
-        $output = date('g', (int) $value);
-        break;
-      case 'minutes':
-        $output = date('i', (int) $value);
-        break;
-      case 'seconds':
-        $output = date('s', (int) $value);
-        break;
-      case 'total':
+      case 'raw':
         $output = $value;
         break;
       default:
-        $output = theme('filefield_meta_duration', $value);
+        $output = theme('filefield_meta_bitrate', $value);
     }
 
     return check_plain($this->options['prefix']) . $output . check_plain($this->options['suffix']);

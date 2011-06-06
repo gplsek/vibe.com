@@ -2,7 +2,7 @@
 
 /**
  * @file
- * A special handler that properly formats duration fields as minutes:seconds.
+ * A special handler that properly formats bit rate fields as kHz.
  */
 
 /**
@@ -10,7 +10,7 @@
  *
  * @ingroup views_field_handlers
  */
-class filefield_meta_handler_field_duration extends views_handler_field_numeric {
+class filefield_meta_handler_field_samplerate extends views_handler_field_numeric {
   function option_definition() {
     $options = parent::option_definition();
 
@@ -32,14 +32,11 @@ class filefield_meta_handler_field_duration extends views_handler_field_numeric 
     $form['suffix']['#weight'] = 10;
     $form['format'] = array(
       '#type' => 'select',
-      '#title' => t('Time format'),
+      '#title' => t('Format'),
       '#default_value' => $this->options['format'],
       '#options' => array(
-        'default' => t('Default (usually mm:ss)'),
-        'hours' => t('Hours: h'),
-        'minutes' => t('Minutes: mm'),
-        'seconds' => t('Seconds: ss'),
-        'total' => t('Total seconds'),
+        'default' => t('Default (kHz)'),
+        'raw' => t('Raw numberic value'),
       ),
     );
   }
@@ -47,26 +44,17 @@ class filefield_meta_handler_field_duration extends views_handler_field_numeric 
   function render($values) {
     $value = $values->{$this->field_alias};
 
-    switch ($this->options['format']) {
-      case 'hours':
-        $output = date('g', (int) $value);
-        break;
-      case 'minutes':
-        $output = date('i', (int) $value);
-        break;
-      case 'seconds':
-        $output = date('s', (int) $value);
-        break;
-      case 'total':
-        $output = check_plain($value);
-        break;
-      default:
-        $output = theme('filefield_meta_duration', $value);
-    }
-
     // Check to see if hiding should happen before adding prefix and suffix.
     if ($this->options['hide_empty'] && empty($value) && ($value !== 0 || $this->options['empty_zero'])) {
       return '';
+    }
+
+    switch ($this->options['format']) {
+      case 'raw':
+        $output = $value;
+        break;
+      default:
+        $output = theme('filefield_meta_samplerate', $value);
     }
 
     return check_plain($this->options['prefix']) . $output . check_plain($this->options['suffix']);

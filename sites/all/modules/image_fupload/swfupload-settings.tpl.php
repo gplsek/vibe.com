@@ -49,11 +49,6 @@
          
          function startUploadProcess() {
            var redirect_url = "<?php print $redirect_url; ?>";
-           //bwetter added for photo gallery module
-            if (isNaN(document.getElementById('edit-redirect'))) {
-               // updated redirect url
-               redirect_url = document.getElementById('edit-redirect').value;
-             }
            var imagefield_required = <?php print $field_required; ?>;
            
              if (!upload_complete) {  
@@ -89,11 +84,6 @@
          function UploadComplete(numFilesUploaded) {
              // Provide a second step to be able to edit captions of image if supported             
              var redirect_url_main = "<?php print $redirect_url; ?>";
-             //bwetter added for photo gallery module
-             if (isNaN(document.getElementById('edit-redirect'))) {
-               // updated redirect url
-               redirect_url_main = document.getElementById('edit-redirect').value;
-             }
              var redirect_url_updated = "";
              if (isNaN(document.getElementById('redirect_url'))) {
                // updated redirect url

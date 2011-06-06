@@ -67,7 +67,6 @@ function fupload_list_images_imagefield(&$form_state, $node_type) {
         '#collapsible' => FALSE,
         '#collapsed' => FALSE,
     );
-        /*'#value' => theme('imagecache', $image_node_types[$node_type]['imagecache_preset'], $image->filepath, check_plain($image->filename), check_plain($image->filename), $field_image['widget']['fupload_previewlist_img_attributes']),*/
     $form[$image->fid]['preview_image'] = array(
         '#prefix' => '<div class="image_fupload_preview">',
         '#value' => theme('imagecache', $image_node_types[$node_type]['imagecache_preset'], $image->filepath, check_plain($image->filename), check_plain($image->filename), $field_image['widget']['fupload_previewlist_img_attributes']),
