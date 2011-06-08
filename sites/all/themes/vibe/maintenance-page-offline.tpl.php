@@ -10,7 +10,29 @@
  * This mirrors closely page.tpl.php for Garland in order to share the same
  * styles.
  */
-?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN"
+?>
+<?php
+  $head_title = 'vibe.com | Site-offline';
+  $logo = 'sites/all/themes/vibe/logo.png';
+
+  // If your theme is set to display the site name, uncomment this line and replace the value:
+  // $site_name = 'Your Site Name';
+
+  // If your theme is set to *not* display the site name, uncomment this line:
+  unset($site_name);
+
+  // If your theme is set to display the site slogan, uncomment this line and replace the value:
+  $site_slogan = 'My Site Slogan';
+
+  // If your theme is set to *not* display the site slogan, uncomment this line:
+   unset($site_slogan);
+
+  // Main message. Note HTML markup.
+  $content = '<p>The site is currently not available due to technical problems. Please try again later. Thank you for your understanding.</p><hr /><p>If you are the maintainer of this site, please check your database settings.</p>';
+?>
+
+
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN"
   "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd">
 <html xmlns="http://www.w3.org/1999/xhtml" xml:lang="<?php print $language->language ?>" lang="<?php print $language->language ?>" dir="<?php print $language->dir ?>">
   <head>
