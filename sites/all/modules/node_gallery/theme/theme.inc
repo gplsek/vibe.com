@@ -1,204 +1,230 @@
 <?php
-// $Id: theme.inc,v 1.1.2.18 2010/05/08 14:02:30 justintime Exp $
 
 /**
- * @file theme/theme.inc
+ * @file
  * Node gallery theme functions
- *
  */
 
-function theme_gallery_list($items, $account = NULL) {
-  $output = '<div class="gallery-list">';
-  $output .= node_gallery_operations('list', $account);
-  if (empty($items)) {
-    $output .= t('There are currently no galleries.');
+function theme_node_gallery_manage_images_form($form) {
+  // Pull in the multi-select functionality from core
+  drupal_add_js('misc/tableselect.js');
+  // get fieldname to retrieve the filepath for the thumbnail without loading the node
+  $relationship = node_gallery_get_relationship($form['#gallery']->type);
+  $enable_rotation = FALSE;
+  if ($relationship['settings']['manage_images_enable_rotation'] && (imageapi_default_toolkit() != 'imageapi_gd' || function_exists("imagerotate"))) {
+    $enable_rotation = TRUE;
+    if (module_exists('jquery_ui')) {
+      drupal_add_css(drupal_get_path('module', 'jquery_ui') .'/jquery.ui/themes/default/ui.all.css');
+      jquery_ui_add(array('ui.dialog', 'ui.draggable', 'ui.resizable'));
+    }
+    drupal_add_js(drupal_get_path('module', 'node_gallery') .'/js/ng_manage_images.js');
   }
-  else {
-    $output .= theme('item_list', $items, NULL, 'ul', array('class' => 'gallery-cover-list'));
+  $field_name = $relationship['imagefield_name'];
+  $thumb_imagecache = $form['#thumb_imagecache'];
+  $header = array(array('data' => t('Delete'), 'class' => 'select-all'), t('Preview'), t('Edit'), t('Cover'));
+  if ($enable_rotation) {
+    $header = array(array('data' => t('Delete'), 'class' => 'select-all'), t('Preview'), t('Edit'), t('Rotation'), t('Cover'));
   }
-  $output .= '</div>';
-  
+  foreach (element_children($form['images']) as $nid) {
+    $element = &$form['images'][$nid];
+    $filepath = node_gallery_get_image_filepath($element['edit_form']['nid']['#value'], $field_name);
+
+    $row = array();
+    $row[] = drupal_render($element['remove']);
+    $row[] = '<span>'. l(theme('imagecache', 'node-gallery-admin-thumbnail', $filepath), 'node/'. $nid .'/edit', array('html' => TRUE)) .'</span>';
+    $edit = drupal_render($element['edit_form']);
+    if (!empty($element['gid'])) {
+      $edit .= drupal_render($element['gid']);
+    }
+    $row[] = $edit;
+    if ($enable_rotation) {
+      $row[] = drupal_render($element['rotate']);
+    }
+    if ($form['is_cover']) {
+      $row[] = drupal_render($form['is_cover'][$nid]);
+    }
+    $rows[] = array('data' => $row);
+  }
+  $output = theme('table', $header, $rows, array('id' => 'upload-attachments'));
+  $output .= drupal_render($form);
   return $output;
 }
 
-function template_preprocess_gallery_cover_view(&$vars) {
-  $gallery = $vars['gallery'];
-  $cover_image = node_gallery_get_cover($gallery);
-  $vars['cover_image'] = theme('image_view', $gallery->config['image_size']['cover'], $cover_image);
-  $vars['meta_data'] = theme('item_list', theme('gallery_meta', $gallery));
-  $vars['cover_operations'] = node_gallery_operations('cover', $gallery);
-}
+function theme_node_gallery_content_multiple_values($element) {
+  $nid = $element['#parents'][1];
+  $field_name = $element['#field_name'];
+  $field = content_fields($field_name);
+  $output = '';
 
-function template_preprocess_gallery_teaser(&$vars) {
-  $gallery = $vars['gallery'];
-  $config = $vars['config'];
-  
-  //cover display
-  if ($config['teaser']['gallery_display_type'] == 'cover') {
-    $cover = node_gallery_get_cover($gallery);
-    $image_tag = theme('image_view', $config['image_size']['cover'], $cover);
-    $teaser = l($image_tag, 'node/'. $gallery->nid, array('html' => TRUE));
-  }
-  else {
-    $display_num = $config['teaser']['thumbnails_num'];
-    $i = 0;
-    // Make sure to avoid an "Invalid argument supplied for foreach()" error
-    if ($gallery->images) {
-      foreach ($gallery->images as $image) {
-        if ($i < $display_num) {
-          $image_tag = theme('gallery_image_thumbnail', $image, $config, NODE_GALLERY_VIEW_TEASER);
-          $items[] = l($image_tag, 'node/'. $gallery->nid, array('html' => TRUE));
-          $i ++;
-        }
+  if ($field['multiple'] >= 1) {
+    $table_id = $element['#field_name'] .'_values-' . $nid;
+    $order_class = $element['#field_name'] .'-delta-order';
+    $required = !empty($element['#required']) ? '<span class="form-required" title="'. t('This field is required.') .'">*</span>' : '';
+
+    $header = array(
+      array(
+        'data' => t('!title: !required', array('!title' => $element['#title'], '!required' => $required)),
+        'colspan' => 2
+      ),
+      t('Order'),
+    );
+    $rows = array();
+
+    // Sort items according to '_weight' (needed when the form comes back after
+    // preview or failed validation)
+    $items = array();
+    foreach (element_children($element) as $key) {
+      if ($key !== $element['#field_name'] .'_add_more-'.$nid) {
+        $items[] = &$element[$key];
       }
     }
-    $teaser = $items;
-  }
-  $vars['gallery_teaser'] = $teaser;
-}
+    usort($items, '_content_sort_items_value_helper');
 
-function template_preprocess_gallery_images_list(&$vars) {
-  $gallery = $vars['gallery'];
-  $config = $vars['config'];
-  
-  if (!count($gallery->images)) {
-    $empty_message = '<p>'. t('There are currently no images in this gallery.');
-    if (node_gallery_user_access('edit', $gallery)) {
-      $empty_message .= '  '. l(t('You may upload images to this gallery.'), 'node/'. $gallery->nid .'/upload', array('query' => 'destination=node/'. $gallery->nid));
+    // Add the items as table rows.
+    foreach ($items as $key => $item) {
+      $item['_weight']['#attributes']['class'] = $order_class;
+      $delta_element = drupal_render($item['_weight']);
+      $cells = array(
+        array('data' => '', 'class' => 'content-multiple-drag'),
+        drupal_render($item),
+        array('data' => $delta_element, 'class' => 'delta-order'),
+      );
+      $rows[] = array(
+        'data' => $cells,
+        'class' => 'draggable',
+      );
     }
-    $empty_message .= '</p>';
+
+    $output .= theme('table', $header, $rows, array('id' => $table_id, 'class' => 'content-multiple-table'));
+    $output .= $element['#description'] ? '<div class="description">'. $element['#description'] .'</div>' : '';
+    $output .= drupal_render($element[$element['#field_name'] .'_add_more-' . $nid]);
+
+    drupal_add_tabledrag($table_id, 'order', 'sibling', $order_class);
   }
   else {
-    foreach ($gallery->images as $nid => $image) {
-      $items[] = theme('gallery_image_thumbnail', $image, $config, NODE_GALLERY_VIEW_IMAGE_LIST);
+    foreach (element_children($element) as $key) {
+      $output .= drupal_render($element[$key]);
     }
   }
-  $vars['empty_message'] = $empty_message;
-  $vars['images_list'] = $items;
+
+  return $output;
 }
 
-function template_preprocess_image_detail_view(&$vars) {
-  $node = $vars['image'];
-  $config = $vars['config'];
-  
-  $image_view = theme('image_view', $config['image_size']['preview'], $node);
-  switch ($config['original']['view_original']) {
-    case 'default':
-      $output = l($image_view, file_create_url($node->filepath),
-         array('attributes' => array('target' => '_blank'), 'html' => TRUE));
-      break;
-    case 'text':
-      $download_text = empty($config['original']['view_original_text']) ? t('Download the Original Image') : $config['original']['view_original_text'];
-      $output = $image_view;
-      $extra = '<div class="download-full-link">'. l($download_text, file_create_url($node->filepath), array('attributes' => array('target' => '_blank'), 'html' => FALSE)) .'</div>';
-      break;
-    default:
-      $output = $image_view;
-      break;
+function template_preprocess_node_gallery_image_navigator(&$variables) {
+  $relationship = node_gallery_get_relationship(NULL, $variables['image']->type);
+  $fragment = FALSE;
+  if ($relationship['settings']['node_images_page_fragment']) {
+    $fragment = TRUE;
   }
-  $vars['image'] = $output;
-  $vars['extra'] = $extra;
-}
-
-function template_preprocess_gallery_image_thumbnail(&$vars) {
-  $image = $vars['image'];
-  $config = $vars['config'];
-  $mode = $vars['mode'];
-  
-  switch ($mode) {
-    case NODE_GALLERY_VIEW_TEASER:
-      $url = "node/". $image->gid;
-      break;
-    case NODE_GALLERY_VIEW_IMAGE_LIST:
-      $url = "node/". $image->nid;
-      break;
+  $entries = array();
+  if (isset($variables['navigator']['prev_nid'])) {
+    $entries = array_merge($entries, array('prev', 'first'));
   }
-  
-  $vars['image_output'] = l(theme('image_view', $config['image_size']['thumbnail'], $image), $url, array('html' => TRUE));
-  $vars['title_output'] = l($image->title, 'node/'. $image->nid);
+  if (isset($variables['navigator']['next_nid'])) {
+    $entries = array_merge($entries, array('next', 'last'));
+  }
+  foreach ($entries as $type) {
+    $nid = $variables['navigator'][$type .'_nid'];
+    $variables[$type .'_link'] = $fragment ?
+      url('node/'. $nid, array('fragment' => 'node-'. $nid)) :
+      url('node/'. $nid);
+  }
+$variables['gallery_link'] = url('node/'. $variables['navigator']['gallery_nid']);
+  $gallery = node_load($variables['navigator']['gallery_nid']);
+  $variables['gallery_title'] = check_plain($gallery->title);
 }
 
-function theme_image_view($imagecache, $image) {
-  return theme('imagecache', $imagecache, $image->filepath, $image->title, $image->title);
+/**
+ * Imports the image properties into the variables namespace for easier theming.
+ *
+ * @param <type> $variables
+ */
+function template_preprocess_node_gallery_sort_images_grid_item(&$variables) {
+  $variables += $variables['image'];
 }
 
-function theme_gallery_edit_images_form($form) {
-  drupal_add_tabledrag('upload-attachments', 'order', 'sibling', 'upload-weight');
-  
-  $thumb_imagecache = $form['#thumb_imagecache'];
-  $header = array('', t('Delete'), t('Thumbnail'), t('Edit'), t('Weight'), t('Cover'));
-  foreach (element_children($form['files']) as $key) {
-    // Add class to group weight fields for drag and drop.
-    $form['files'][$key]['weight']['#attributes']['class'] = 'upload-weight';
-
-    $row = array('');
-    $row[] = drupal_render($form['files'][$key]['remove']);
-    $row[] = '<span class="gallery-upload-thumb">'. theme('imagecache', $thumb_imagecache, 
-      $form['files'][$key]['filepath']['#value'], $form['files'][$key]['filename']['#value'], $form['files'][$key]['filename']['#value']) .'</span>';
-    $row[] = drupal_render($form['files'][$key]['edit_form']) . drupal_render($form['files'][$key]['gid']);
-    $row[] = drupal_render($form['files'][$key]['weight']);
-    if ($form['is_cover']) {
-      $row[] = drupal_render($form['is_cover'][$key]);
+function theme_node_gallery_sort_images_form($form) {
+  $output = '';
+  if ($form['jquery_ui_integration']['#value']) {
+    jquery_ui_add(array('ui.draggable', 'ui.droppable', 'ui.sortable'));
+    drupal_add_js(drupal_get_path('module', 'node_gallery') .'/js/ng_sort_jqueryui.js');
+    drupal_add_js(array('node_gallery' => array('gid' => $form['gid']['#value'])), 'setting');
+    $output .= theme('node_gallery_sort_images_grid', $form['#images']);
+  }
+  else {
+    $rows = array();
+    $header = array('&uarr;&darr;', t('Preview'), t('Title'), t('Post date'), t('Updated date'), t('Published'), t('Weight'));
+    $i = 0;
+    foreach ($form['#images'] as $image) {
+      $published = ($image['status']) ? t('Yes') : t('No');
+      $row = array(
+        // The placeholder for the tabledrag icon
+        '',
+        $image['admin_thumb'],
+        $image['title'],
+        format_date($image['created'], 'small'),
+        format_date($image['changed'], 'small'),
+        $published,
+        // the weight drop down
+        drupal_render($form['images-sort-'. $i]),
+      );
+      $rows[] = array('data' => $row, 'class' => 'draggable');
+      $i++;
     }
-    $rows[] = array('data' => $row, 'class' => 'draggable');
+    // this will replace the weight drop downs with drag&drop when javascript is available
+    drupal_add_tabledrag('sort-images-table', 'order', 'sibling', 'sort');
+    $output .= theme('table', $header, $rows, array('id' => 'sort-images-table'));
   }
-  $output = theme('table', $header, $rows, array('id' => 'upload-attachments'));
+  // render the left over elements, if any
   $output .= drupal_render($form);
   return $output;
 }
 
-function theme_gallery_sort_images_form($form) {
-  drupal_add_tabledrag('upload-attachments', 'order', 'sibling', 'upload-weight');
-  
-  $thumb_imagecache = $form['#thumb_imagecache'];
-  $header = array('', t('Delete'), t('Thumbnail'), t('Weight'), t('Cover'));
-  foreach (element_children($form['files']) as $key) {
-    // Add class to group weight fields for drag and drop.
-    $form['files'][$key]['weight']['#attributes']['class'] = 'upload-weight';
-
-    $row = array('');
-    $row[] = drupal_render($form['files'][$key]['remove']);
-    $row[] = '<span class="gallery-upload-thumb">'. theme('imagecache', $thumb_imagecache, 
-      $form['files'][$key]['filepath']['#value'], $form['files'][$key]['filename']['#value'], $form['files'][$key]['filename']['#value']) .'</span>';
-    //$row[] = drupal_render($form['files'][$key]['edit_form']) . drupal_render($form['files'][$key]['gid']);
-    $row[] = drupal_render($form['files'][$key]['weight']);
-    if ($form['is_cover']) {
-      $row[] = drupal_render($form['is_cover'][$key]);
-    }
-    $rows[] = array('data' => $row, 'class' => 'draggable');
+/**
+ * Node gallery formatter hooks and callbacks.
+ */
+function theme_node_gallery_formatter_nextimagelink($element) {
+  // Inside a view $element may contain null data. In that case, just return.
+  if (empty($element['#item']['fid'])) {
+    return '';
   }
-  $output = theme('table', $header, $rows, array('id' => 'upload-attachments'));
-  $output .= drupal_render($form);
-  return $output;
-}
 
-function theme_gallery_image_navigator($navigator, $image) {
-  $col1 = array('data' => t("Image %current of %total", array('%current' => $navigator['current'], '%total' => $navigator['total'])),
-    'class' => 'image-navigator-left');
-  // Eliminate prev/next links when we only have one image
-  if ($navigator['total'] <= 1) {
-    $col2 = array('data' => t('&nbsp;'), 'class' => 'image-navigator-mid');
-  } 
+  // If node type is not in a gallery relationship or gid is not set, just render the default formatter.
+  $imagetag = theme_imagecache_formatter_default($element);
+  $node = $element['#node'];
+  if (!in_array($node->type, (array)node_gallery_get_types('image'))
+          || !isset($node->gid)) {
+    return $imagetag;
+  }
+  $relationship = node_gallery_get_relationship(NULL, $node->type);
+  $next = node_gallery_get_next_image($node->gid, $node->nid);
+  if ($next !== NULL) {
+    $class = 'imagefield image-nextimagelink imagefield-'. $element['#field_name'];
+    $options = array('attributes' => array('class' => $class), 'html' => TRUE);
+    if ($relationship['settings']['node_images_page_fragment']) {
+      $options['fragment'] = 'node-'. $next;
+    }
+    return l($imagetag, 'node/'. $next, $options);
+  }
   else {
-    if (variable_get('node_images_page_fragment', FALSE)) {
-      $col2 =  array('data' => l(t('Previous'), 'node/'. $navigator['prev_nid'], array(fragment => 'node-inner')) .'/'. l(t('Next'), 'node/'. $navigator['next_nid'], array(fragment => 'node-inner')),
-        'class' => 'image-navigator-mid');
-    }
-    else {
-      $col2 = array('data' => l(t('Previous'), 'node/'. $navigator['prev_nid']) .'/'. l(t('Next'), 'node/'. $navigator['next_nid']),
-        'class' => 'image-navigator-mid');
-    }
+    // no link on the last image
+    return $imagetag;
   }
-  $col3 = array('data' => node_gallery_operations('image', $image), 'class' => 'image-navigator-right');
-  $rows[] = array($col1, $col2, $col3);
-
-  return theme('table', NULL, $rows, array('class' => 'image-navigator')); 
 }
 
-function theme_gallery_meta($gallery) {
-  $images_count = empty($gallery->images_count) ? count($gallery->images) : $gallery->images_count;
-  $items[] = format_plural($images_count, '1 image', '@count images');
-  $items[] = t('Created at: !date', array('!date' => format_date($gallery->created, 'custom', 'Y-m-d')));
-  
-  return $items;
+/**
+ * Link an image to its gallery.
+ */
+function theme_node_gallery_formatter_gallerylink($element) {
+  if (empty($element['#item']['fid'])) {
+    return '';
+  }
+  $imagetag = theme_imagecache_formatter_default($element);
+  if (!in_array($element['#node']->type, (array)node_gallery_get_types('image'))) {
+    return $imagetag;
+  }
+  $node = node_load($element['#node']->nid);
+  $class = 'imagefield image-gallerylink imagefield-'. $element['#field_name'];
+  $options = array('attributes' => array('class' => $class), 'html' => TRUE);
+  return l($imagetag, 'node/'. $node->gid, $options);
 }

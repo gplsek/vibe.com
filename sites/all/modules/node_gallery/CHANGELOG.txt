@@ -1,27 +1,7 @@
-$Id: CHANGELOG.txt,v 1.23.4.52 2010/06/06 20:26:54 justintime Exp $
+
+node_gallery-6.x-3.0-dev
 
 node_gallery-6.x-2.0-dev
-
-node_gallery-6.x-2.0-BETA-2
-#814984: Gallery views disappeared after updating! 
-
-node_gallery-6.x-2.0-BETA-1
-#693588: Users other than admin can't access through breadcrumb + breadcrumb fixes
-#802548: upload images only appear as guest
-#550995: Admin editing gallery changes user ID - use db_rewrite_sql()
-#801012: Conflict with i18n: Sorting/Managing Galleries empty - uploads failing (Dev broken?)
-#601186: Image total count not being flushed on failed uploads
-#748054: after sorting images nodes are re-published
-#609150: How to enable "My galleries" on the navigation menu?
-#550995: Admin editing gallery changes user ID & #784328: pathauto creates url collisions for node gallery
-#791930: warning: Parameter 1 to theme_gallery_edit_images_form() expected to be a reference, value given in /usr/share/drupal6/includes/
-#765024: CCK & Node Gallery Solution - thanks kgnet!
-#743980: Gallery displays unpublished 'gallery image's (fixed count on Galleries list)
-#762672: Gallery deletion returns user to gallery list even if user has no permissions to view it
-#743980: Gallery displays unpublished 'gallery image's
-#701456: Authenticated User gets error message after image upload but Admin doesn't. Error: Invalid 
-argument.... form.inc on line 1429
-#713430: Array-related warnings when there are no gallery or image types - thanks shaisachs
 #684546: Should Gallery and Image nodes be 'promoted' to the front page by default?
 #523294: Uninstall does not remove records created by this module
 #683312: Missing a translation string?
