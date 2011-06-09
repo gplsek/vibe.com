@@ -1,0 +1,29 @@
+
+ - Pager settings at admin/settings/node_gallery/settings are now set on the
+   views themselves.
+   
+ - File extensions allowed, image resolution limits, file size limits, default
+   image via admin/settings/node_gallery/edit/<content_type> are now set on
+   the filefield, these are not migrated.
+   
+ - There is no longer a "default cover image".  When the first image is saved
+   to a gallery, it becomes the cover.
+   
+ - If you use node gallery tokens in your paths for images, you need to install
+   http://drupal.org/project/filefield_paths and set it up (be sure to enable transliteration too)
+   
+ - If you limit image uploads on a per-user basis in 2.x, this isn't supported
+   by NG3.  Actually, it didn't work right in 2.x either:
+   http://drupal.org/node/659672.  You can use
+   http://drupal.org/project/user_quota to limit the number of image nodes a
+   user can create, and limit the size of each filefield to get a quota.
+   
+ - The ability to upload 5 images at once is no longer present, you may only
+   upload 1 image at a time with node_gallery core.  However, if you have the
+   imagefield_import module installed, you can import a huge number of images
+   already on the server into an existing gallery by going to the gallery,
+   and clicking the 'import images' tab.
+
+
+After upgrading, you *really* should look at the filefield settings for
+field_node_gallery_image as well as the admin settings for node gallery.

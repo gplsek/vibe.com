@@ -1,21 +1,93 @@
 <?php
-// $Id: node_gallery.install,v 1.16.4.22 2010/05/08 14:02:30 justintime Exp $
 
 /**
  * @file
- * Node gallery install file. 
+ * Install, update and uninstall functions for the node_gallery module.
  *
  */
 
+define('NODE_GALLERY_DEFAULT_GALLERY_TYPE', 'node_gallery_gallery');
+define('NODE_GALLERY_DEFAULT_IMAGE_TYPE', 'node_gallery_image');
+define('NODE_GALLERY_DEFAULT_IMAGE_FIELD', 'field_node_gallery_image');
+
+if (defined('MAINTENANCE_MODE') && MAINTENANCE_MODE == 'install') {
+  include_once(dirname(__FILE__) . '/node_gallery.inc');
+}
+else {
+  module_load_include('inc', 'node_gallery');
+}
+
 /**
- * Implementation of hook_schema()
+ * Implements hook_schema()
  *
  * @return unknown
  */
 function node_gallery_schema() {
   $schema = array();
-  
-  $schema['node_galleries'] = array(
+
+  $schema['node_gallery_relationships'] = array(
+    'fields' => array(
+      'rid' => array(
+        'type' => 'serial',
+        'not null' => TRUE,
+        'description' => t('Node Gallery Relationship ID'),
+      ),
+      'gallery_type' => array(
+        'type' => 'varchar',
+        'not null' => TRUE,
+        'length' => 255,
+        'description' => t('Node Gallery Gallery Content Type.'),
+      ),
+      'image_type' => array(
+        'type' => 'varchar',
+        'not null' => TRUE,
+        'length' => 255,
+        'description' => t('Node Gallery Image Content Type.'),
+      ),
+      'imagefield_name' => array(
+        'type' => 'varchar',
+        'not null' => TRUE,
+        'length' => 255,
+        'description' => t('The name of the imagefield that contains the image on an image node.'),
+      ),
+      'settings' => array(
+        'type' => 'text',
+        'not null' => FALSE,
+        'serialize' => TRUE,
+      ),
+    ),
+    'primary key' => array('rid'),
+  );
+  $schema['node_gallery_images'] = array(
+    'fields' => array(
+      'nid' => array(
+        'type' => 'int',
+        'unsigned' => TRUE,
+        'not null' => TRUE,
+        'default' => 0,
+        'description' => t('Image node id.'),
+      ),
+      'gid' => array(
+        'type' => 'int',
+        'unsigned' => TRUE,
+        'not null' => TRUE,
+        'default' => 0,
+        'description' => t('Gallery node id.'),
+      ),
+      'weight' => array(
+        'type' => 'int',
+        'size' => 'small',
+        'not null' => TRUE,
+        'default' => 0,
+      ),
+    ),
+    'primary key' => array('nid'),
+    'indexes' => array(
+      // For quick finding of the contents of a gallery
+      'gallery' => array('gid'),
+    )
+  );
+  $schema['node_gallery_galleries'] = array(
     'fields' => array(
       'gid' => array(
         'type' => 'int',
@@ -24,83 +96,198 @@ function node_gallery_schema() {
         'default' => 0,
         'description' => t('Gallery node id.'),
       ),
-      'nid' => array(
+      'cover_image' => array(
         'type' => 'int',
         'unsigned' => TRUE,
-        'not null' => TRUE,
-        'default' => 0,
-        'description' => t('Image node id.'),
-      ),
-      'fid' => array(
-        'type' => 'int',
-        'unsigned' => TRUE,
-        'not null' => TRUE,
-        'default' => 0,
-        'description' => t('Image node file id.'),
-      ),
-      'weight' => array(
-        'type' => 'int',
-        'size' => 'small',
         'not null' => FALSE,
-        'default' => 0,
-      ),
-      'is_cover' => array(
-        'type' => 'int',
-        'size' => 'tiny',
-        'not null' => TRUE,
-        'default' => 0,
+        'default' => NULL,
+        'description' => t('Node Id of the Cover Image')
       ),
     ),
-    'primary key' => array('nid'),
+    'primary key' => array('gid'),
+    'unique keys' => array(
+      // To quickly answer, is this image the cover image?
+      'cover_image' => array('cover_image'),
+    ),
   );
-  
+
   return $schema;
 }
 
-/**
- * Implementation of hook_requirements()
- */
-function node_gallery_requirements($phase) {
-  $requirements = array();
-  $t = get_t();
+function node_gallery_required_modules() {
+  return array('content', 'views', 'filefield', 'imageapi', 'imagecache', 'imagefield');
+}
 
-  switch ($phase) {
-    case 'install':
-      $error = FALSE;
-      // If ImageCache is not installed already, node_gallery.install code will fail and the system will be in a 'broken' state.
-      if (!module_exists('imagecache')) {
-        $requirements['node_gallery'] = array(
-          'title' => $t('Node Gallery requires'),
-          'value' => $t(' ImageCache module to be pre-installed. If ImageCache is now installed, please enable Node Gallery again.'),
-          'severity' => REQUIREMENT_ERROR,
-        );
-      }
-    break;
+function node_gallery_type_exists($type) {
+  // During install profiles, node and user modules aren't yet loaded.
+  // Ensure they're loaded before calling node_get_types().
+  include_once './'. drupal_get_path('module', 'node') .'/node.module';
+  include_once './'. drupal_get_path('module', 'user') .'/user.module';
+  $types = node_get_types();
+  $types = array_change_key_case($types, CASE_LOWER);
+  return array_key_exists($type, $types);
+}
+
+function node_gallery_install_cck_type($type = '<create>', $filename = '') {
+  // Get the files content
+  if (file_exists($filename)) {
+    $macro = implode('', file($filename));
   }
+  else {
+    drupal_set_message(t('Unable to read cck file !file for import. Exiting.', array('!file' => $filename)), 'error');
+    return;
+  }
+  if ($type != '<create>') {
+    // add the imagefield for the image type.
+    if ($type == NODE_GALLERY_DEFAULT_IMAGE_TYPE) {
+      $content = array();
+      eval($macro);
+      $param = array('type_name' => $type);
+      $param = array_merge($param, array_pop($content['fields']));
+      if (! node_gallery_cck_field_exists($param)) {
+        content_field_instance_create($param);
+      }
+    }
+  }
+  else {
+    // Since we only need content copy once at install time, we cheat a bit here and include it
+    // to take care of the case where CCK is installed and enabled, but content_copy isn't enabled
+    require_once './' . drupal_get_path('module', 'content') . '/modules/content_copy/content_copy.module';
 
-  return $requirements;
+    // Build form state
+    $form_state = array(
+    'values' => array(
+      'type_name' => $type,
+        'macro' => $macro,
+      ),
+    );
+
+    // form provided by content_copy.module
+    drupal_execute('content_copy_import_form', $form_state);
+    content_clear_type_cache();
+  }
+}
+
+function _migrate_files_to_imagefields() {
+  $total = db_result(db_query('SELECT COUNT(nid) FROM {node_galleries}'));
+
+  // first, select nid, fid from node_galleries
+  $result = db_query('SELECT nid, fid FROM {node_galleries}');
+
+  // upgrade the node
+  $count = 0;
+  while ($r = db_fetch_array($result)) {
+    $count++;
+    if ($count % 50 == 0) {
+      // Make sure we don't run out of memory by clearing the cache.
+      $image = node_load(NULL, NULL, TRUE);
+    }
+    $image = node_load($r['nid']);
+    $file = db_fetch_array(db_query('SELECT fid, uid, filename, filepath, filemime, filesize, status, timestamp FROM {files} WHERE fid = %d', $r['fid']));
+    $image->field_node_gallery_image[0] = $file;
+    $image->field_node_gallery_image[0]['data'] = array('alt' => $image->title, 'title' => $image->title);
+    $image->field_node_gallery_image[0]['origname'] = $file['filename'];
+    $image->field_node_gallery_image[0]['list'] = 1;
+    node_save($image);
+    db_query('DELETE FROM {node_galleries} WHERE nid = %d', $image->nid);
+  }
+  drupal_set_message(t('Upgraded !number total images to imagefield.', array('!number' => $total)));
+}
+
+function node_gallery_setup_content_type($type) {
+  // add CCK types
+  $path = drupal_get_path('module', 'node_gallery') . "/cck_types";
+  $cck_file = $path . "/" . $type . ".cck";
+  $action = node_gallery_type_exists($type) ? $type : '<create>';
+  node_gallery_install_cck_type($action, $cck_file);
+  drupal_set_message(t('Node type %type created/modified.', array('%type' => $type)));
+}
+
+function node_gallery_setup_content_types() {
+  foreach (array(NODE_GALLERY_DEFAULT_GALLERY_TYPE, NODE_GALLERY_DEFAULT_IMAGE_TYPE) as $type) {
+    node_gallery_setup_content_type($type);
+  }
 }
 
 /**
- * Implementation of hook_install()
+ * Implements hook_install()
  *
  */
 function node_gallery_install() {
+  // If the user manages to install this module without the prerequisite modules enabled, this will enable them.
+  module_enable(node_gallery_required_modules());
+  node_gallery_setup_content_types();
   $ret = drupal_install_schema('node_gallery');
-  _node_gallery_install_type_create();
-  _node_gallery_install_imagecache_presets();
-  _node_gallery_set_imagecache_permissions();
-  _node_gallery_install_default();
+  node_gallery_install_imagecache_presets();
+  node_gallery_set_imagecache_permissions();
+  node_gallery_set_default_view_node_gallery_permissions();
 }
 
 /**
- * Implementation of hook_uninstall()
+ * Implementation of hook_requirements().
+ *
+ * @param $phase The phase in which hook_requirements is run: install or runtime.
+ */
+function node_gallery_requirements($phase) {
+  // @todo: the rest of this .install file should use $t = get_t()
+  $t = get_t();
+  $requirements['node_gallery'] = array();
+  if (module_exists('node_images')) {
+    $requirements['node_gallery'][] = array(
+      'title' => 'Node Gallery',
+      'value' => 'Node Images module installed',
+      'description' => $t('The Node Images module is installed, and it conflicts with Node Gallery.  Please disable it via the <a href="!link">modules page</a>.', array('!link' => url('admin/build/modules'))),
+      'severity' => REQUIREMENT_ERROR,
+    );
+  }
+  $lb2dir = drupal_get_path('module', 'node_gallery') . '/contrib/node_gallery_lightbox2';
+  if (module_exists('node_gallery_lightbox2') || is_dir($lb2dir)) {
+    $requirements['node_gallery'][] = array(
+      'title' => 'Node Gallery',
+      'value' => 'Node Gallery Lightbox2 module installed',
+      'description' => $t('The Node Gallery Lightbox2 module is available, and it has been removed with the release of Node Gallery version 3.  Please <a href="!link">follow the directions given on Drupal.org</a> regarding module upgrading.', array('!link' => url('http://drupal.org/node/250790'))),
+      'severity' => REQUIREMENT_ERROR,
+    );
+  }
+  switch ($phase) {
+    case 'runtime':
+      if (module_exists('imageapi') && !module_exists('imageapi_gd') && !module_exists('imageapi_imagemagick')) {
+        $requirements['node_gallery'][] = array(
+          'title' => 'Node Gallery',
+          'value' => 'Image toolkit not installed',
+          'description' => $t('Image API requires that an image toolkit be enabled before it will work! Please enable an image toolkit on the <a href="!link">modules page</a>.', array('!link' => url('admin/build/modules'))),
+          'severity' => REQUIREMENT_ERROR,
+        );
+      }
+      break;
+    default:
+      break;
+  }
+  return $requirements['node_gallery'];
+}
+
+/**
+ * Create default settings when the module is enabled.
+ */
+function node_gallery_enable() {
+  $exists = db_result(db_query("SELECT COUNT(*) from {node_gallery_relationships} WHERE image_type = '%s'", NODE_GALLERY_DEFAULT_GALLERY_TYPE));
+  if ($exists == 0) {
+    // http://drupal.org/node/200931 - We need to manually rebuild the schema until D7
+    drupal_get_schema(NULL, TRUE);
+    node_gallery_install_default_settings();
+  }
+}
+
+/**
+ * Implements hook_uninstall()
  *
  */
 function node_gallery_uninstall() {
   global $conf;
+  include_once './'. drupal_get_path('module', 'node') .'/node.module';
+  include_once './'. drupal_get_path('module', 'user') .'/user.module';
   $types = node_get_types();
-  foreach (array('node_gallery_gallery', 'node_gallery_image') as $content_type) {
+  foreach (array(NODE_GALLERY_DEFAULT_GALLERY_TYPE, NODE_GALLERY_DEFAULT_IMAGE_TYPE) as $content_type) {
     if (in_array($content_type, array_keys($types))) {
       drupal_set_message(t('The !content_type content type is still present.  You may !delete_link.', array('!content_type' => $content_type, '!delete_link' => l(t('delete it'), 'admin/content/node-type/'. str_replace('_', '-', $content_type) .'/delete', array('attributes' => array('target' => '_blank'))))));
     }
@@ -112,106 +299,60 @@ function node_gallery_uninstall() {
       drupal_set_message(t('The !preset_name imagecache preset is still present.  You may !delete_link.', array('!preset_name' => $preset_name, '!delete_link' => l(t('delete it'), 'admin/build/imagecache/'. $preset['presetid'] .'/delete', array('attributes' => array('target' => '_blank'))))));
     }
   }
+  $param = array(
+    'type_name' => NODE_GALLERY_DEFAULT_IMAGE_TYPE,
+    'field_name' => NODE_GALLERY_DEFAULT_IMAGE_FIELD,
+  );
+  if (node_gallery_cck_field_exists($param)) {
+    drupal_set_message(t('The !field field is still present.  You may !delete_link.', array('!field' => NODE_GALLERY_DEFAULT_IMAGE_FIELD, '!delete_link' => l(t('delete it'), 'admin/content/node-type/'. NODE_GALLERY_DEFAULT_IMAGE_TYPE .'/fields/'. NODE_GALLERY_DEFAULT_IMAGE_FIELD .'/remove', array('attributes' => array('target' => '_blank'))))));
+  }
   $ret = drupal_uninstall_schema('node_gallery');
-  foreach ($conf as $key => $value) {
-    if (strpos($key, 'node_gallery') === 0) {
-      variable_del($key);
-    }
+  $variables = array(
+    'node_gallery_galleries_summary_view',
+    'node_gallery_plupload_integration',
+    'node_gallery_plupload_manage_images_integration',
+    'node_gallery_plupload_manage_images_limit',
+    'node_gallery_jquery_ui_integration',
+    'node_gallery_sort_images_max',
+  );
+  foreach ($variables as $var) {
+    variable_del($var);
   }
   cache_clear_all();
 }
 
-function _node_gallery_install_type_create() {
-  // During install profiles, node and user modules aren't yet loaded.
-  // Ensure they're loaded before calling node_get_types().
-  include_once './'. drupal_get_path('module', 'node') .'/node.module';
-  include_once './'. drupal_get_path('module', 'user') .'/user.module';
-  $types = node_get_types();
-  $types = array_change_key_case($types, CASE_LOWER);
-
-  if (!in_array('node_gallery_gallery', array_keys($types))) {
-    // Create the comment content type.
-    $node_gallery_node_type = array(
-      'type' => 'node_gallery_gallery',
-      'name' => t('Gallery'),
-      'module' => 'node',
-      'description' => t('This is a gallery (album). This will be the parent of your individual images.'),
-      'title_label' => t('Gallery Name'),
-      'body_label' => t('Description'),
-      'custom' => TRUE,
-      'modified' => TRUE,
-      'locked' => FALSE,
-    );
-    $node_gallery_node_type = (object)_node_type_set_defaults($node_gallery_node_type);
-    node_type_save($node_gallery_node_type);
-    drupal_set_message(t('Node type "Gallery (Node Gallery)" created.'));
-  }
-  if (!in_array('node_gallery_image', array_keys($types))) {
-    // Create the comment content type.
-    $node_gallery_image_node_type = array(
-      'type' => 'node_gallery_image',
-      'name' => t('Gallery Image'),
-      'module' => 'node',
-      'description' => t('This is an individual image that will be linked to a gallery. This should not be accessed via node/add/node_gallery_image'),
-      'title_label' => t('Title'),
-      'body_label' => t('Caption'),
-      'custom' => TRUE,
-      'modified' => TRUE,
-      'locked' => FALSE,
-    );
-    $node_gallery_image_node_type = (object)_node_type_set_defaults($node_gallery_image_node_type);
-    node_type_save($node_gallery_image_node_type);
-    drupal_set_message(t('Node type "Gallery Image (Node Gallery)" created.'));
-  }
-  if (!in_array('node_gallery_gallery', array_keys($types)) || !in_array('node_gallery_image', array_keys($types))) {
-    cache_clear_all();
-    system_modules();
-    menu_rebuild();
-    node_types_rebuild();
-  }
+/**
+ * Write the default relationship to the database.
+ * This function cannot be called from hook_install, because Drupal
+ * will not know the schema of a module that has not yet been installed!
+ */
+function node_gallery_install_default_settings() {
+  // Set the defaults for a node_gallery relationship
+  $rel = new stdClass;
+  $rel->gallery_type = NODE_GALLERY_DEFAULT_GALLERY_TYPE;
+  $rel->image_type = NODE_GALLERY_DEFAULT_IMAGE_TYPE;
+  $rel->imagefield_name = 'field_node_gallery_image';
+  $rel->settings = node_gallery_relationship_settings_defaults();
+  drupal_write_record('node_gallery_relationships', $rel);
 }
 
-function _node_gallery_install_default() {
-  /* Set the defaults for a node_gallery relationship */
-  $default = array(
-   'gallery_type' => 'node_gallery_gallery', 
-   'image_type' => 'node_gallery_image', 
-   'name' => 'Node Gallery Default', 
-   'gallery_directory' => '', 
-   'default_cover' => '', 
-   'number_uploads' => '5', 
-   'display_fields' => array('title' => 'title', 'body_field' => 'body_field', ), 
-   'content_display' => 'image', 
-   'view_original' => '0', 
-   'view_original_text' => 'Download the Original Image', 
-   'lightbox2' => 'node-gallery-display', 
-   'image_size' => array('cover' => 'node-gallery-cover', 'thumbnail' => 'node-gallery-thumbnail', 'preview' => 'node-gallery-display'), 
-   'teaser' => array('gallery_display_type' => 'thumbnails', 'thumbnails_num' => '6', 'lightbox2_gallery' => 'node-gallery-display', 'image' => 'node-gallery-thumbnail'), 
-   'upload_limits' => array('general' => array('file_extension' => 'jpg jpeg gif png', 'file_resolution' => '0', 'file_max_size' => '1', 'user_max_size' => '2'), 'roles' => array(3 => 'editor', ), 'role_3' => array('role_name' => 'editor', 'file_max_size' => '1', 'user_max_size' => '2', ), ), 
-   'gallery' => array('gallery_display_type' => 'thumbnails', 'lightbox2_gallery_preset' => 'node-gallery-display'));
-  
-  variable_set('node_gallery_node_gallery_gallery', $default);
-  variable_set('node_options_node_gallery_image', array('status'));
-}
-
-function _node_gallery_install_imagecache_presets() {
+function node_gallery_install_imagecache_presets() {
   // First, build an array of all the preset names so we do not make duplicates
   // Set the argument to TRUE to reset the cache
   $presets = imagecache_presets(TRUE);
   $preset_names = array();
-  
-  //If there are any presets
+
+  // If there are any presets
   if ($presets != '') {
     foreach ($presets as $preset) {
       $preset_names[] = $preset['presetname'];
     }
   }
-  
-  
+
   // Prepare to install ImageCache presets
   $imagecache_presets = array();
   $imagecache_actions = array();
-  
+
   // We are checking to make sure the preset name does not exist before creating
   if (!in_array('node-gallery-thumbnail', $preset_names)) {
     $imagecache_presets[] = array(
@@ -226,7 +367,7 @@ function _node_gallery_install_imagecache_presets() {
       'weight' => 0,
     );
   }
-  
+
   if (!in_array('node-gallery-cover', $preset_names)) {
     $imagecache_presets[] = array(
       'presetname' => 'node-gallery-cover',
@@ -240,7 +381,7 @@ function _node_gallery_install_imagecache_presets() {
       'weight' => 0,
     );
   }
-  
+
   if (!in_array('node-gallery-display', $preset_names)) {
     $imagecache_presets[] = array(
       'presetname' => 'node-gallery-display',
@@ -260,7 +401,20 @@ function _node_gallery_install_imagecache_presets() {
       'weight' => 1,
     );
   }
-  
+
+  if (!in_array('node-gallery-admin-thumbnail', $preset_names)) {
+    $imagecache_presets[] = array(
+      'presetname' => 'node-gallery-admin-thumbnail',
+    );
+    $imagecache_actions['node-gallery-admin-thumbnail'][] = array(
+      'action' => 'imagecache_scale_and_crop',
+      'data' => array(
+        'width' => 50,
+        'height' => 50,
+      ),
+      'weight' => 0,
+    );
+  }
   // Need to install preset, id will be returned by function,
   // Then install action add presetid to action prior to install:
   foreach ($imagecache_presets as $preset) {
@@ -273,27 +427,168 @@ function _node_gallery_install_imagecache_presets() {
   }
 }
 
-function _node_gallery_set_imagecache_permissions() {
-  $query = db_query("SELECT rid, perm FROM {permission} ORDER BY rid");
-  while ($role = db_fetch_object($query)) {
-    $role->perm .= ', view imagecache node-gallery-cover, view imagecache node-gallery-thumbnail, view imagecache node-gallery-display';
-    update_sql("UPDATE {permission} SET perm = '$role->perm' WHERE rid = $role->rid");
+/**
+ * _node_gallery_add_permissions() is a helper function to add permissions by role to the db
+ */
+function _node_gallery_add_permissions($rid, $permissions) {
+  if (!is_array($permissions)) {
+    $permissions = explode(', ', $permissions);
+  }
+  $current_perms = explode(', ', db_result(db_query("SELECT perm FROM {permission} WHERE rid=%d", $rid)));
+  foreach ($permissions as $permission) {
+    if (!in_array($permission, $current_perms)) {
+      $current_perms[] = $permission;
+    }
+  }
+  $current_perms = implode(', ', $current_perms);
+  $return = db_query("UPDATE {permission} SET perm= '%s' WHERE rid=%d", $current_perms, $rid);
+  return $return;
+}
+
+function _node_gallery_give_all_users_permission($permissions) {
+  $rids = array(DRUPAL_ANONYMOUS_RID, DRUPAL_AUTHENTICATED_RID);
+  foreach ($rids as $rid) {
+    _node_gallery_add_permissions($rid, $permissions);
+  }
+}
+
+function node_gallery_set_default_view_node_gallery_permissions() {
+  $perms = array(
+    'view node gallery',
+  );
+  _node_gallery_give_all_users_permission($perms);
+}
+
+
+function node_gallery_set_imagecache_permissions() {
+  $perms = array(
+    'view imagecache node-gallery-cover',
+    'view imagecache node-gallery-thumbnail',
+    'view imagecache node-gallery-display',
+    'view imagecache node-gallery-admin-thumbnail',
+  );
+  _node_gallery_give_all_users_permission($perms);
+}
+
+function _migrate_node_gallery_variables() {
+  global $conf;
+  /* Here's an example of an ng2 $conf['node_gallery_node_gallery_gallery']:
+   NA    [gallery_type] => node_gallery_gallery
+   NA    [image_type] => node_gallery_image
+   NA    [name] => Node Gallery Default
+   X    [gallery_directory] =>
+   [default_cover] =>
+   NA    [number_uploads] => 20
+   [display_fields] => Array (
+   [title] => title
+   [body_field] => body_field
+   [revision_information] => 0
+   [comment_settings] => 0
+   [path] => 0 )
+   [content_display] => image
+   [image_comment] => image
+   [image_size] => Array (
+   [cover] => node-gallery-cover
+   [thumbnail] => node-gallery-thumbnail
+   [preview] => node-gallery-display )
+   [original] => Array (
+   [view_original] => 0
+   [view_original_text] => Download the Original Image )
+   [teaser] => Array (
+   [gallery_display_type] => thumbnails
+   [thumbnails_num] => 6
+   [image] => node-gallery-thumbnail )
+   [gallery] => Array (
+   [gallery_display_type] => thumbnails )
+   [upload_limits] => Array (
+   [general] => Array (
+   X                    [file_extension] => jpg jpeg gif png
+   X                    [file_resolution] => 0
+   X                    [file_max_size] => 1
+   NA                    [user_max_size] => 2
+   NA                    [user_max_number] => 0 )
+   X            [roles] => Array ( )
+   )
+   */
+  $node_types = array_keys(node_get_types());
+  foreach ($conf as $key => $value) {
+    if (strpos($key, 'node_gallery_') === 0) {
+      $t = substr($key, 13);
+      if (in_array($t, $node_types)) {
+        // migrate monolithic node_gallery_<content_type> variables
+        $var = variable_get($key, array());
+        if (! isset($var['gallery_type'])) {
+          continue;
+        }
+        $rel = new stdClass;
+        $rel->gallery_type = $var['gallery_type'];
+        $rel->image_type = $var['image_type'];
+        $rel->imagefield_name = 'field_node_gallery_image';
+        $field_instance = array();
+        if ($var['upload_limits']['general']['file_extension'] != 'jpg jpeg gif png') {
+          $field_instance['widget']['file_extensions'] = $var['upload_limits']['general']['file_extension'];
+        }
+        if ($var['upload_limits']['general']['file_resolution'] != 0) {
+          $field_instance['widget']['max_resolution'] = $var['upload_limits']['general']['file_resolution'];
+        }
+        $field_instance['widget']['max_filesize_per_file'] = $var['upload_limits']['general']['file_max_size'] .'M';
+        $field_instance['widget']['max_filesize_per_node'] = $var['upload_limits']['general']['file_max_size'] .'M';
+        if (count($var['upload_limits']['roles']) > 0) {
+          drupal_set_message(t('Imagefield doesn\'t provide per-role file limits without extra modules.  If you wish to maintain those, please use the !module module.', array('!module' => l(t('Node Limit Number'), 'http://drupal.org/project/node_limitnumber'))));
+        }
+        if (isset($var['gallery_directory'])) {
+          if (strpos($var['gallery_directory'], '%') === FALSE) {
+            $field_instance['widget']['file_path'] = $var['gallery_directory'];
+          }
+          else {
+            if (!module_exists('filefield_paths')) {
+              drupal_set_message(t('Imagefield doesn\'t provide tokenized paths without extra modules.  If you wish to maintain those, please use the !module module.', array('!module' => l(t('FileField Paths'), 'http://drupal.org/project/filefield_paths'))));
+            }
+          }
+        }
+
+        $rel->settings = array_merge(node_gallery_relationship_settings_defaults(), $var);
+        drupal_write_record('node_gallery_relationships', $rel);
+        variable_del($key);
+      }
+    }
+  }
+  // Move this variable to one with a proper namespace
+  if (variable_get('node_images_page_fragment', FALSE)) {
+    drupal_set_message(t('You have selected \'Use Named Anchors on Image "Previous" and "Next" links\' in your configuration.  This setting is now set on a per-relationship basis.  Please <a href="@relationship_page">configure your relationships</a> to re-apply your previous setting.', array('@relationship_page' => url('admin/settings/node_gallery'))), 'warning');
+    variable_del('node_images_page_fragment');
+  }
+  foreach (array('node_gallery_page_number', 'node_images_page_number', ) as $v) {
+    $value = variable_get($v, 20);
+    switch ($v) {
+      case 'node_gallery_page_number':
+        if ($value != 20) {
+          drupal_set_message(t('You have selected to display @value galleries per page.  The default is 20 - you may change the value by <a href="@view_link">editing the view</a>.', array('@value' => $value, '@view_link' => url('admin/build/views/edit/node_gallery_gallery_summaries'))), 'warning');
+        }
+        break;
+      case 'node_images_page_number':
+        if ($value != 0) {
+          drupal_set_message(t('You have selected to display @value images per page.  The default is 0 (unlimited) - you may change the value by <a href="@view_link">editing the view</a>.', array('@value' => $value, '@view_link' => url('admin/build/views/edit/node_gallery_gallery_image_views'))), 'warning');
+        }
+        break;
+    }
+    variable_del($v);
   }
 }
 
 /**
- * Implementation of hook_update_N()
+ * Implements hook_update_N()
  * Directly installing the default imagecache presets
  */
 function node_gallery_update_6100() {
   $ret = array();
-  _node_gallery_install_imagecache_presets();
-  _node_gallery_set_imagecache_permissions();
+  node_gallery_install_imagecache_presets();
+  node_gallery_set_imagecache_permissions();
   return $ret;
 }
 
 /**
- * Implementation of hook_update_N()
+ * Implements hook_update_N()
  * Updating the database for the changing options for "view original"
  */
 function node_gallery_update_6101() {
@@ -313,7 +608,7 @@ function node_gallery_update_6101() {
         $relationship->view_original = 'default';
       }
       unset($relationship->data);
-      
+
       $relationship->save();
     }
   }
@@ -321,7 +616,7 @@ function node_gallery_update_6101() {
 }
 
 /**
- * Implementation of hook_update_N()
+ * Implements hook_update_N()
  * Updating the database for the changing options for "view teaser"
  */
 function node_gallery_update_6102() {
@@ -349,7 +644,7 @@ function node_gallery_update_6102() {
 }
 
 /**
- * Implementation of hook_update_N()
+ * Implements hook_update_N()
  * Updating the database so we can custom select the number of uploads
  */
 function node_gallery_update_6103() {
@@ -371,14 +666,14 @@ function node_gallery_update_6103() {
 
 function node_gallery_update_6201() {
   $ret = array();
-  
+
   db_drop_primary_key($ret, 'node_galleries');
   db_add_primary_key($ret, 'node_galleries', array('nid'));
   return $ret;
 }
 
 /**
- * Implementation of hook_update_N()
+ * Implements hook_update_N()
  * Alerting the users that we have potentially broken their views
  */
 function node_gallery_update_6202() {
@@ -391,22 +686,148 @@ function node_gallery_update_6203() {
   $ret = array();
   drupal_set_message(t('Node Gallery Access has been removed from core, and migrated to it\'s own module - you may download the new version from !url.', array('url' => l('http://drupal.org/project/node_gallery_access', 'http://drupal.org/project/node_gallery_access'))));
   $contribdir = drupal_get_path('module', 'node_gallery') . '/contrib/node_gallery_access';
-  //Does the contrib node_gallery_access exist?
+  // Does the contrib node_gallery_access exist?
   if (is_dir($contribdir)) {
-    //Is it enabled?
+    // Is it enabled?
     if (module_exists('node_gallery_access')) {
       module_disable(array('node_gallery_access'));
       drupal_set_message(t('Node Gallery Access (contrib version) has been disabled, but your data is still there.  Simply download the new version after removing the old one, and everything will upgrade automatically.'));
     }
-    //We could go to the trouble to try a recursive delete, but most modules/* files aren't writable by Apache anyways.
+    // We could go to the trouble to try a recursive delete, but most modules/* files aren't writable by Apache anyways.
     $ret['#abort'] = array('success' => FALSE, 'query' => 'Old contrib version of Node Gallery Access was found at ' . $contribdir . '.  Please remove that directory and all of it\'s subfolders then rerun ' . l('update.php', 'update.php'));
   }
   return $ret;
 }
 
-function node_gallery_update_6204() {
+function node_gallery_update_6300() {
   $ret = array();
-  menu_rebuild();
+  // Create new tables
+  $schema = node_gallery_schema();
+  foreach (array('node_gallery_galleries', 'node_gallery_images', 'node_gallery_relationships') as $table) {
+    if (!db_table_exists($table)) {
+      db_create_table($ret, $table, $schema[$table]);
+      if (!db_table_exists($table)) {
+        // Table creation failed
+        $ret['#abort'] = array('success' => FALSE, 'query' => 'Failed to create table $table.');
+        return $ret;
+      }
+    }
+  }
+  // Update gallery and image content types with new imagefield
+  node_gallery_setup_content_types();
+  cache_clear_all();
+  if (db_table_exists('node_galleries')) {
+    // Just to make sure we have tabula rasa, we wipe the tables
+    $ret[] = update_sql('DELETE FROM {node_gallery_galleries}');
+    $ret[] = update_sql('DELETE FROM {node_gallery_images}');
+    // Migrate galleries from old table to new
+    $ret[] = update_sql('INSERT INTO {node_gallery_galleries} (SELECT DISTINCT gid, NULL FROM {node_galleries})');
+    // Migrate cover images
+    $ret[] = update_sql('UPDATE {node_gallery_galleries} new JOIN {node_galleries} old ON new.gid = old.gid SET cover_image = nid WHERE is_cover > 0');
+    // Migrate images from old table to new
+    $ret[] = update_sql('INSERT INTO {node_gallery_images} (SELECT nid,gid,weight FROM {node_galleries})');
+    _migrate_files_to_imagefields();
+    db_drop_table($ret, 'node_galleries');
+  }
+
+  _migrate_node_gallery_variables();
+  // We call this to add the admin-thumbnail preset
+  node_gallery_install_imagecache_presets();
+  node_gallery_set_imagecache_permissions();
+  cache_clear_all();
+  drupal_set_message(t('Node Gallery upgrade complete.  Please review !upgrade_txt_link.', array('!upgrade_txt_link' => l('UPGRADING.txt', drupal_get_path('module', 'node_gallery') .'/UPGRADING.txt'))));
   return $ret;
 }
 
+/**
+ * @todo: Setup hook_requirements
+ *  - At install
+ *    - check things are the right version
+ *  - At runtime
+ *    - look for appropriate views
+ *    - make sure imagecache presets are there
+ */
+
+function node_gallery_update_6301() {
+  // Remove any orphans in the db
+  $ret = array();
+  node_gallery_delete_orphans();
+  return $ret;
+}
+
+function node_gallery_update_6302() {
+  $ret = array();
+  // Set our default navigator sort view
+  $defaults = node_gallery_relationship_settings_defaults();
+  foreach (node_gallery_get_all_relationships() as $rel) {
+    $rel['settings']['view_navigator_image_display'] = $defaults['view_navigator_image_display'];
+    $r = (object)$rel;
+    drupal_write_record('node_gallery_relationships', $r, 'rid');
+  }
+  cache_clear_all();
+  return $ret;
+}
+
+/**
+ * Update for #997980. Add tags filtering to views selection.
+ */
+function node_gallery_update_6303() {
+  $ret = array();
+  // tag global summary view for /galleries page with 'galleries'
+  $viewkey = unserialize(variable_get('node_gallery_galleries_summary_view', serialize(array('name' => 'node_gallery_gallery_summaries', 'display_id' => 'page_1'))));
+  $view = views_get_view($viewkey['name']);
+  if ($view->type == t('Overridden')) {
+    $view->tag = 'node_gallery_galleries';
+    $view->save();
+    watchdog('node_gallery', 'Added \'node_gallery_galleries\' tag for view %viewname', array('%viewname', $view->name));
+  }
+  // Tag image views with 'image'
+  $view_names = array();
+  $view_settings = array(
+    'view_gallery_full_image_display',
+    'view_gallery_teaser_view_image_display',
+    'view_navigator_image_display'
+    );
+    foreach (node_gallery_get_all_relationships() as $rel) {
+      foreach ($view_settings as $view_setting) {
+        $viewkey = unserialize($rel['settings'][$view_setting]);
+        $view_names[] = $viewkey['name'];
+      }
+    }
+    $view_names = array_unique($view_names);
+    foreach ($view_names as $view_name) {
+      $view = views_get_view($view_name);
+      if ($view->type == t('Overridden')) {
+        $view->tag = 'node_gallery_images';
+        $view->save();
+        watchdog('node_gallery', 'Added \'node_gallery_images\' tag for view %viewname', array('%viewname', $view->name));
+      }
+    }
+    cache_clear_all('*', 'cache_views');
+    return $ret;
+}
+
+function node_gallery_update_6304() {
+  /* http://drupal.org/node/1008006
+   * NG2 didn't add a gallery to the table until it contained images.  This update hook gets
+   * those empty (or otherwise missing) galleries into the table.
+   */
+  $ret = array();
+  $types = array();
+  $result = db_query('SELECT gallery_type FROM {node_gallery_relationships}');
+  while ($row = db_fetch_array($result)) {
+    $types[] = $row['gallery_type'];
+  }
+  $sql = 'SELECT nid as gid FROM {node} n LEFT JOIN {node_gallery_galleries} ng on ng.gid = n.nid WHERE n.type IN ('. db_placeholders($types, 'varchar') .') AND ng.gid IS NULL';
+  $result = db_query($sql, $types);
+  $count = 0;
+  while ($gallery = db_fetch_object($result)) {
+    if (drupal_write_record('node_gallery_galleries', $gallery)) {
+      $count++;
+    }
+  }
+  if ($count > 0) {
+    $ret[] = array('success' => TRUE, 'query' => t('Added !count empty galleries into node_gallery_galleries table.', array('!count' => $count)));
+  }
+  return $ret;
+}
