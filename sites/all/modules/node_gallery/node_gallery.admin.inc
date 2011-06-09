@@ -1,60 +1,244 @@
 <?php
-// $Id: node_gallery.admin.inc,v 1.10.4.17 2010/05/08 14:02:30 justintime Exp $
 
 /**
- * @file Node gallery admin page file
+ * @file
+ * Node gallery admin page file
  *
- * @return unknown
+ * The contents of this file are used in displaying the admin/settings/node_gallery/* pages
  */
 
-function node_gallery_config_list() {
-  $ng_configs = node_gallery_get_config();
-  
-  if (!empty($ng_configs)) {
-    $headers = array(t('Gallery Name'), t('Gallery type'), t('Image type'), t('Operations'));
-    foreach ($ng_configs as $key => $config) {
-      $rows[] = array($config['name'], $config['gallery_type'], $config['image_type'], 
-      theme('links', node_gallery_config_operations($key)));
+include_once(drupal_get_path('module', 'views') .'/includes/admin.inc');
+
+/**
+ * Displays a list of all defined Gallery-to-Image relationships.
+ *
+ * @return
+ *   A themed table suitable for output
+ */
+function node_gallery_relationship_list() {
+  $ng_rels = node_gallery_get_all_relationships();
+
+  if (!empty($ng_rels)) {
+    $headers = array(t('Relationship name'), t('Gallery type'), t('Image type'), t('Image Field'));
+    foreach ($ng_rels as $gallery_type => $config) {
+      $image_type = content_types($config['image_type']);
+      $field_link = 'admin/content/node-type/'. $image_type['url_str'] .'/fields/'. $config['imagefield_name'];
+      $rows[] = array(array('data' => $config['settings']['name'], 'rowspan' => 2), $gallery_type, $config['image_type'], l($config['imagefield_name'], $field_link));
+      $links = theme('links', node_gallery_relationship_operations($config['rid']));
+      $operations = array(
+        array('data' => $links, 'align' => 'right', 'colspan' => 3),
+      );
+      $rows[] = $operations;
     }
     return theme('table', $headers, $rows, array('class' => 'node-gallery-config-list'));
   }
   else {
-    return t("There's no gallery type now.");
+    return t("There are no gallery relationships defined.");
   }
 }
 
-function node_gallery_settings_form() {
-  $form['node_gallery_page_number'] = array(
-    '#type' => 'textfield',
-    '#title' => t('Enter the Number of galleries displayed on each main gallery list page'),
-    '#default_value' => variable_get('node_gallery_page_number', 20),
-    '#description' => t('If this number is exceed, a pager will be displayed below the main gallery list.'),
-  );
-  $form['node_images_page_number'] = array(
-    '#type' => 'textfield',
-    '#title' => t('Enter the Number of images displayed on each gallery thumbnail page'),
-    '#default_value' => variable_get('node_images_page_number', 20),
-    '#description' => t('If this number is exceeded, a pager will be displayed below each corresponding gallery thumbnail page.'),
-  );
-  $form['node_images_page_fragment'] = array(
-    '#type' => 'checkbox',
-    '#title' => t('Use Named Anchors on Image "Previous" and "Next" links?'),
-    '#default_value' => variable_get('node_images_page_fragment', FALSE),
-    '#description' => t('When checked, the "Previous" and "Next" links will jump to the top of the image.  You might want to leave this unchecked if you have ads at the top of your image pages.'),
-  );
-  return system_settings_form($form);
+/**
+ * Builds a list of all views tagged with 'node_gallery'
+ *
+ * @return
+ *   An associative array where the key is a serialized array, and the value
+ *   is the title of the view display.  The serialized array key is:
+ *     - name: the name of the view.
+ *     - display_id: the display_id of the display.
+ */
+function node_gallery_build_views_select($tags = 'node_gallery') {
+  // load list of views into array for select lists
+  $tags = (is_array($tags)) ? $tags : array($tags);
+  $select = array();
+  foreach (views_get_all_views() as $view) {
+    if (!in_array($view->tag, $tags)) {
+      continue;
+    }
+    foreach ($view->display as $display) {
+      $key = array();
+      $key['name'] = $view->name;
+      $key['display_id'] = $display->id;
+      $select[$view->name][serialize($key)] = $display->display_title;
+    }
+  }
+  return $select;
 }
 
-function node_gallery_config_operations($type) {
-  $items[] = array('title' => t('Edit'), 'href' => 'admin/settings/node_gallery/edit/'. $type);
-  $items[] = array('title' => t('Delete'), 'href' => 'admin/settings/node_gallery/delete/'. $type);
-  
+/**
+ * Displays the form at admin/settings/node_gallery/settings.
+ *
+ * @return
+ *   A FAPI form array.
+ */
+function node_gallery_settings_form() {
+  $selected_display = variable_get('node_gallery_galleries_summary_view', serialize(array('name' => 'node_gallery_gallery_summaries', 'display_id' => 'page_1')));
+  $form['node_gallery_remove_orphans'] = array(
+    '#type' => 'submit',
+    '#weight' => -5,
+    '#value' => t('Remove orphaned rows from database'),
+    '#submit' => array('node_gallery_delete_orphans'),
+  );
+  $form['node_gallery_galleries_summary_view'] = array(
+    '#type' => 'select',
+    '#weight' => -4,
+    '#title' => t('View display to use at /galleries'),
+    '#description' => t('Select the display of the gallery view to be used when the /galleries URL is requested.  Only views tagged with \'node_gallery_galleries\' are displayed here.'),
+    '#options' => node_gallery_build_views_select('node_gallery_galleries'),
+    '#default_value' => $selected_display,
+  );
+  $form['node_gallery_plupload_settings'] = array(
+    '#type' => 'fieldset',
+    '#title' => t('plupload settings'),
+    '#description' => t('This area defines the settings used when integrating Node Gallery with plupload.'),
+    '#collapsible' => TRUE,
+    '#collapsed' => FALSE,
+  );
+
+  $form['node_gallery_plupload_settings']['node_gallery_plupload_integration'] = array(
+    '#type' => 'checkbox',
+    '#weight' => 0,
+    '#title' => t('Use plupload module to upload images?'),
+    '#default_value' => variable_get('node_gallery_plupload_integration', TRUE),
+    '#description' => t('When checked, the plupload widget will be used on the "Upload Images" tab to add new images to a gallery.'),
+  );
+  $form['node_gallery_plupload_settings']['node_gallery_plupload_manage_images_integration'] = array(
+    '#type' => 'checkbox',
+    '#weight' => 0,
+    '#title' => t('Integrate plupload and the Manage Images tab?'),
+    '#default_value' => variable_get('node_gallery_plupload_manage_images_integration', TRUE),
+    '#description' => t('When checked, the first visit to the Manage Images tab after uploading new images will only show newly uploaded images.'),
+  );
+  $form['node_gallery_plupload_settings']['node_gallery_plupload_manage_images_limit'] = array(
+    '#type' => 'textfield',
+    '#maxlength' => 5,
+    '#size' => 5,
+    '#title' => t('Enter the limit on the number of images displayed after upload.'),
+    '#default_value' => variable_get('node_gallery_plupload_manage_images_limit', 100),
+    '#description' => t('Displaying too many images on the Manage Images tab at once will exhaust the server\'s memory.  This setting limits the number of images listed.'),
+  );
+  if (! module_exists('plupload')) {
+    $form['node_gallery_plupload_settings']['node_gallery_plupload_integration']['#disabled'] = TRUE;
+    $form['node_gallery_plupload_settings']['node_gallery_plupload_integration']['#default_value'] = FALSE;
+    $form['node_gallery_plupload_settings']['node_gallery_plupload_integration']['#description'] = t('You need to download and install the <a href="@plupload_url">plupload module</a> to enable this option.', array('@plupload_url' => url('http://drupal.org/project/plupload')));
+  }
+  $form['node_gallery_jquery_ui_integration'] = array(
+    '#type' => 'checkbox',
+    '#weight' => 0,
+    '#title' => t('Use jQuery UI module to sort images?'),
+    '#default_value' => variable_get('node_gallery_jquery_ui_integration', TRUE),
+    '#description' => t('When checked, a drag and drop interface using thumbnails will be used to sort images instead of a table of rows.'),
+  );
+  $form['node_gallery_sort_images_max'] = array(
+    '#type' => 'textfield',
+    '#title' => t('Number of images to allow on sort images page'),
+    '#default_value' => variable_get('node_gallery_sort_images_max', 750),
+    '#weight' => 0,
+    '#description' => t('The sort images page can require a lot of memory on both the server and the client if the gallery contains a large amount of images. If the image count exceeds this value, the form rendering will be aborted.  In most cases, the default is sufficient.'),
+    '#maxlength' => 5,
+    '#size' => 5,
+  );
+  if (!module_exists('jquery_ui')) {
+    $form['node_gallery_jquery_ui_integration']['#disabled'] = TRUE;
+    $form['node_gallery_jquery_ui_integration']['#default_value'] = FALSE;
+    $form['node_gallery_jquery_ui_integration']['#description'] = t('You need to download and install the <a href="@jquery_ui_url">jquery_ui module</a> to enable this option.', array('@jquery_ui_url' => url('http://drupal.org/project/jquery_ui')));
+  }
+  $form = system_settings_form($form);
+  return $form;
+}
+
+/**
+ * Validate the input from the global settings form.
+ */
+function node_gallery_settings_form_validate($form, &$form_state) {
+  if (!is_numeric($form_state['values']['node_gallery_sort_images_max']) ||
+          $form_state['values']['node_gallery_sort_images_max'] < 0) {
+    form_error($form['node_gallery_sort_images_max'], t('The maximum number of images on the sort images page must be a positive integer.'));
+  }
+}
+
+/**
+ * Returns a list of operations available to a Gallery-to-Image relationship.
+ *
+ * @return
+ *   An array containing associative arrays with keys and values of titles and href links
+ */
+function node_gallery_relationship_operations($rid) {
+  $items[] = array('title' => t('Change content types'), 'href' => 'admin/settings/node_gallery/relationship/content_types/'. $rid);
+  $items[] = array('title' => t('Change settings'), 'href' => 'admin/settings/node_gallery/relationship/settings/'. $rid);
+  $items[] = array('title' => t('Delete'), 'href' => 'admin/settings/node_gallery/delete/'. $rid);
+
   return $items;
 }
 
-function node_gallery_config_form($form_state, $gallery_config = NULL) {
+function node_gallery_relationship_content_types_form($form_state, $relationship = NULL) {
   static $node_types, $image_types, $imagecaches;
-  
+  $form['relationship'] = array(
+    '#tree' => TRUE,
+  );
+
+  if (empty($node_types)) {
+    foreach (node_get_types() as $node_type) {
+      $node_types[$node_type->type] = $node_type->name;
+    }
+  }
+  $form['#relationship'] = $relationship;
+  $form['relationship']['gallery_type'] = array(
+    '#type' => 'radios',
+    '#title' => t('Gallery Type'),
+    '#options' => $node_types,
+    '#description' => t('Select which content type should be used as the gallery type.'),
+    '#default_value' => $relationship['gallery_type'],
+    '#required' => TRUE,
+  );
+  $form['relationship']['image_type'] = array(
+    '#type' => 'radios',
+    '#title' => t('Image Type'),
+    '#options' => $node_types,
+    '#description' => t('Select which content type should be used as the image type.'),
+    '#default_value' => $relationship['image_type'],
+    '#required' => TRUE,
+  );
+  $form['submit'] = array(
+    '#type' => 'submit',
+    '#value' => t('Save'),
+  );
+  return $form;
+}
+
+/**
+ * Returns a FAPI form array that renders the settings form when adding/editing a Gallery-to-Image relationship
+ *
+ * @parm $form_state
+ *
+ * @param $gallery_config
+ *   The existing gallery config relationship
+ *
+ * @return
+ *   A FAPI form array
+ */
+
+function node_gallery_relationship_settings_form($form_state, $relationship) {
+  static $node_types, $image_types, $imagecaches;
+
+  $image_type = content_types($relationship['image_type']);
+  if (module_exists('taxonomy') && taxonomy_get_vocabularies($image_type['type'])) {
+    $image_type['extra']['taxonomy'] = array(
+      'label' => t('Taxonomy'),
+      'description' => t('Taxonomy module form.'),
+      'weight' => -3
+    );
+  }
+  //non-cck fields
+  foreach ($image_type['extra'] as $name => $field) {
+    if ($name != 'menu' && $name != 'attachments' && $name != 'workflow') {
+      $image_type_fields[$name] = $field['label'];
+    }
+  }
+  //cck fields
+  foreach ($image_type['fields'] as $name => $field) {
+    $image_type_fields[$name] = $field['widget']['label'];
+  }
+
   if (empty($imagecaches)) {
     foreach (imagecache_presets() as $id => $imagecache) {
       $imagecaches[$imagecache['presetname']] = $imagecache['presetname'];
@@ -63,535 +247,306 @@ function node_gallery_config_form($form_state, $gallery_config = NULL) {
   if (empty($imagecaches)) {
     form_set_error('Node gallery config', t('There are no imagecache presets. <a href="@imagecache">You must create at least one preset</a>.', array('@imagecache' => url('admin/build/imagecache/add'))));
   }
-  
-  $gallery_config = array_merge((array)$gallery_config, (array)$form_state['storage']);
-  $gallery_config = array_merge($gallery_config, (array)$form_state['values']['config']);
-  //for other module like node_gallery_lightbox2 use.
-  $form['#gallery_config'] = $gallery_config;
-  
-  $step = empty($form_state['values']['step']) ? 1 : 2;
-  $form['step'] = array(
-    '#type' => 'hidden',
-    '#value' => $step,
+  module_load_include('inc', 'content', 'includes/content.crud');
+  $imagefield_instances = content_field_instance_read(array('type_name' => $relationship['image_type']));
+  $options_imagefields = array();
+  foreach ($imagefield_instances as $imagefield_instance) {
+    $options_imagefields[$imagefield_instance['field_name']] = $imagefield_instance['field_name'];
+  }
+  if (!array_key_exists('field_node_gallery_image', $options_imagefields)) {
+    $options_imagefields['field_node_gallery_image'] = t('Create new imagefield');
+  }
+
+  $form['#relationship'] = $relationship;
+  $form['node_gallery_relationship_settings'] = array(
+    '#type' => 'fieldset',
+    '#title' => t('Relationship settings'),
+    '#description' => t('This area defines the settings used to define the relationship between the Gallery and Image content types.'),
+    '#collapsible' => TRUE,
+    '#collapsed' => FALSE,
   );
-  
-  $form['config'] = array(
-    '#tree' => TRUE,
+
+  $form['node_gallery_relationship_settings']['name'] = array(
+    '#type' => 'textfield',
+    '#title' => t('Relationship Name'),
+    '#description' => t('Enter a name for this relationship which will only be viewed by the admin user.'),
+    '#default_value' => $relationship['settings']['name'],
+    '#required' => TRUE,
   );
-  
-  if ($step == 1) {
-    if (empty($node_types)) {
-      foreach (node_get_types() as $node_type) {
-        $node_types[$node_type->type] = $node_type->name;
-      }
-    }
-    $form['config']['gallery_type'] = array(
-      '#type' => 'radios',
-      '#title' => t('Gallery Type'),
-      '#options' => $node_types,
-      '#description' => t('Select which content type should be used as the gallery type.'),
-      '#default_value' => $gallery_config['gallery_type'],
-      '#required' => TRUE,
-    );
-    $form['config']['image_type'] = array(
-      '#type' => 'radios',
-      '#title' => t('Image Type'),
-      '#options' => $node_types,
-      '#description' => t('Select which content type should be used as the image type.'),
-      '#default_value' => $gallery_config['image_type'],
-      '#required' => TRUE,
-    );
-    $form['next'] = array(
-      '#type' => 'submit',
-      '#value' => t('Next'),
-      '#submit' => array('node_gallery_config_form_next_submit'),
+  $form['node_gallery_relationship_settings']['imagefield'] = array(
+    '#type' => 'select',
+    '#title' => t('Image storage field'),
+    '#description' => t('Select the CCK imagefield that will be used for storing the gallery images.  In most cases, you shouldn\'t need to change this setting.'),
+    '#options' => $options_imagefields,
+    '#default_value' => (isset($relationship['imagefield_name']) && !empty($relationship['imagefield_name'])) ? $relationship['imagefield_name'] : 'field_node_gallery_image',
+  );
+  $viewdisplays = node_gallery_build_views_select('node_gallery_images');
+
+  $form['node_gallery_gallery_view'] = array(
+    '#type' => 'fieldset',
+    '#title' => t('Gallery settings'),
+    '#description' => t('This area defines the settings used to display an individual gallery node.'),
+    '#collapsible' => TRUE,
+    '#collapsed' => FALSE,
+  );
+  $form['node_gallery_gallery_view']['full'] = array(
+    '#type' => 'fieldset',
+    '#title' => t('Gallery full(page) view settings'),
+    '#description' => t('Settings applied to a gallery node when being viewed in full(page) mode.'),
+    '#collapsible' => TRUE,
+    '#collapsed' => FALSE,
+  );
+  $form['node_gallery_gallery_view']['full']['view_gallery_full_image_display'] = array(
+    '#type' => 'select',
+    '#title' => t('Gallery full(page) view definition'),
+    '#description' => t('Select the display of the images which will be attached to the page view of a gallery. Only Views tagged with \'node_gallery_images\' are displayed here.'),
+    '#options' => $viewdisplays,
+    '#default_value' => $relationship['settings']['view_gallery_full_image_display'],
+  );
+  $form['node_gallery_gallery_view']['full']['view_navigator_image_display'] = array(
+    '#type' => 'select',
+    '#title' => t('Gallery image sort view definition'),
+    '#description' => t('Select the display that defines the desired sort order to be used when displaying images. You must include the \'Node: Nid\' field in this view. Only Views tagged with \'node_gallery_images\' are displayed here.'),
+    '#options' => $viewdisplays,
+    '#default_value' => $relationship['settings']['view_navigator_image_display'],
+  );
+  $form['node_gallery_gallery_view']['teaser'] = array(
+    '#type' => 'fieldset',
+    '#title' => t('Gallery teaser(list) view settings'),
+    '#description' => t('Settings applied to a gallery node when being viewed in teaser(list) mode.'),
+    '#collapsible' => TRUE,
+    '#collapsed' => FALSE,
+  );
+  $form['node_gallery_gallery_view']['teaser']['view_gallery_teaser_view_image_display'] = array(
+    '#type' => 'select',
+    '#title' => t('Gallery teaser(list) view definition'),
+    '#description' => t('Select the display of the images which will be attached to the teaser view of a gallery. Only Views tagged with \'node_gallery_images\' are displayed here.'),
+    '#options' => $viewdisplays,
+    '#default_value' => $relationship['settings']['view_gallery_teaser_view_image_display'],
+  );
+
+  // image view options
+  $form['node_gallery_image_view'] = array(
+    '#type' => 'fieldset',
+    '#title' => t('Image view settings'),
+    '#description' => t('This area defines the settings used when displaying an individual image node.'),
+    '#collapsible' => TRUE,
+    '#collapsed' => FALSE,
+  );
+  $form['node_gallery_image_view']['display_navigator'] = array(
+    '#type' => 'checkbox',
+    '#title' => t('Display image navigator on image pages?'),
+    '#default_value' => $relationship['settings']['display_navigator'],
+    '#description' => t('When checked, the navigator (bar providing "Previous", "Next", etc. links) will be displayed at the top of the image page.'),
+  );
+  $form['node_gallery_image_view']['node_images_page_fragment'] = array(
+    '#type' => 'checkbox',
+    '#title' => t('Use Named Anchors on Image "Previous" and "Next" links?'),
+    '#default_value' => $relationship['settings']['node_images_page_fragment'],
+    '#description' => t('When checked, the "Previous" and "Next" links will jump to the top of the image. You might want to leave this unchecked if you have ads at the top of your image pages.'),
+  );
+
+  // Manage images tab settings
+  $form['node_gallery_manage_images_settings'] = array(
+    '#type' => 'fieldset',
+    '#title' => t('Manage Images tab settings'),
+    '#description' => t('This area defines the settings used by the Manage Images tab.'),
+    '#collapsible' => TRUE,
+    '#collapsed' => FALSE,
+  );
+
+  $form['node_gallery_manage_images_settings']['manage_images_fields'] = array(
+    '#type' => 'checkboxes',
+    '#title' => t('Manage Images Fields'),
+    '#options' => $image_type_fields,
+    '#description' => t('Specify which fields should be displayed on the Manage Images tab of a gallery node.'),
+    '#default_value' => $relationship['settings']['manage_images_fields'],
+  );
+  $form['node_gallery_manage_images_settings']['manage_images_per_page'] = array(
+    '#type' => 'textfield',
+    '#maxlength' => 5,
+    '#size' => 5,
+    '#title' => t('Enter the number of images displayed on each Manage Images page'),
+    '#default_value' => $relationship['settings']['manage_images_per_page'],
+    '#description' => t('If this number is exceeded, a pager will be displayed below each corresponding Manage Images page.'),
+  );
+  $form['node_gallery_manage_images_settings']['manage_images_show_gallery_list'] = array(
+    '#type' => 'checkbox',
+    '#title' => t('Enable changing an image\'s gallery on the Manage Images page'),
+    '#default_value' => $relationship['settings']['manage_images_show_gallery_list'],
+    '#description' => t('If checked, a gallery dropdown list will be displayed on each image on the Manage Images tab allowing you to move images between galleries.'),
+  );
+  if (imageapi_default_toolkit() != 'imageapi_gd' || function_exists("imagerotate")) {
+    $form['node_gallery_manage_images_settings']['manage_images_enable_rotation'] = array(
+      '#type' => 'checkbox',
+      '#title' => t('Enable the rotation of images on the manage images page'),
+      '#default_value' => $relationship['settings']['manage_images_enable_rotation'],
+      '#description' => t('If checked, image rotation operations will be displayed on each image on the Manage Images tab.'),
     );
   }
-  else {
-    drupal_add_js(drupal_get_path('module', 'node_gallery') .'/node_gallery.admin.js', 'module');
-    
-    /*cck support*/
-    if (module_exists('content')) {
-      content_clear_type_cache();
-      $image_type = content_types($form_state['storage']['image_type']);
-      //non-cck fields
-      foreach ($image_type['extra'] as $name => $field) {
-        if ($name != 'menu' && $name != 'attachments') {
-          $image_type_fields[$name] = $field['label'];
-        }
-      }
-      //cck fields
-      foreach ($image_type['fields'] as $name => $field) {
-        $image_type_fields[$name] = $field['widget']['label'];
-      }
-    }
-    else {
-      $node_fields = node_gallery_get_type_fields($form_state['storage']['image_type']);
-      foreach ($node_fields as $name => $field) {
-        $image_type_fields[$name] = $field['label'];
-      }
-    }
-    
-    $form['config']['name'] = array(
-      '#type' => 'textfield',
-      '#title' => t('Gallery Type Name'),
-      '#description' => t('The human-readable name of this content type. This text will be displayed as part of the list on the create content page. It is recommended that this name begin with a capital letter and contain only letters, numbers, and <strong>spaces</strong>.'),
-      '#maxlength' => 32,
-      '#required' => TRUE,
-      '#default_value' => $gallery_config['name']
-    );
-    
-    $form['config']['gallery_directory'] = array(
-      '#type' => 'textfield',
-      '#title' => t('Gallery Directory'),
-      '#description' => t('Specify a subdirectory of the file system where the images for the galleries will be saved. The document root is \'files\'.
-       Use %uid for user_id, %username for username, %gid for gallery_id, %gallery_name for gallery_name.'),
-      '#default_value' => $gallery_config['gallery_directory']
-    );
-    $form['config']['default_cover'] = array(
-      '#type' => 'textfield',
-      '#title' => t('Default Cover Image'),
-      '#description' => t('Specify a default cover image to show when there are no images in the gallery. The path begins with your drupal root. <strong>Do not include the leading slash /.</strong>'),
-      '#default_value' => $gallery_config['default_cover'],
-    );
-    $form['config']['number_uploads'] = array(
-      '#type' => 'select',
-      '#title' => t('Number of Uploads'),
-      '#options' => drupal_map_assoc(range(1, 20)),
-      '#multiple' => FALSE,
-      '#description' => t('This allows you to specify how many image upload fields appear on the image upload page. By default, only 5 fields are provided. We recommend you do not have more than 5 fields if you are on a shared host or have limited resources. If you increase this to more than 5, we highly recommend you test this by uploading lots of large images prior to putting your site into production.'),
-      '#default_value' => empty($gallery_config['number_uploads']) ? '5' : $gallery_config['number_uploads'],
-    );
-    
-    $form['config']['display_fields'] = array(
-      '#type' => 'checkboxes',
-      '#title' => t('Fields'),
-      '#options' => $image_type_fields,
-      '#description' => t('Specify which fields should be displayed.'),
-      '#required' => TRUE,
-      '#default_value' => empty($gallery_config['display_fields']) ? array() : $gallery_config['display_fields'],
-    );
-    $form['config']['content_display'] = array(
-      '#type' => 'radios',
-      '#title' => t('Choose the content you want to display'),
-      '#options' => array('gallery' => t('Gallery'), 'image' => t('Images')),
-      '#description' => t("If you select 'Gallery', the body text of the gallery node will be used. If you select 'Images', the body text of the image node will be used. This allows you choose if you want the text content with each image to be different or the same on all images."),
-      '#default_value' => empty($gallery_config['content_display']) ? 'image' : $gallery_config['content_display'],
-    );
-    $form['config']['image_comment'] = array(
-      '#type' => 'radios',
-      '#title' => t('Image Comment Setting'),
-      '#options' => array(
-        'image' => t('Use the image type comment settings.'),
-        'gallery' => t('Use the gallery type comment settings.'),
-      ),
-      '#description' => t('Select how to apply comments to the images.'),
-      '#default_value' => isset($gallery_config['image_comment']) ? $gallery_config['image_comment'] : 'image',
-    );
-    
-    //gallery image size setting
-    $form['config']['image_size'] = array(
-      '#type' => 'fieldset',
-      '#title' => t('Image Sizes'),
-      '#description' => t('Specify the imagecache preset to use for each type of gallery image.'),
-      '#tree' => TRUE,
-    );
-    $form['config']['image_size']['cover'] = array(
-      '#type' => 'select',
-      '#title' => t('Cover'),
-      '#options' => $imagecaches,
-      '#default_value' => $gallery_config['image_size']['cover'],
-    );
-    $form['config']['image_size']['thumbnail'] = array(
-      '#type' => 'select',
-      '#title' => t('Thumbnail'),
-      '#options' => $imagecaches,
-      '#default_value' => $gallery_config['image_size']['thumbnail'],
-    );
-    $form['config']['image_size']['preview'] = array(
-      '#type' => 'select',
-      '#title' => t('Preview: This will be the Image Display (A Preview of the Full-Size Image)'),
-      '#options' => $imagecaches,
-      '#default_value' => $gallery_config['image_size']['preview'],
-    );
-    
-    /*$extra_options = array();
-    $extra_description = '';
-    if ($lightbox2) {
-      $extra_options['lightbox2'] = t('Enable as Lightbox2 Popup');
-    }
-    else {
-      $extra_description = '<br />'. t('If you install and enable the <a href="http://drupal.org/project/lightbox2">Lightbox2</a> module, you can use Lightbox to display a larger version of the image.');
-    }*/
-    
-    $form['config']['original'] = array(
-      '#type' => 'fieldset',
-      '#title' => t('Original Image Display'),
-      '#description' => t('Specify how to display the original image or disable this feature.'),
-      '#tree' => TRUE,
-    );
-    $form['config']['original']['view_original'] = array(
-      '#type' => 'radios',
-      '#title' => t('View of The Original Image'),
-      '#attributes' => array('class' => 'view-original-radios'),
-      '#options' => array(
-        '0' => t('Disabled'),
-        'default' => t('Enable as a link over the displayed image'),
-        'text' => t('Enable as text link below the displayed image'),
-      ),
-      '#description' => t('Specify whether to allow viewing the original image and how to do so.'),
-      '#default_value' => isset($gallery_config['original']['view_original']) ? $gallery_config['original']['view_original'] : 0,
-    );
-    
-    $form['config']['original']['view_original_text'] = array(
-      '#type' => 'textfield',
-      '#title' => t('View Original Image Text Link'),
-      '#description' => t('If you have selected the "Enable Text Link Below the Displayed Image" option, enter the text for the link.'),
-      '#default_value' => empty($gallery_config['original']['view_original_text']) ? t('Download the Original Image') : $gallery_config['original']['view_original_text'],
-      '#prefix' => '<div class="view-original-text-value">', 
-      '#suffix' => '</div>'
-    );
-    
-    //gallery teaser image display setting
-    $form['config']['teaser'] = array(
-      '#type' => 'fieldset',
-      '#title' => t('Teaser Setting'),
-      '#description' => t('Specify how to display the gallery when viewing the gallery node as a teaser.'),
-    );
-    $form['config']['teaser']['gallery_display_type'] = array(
-      '#type' => 'radios',
-      '#title' => t('Display Type'),
-      '#attributes' => array('class' => 'teaser-display-type-radios'),
-      '#options' => array('cover' => t('Cover'), 'thumbnails' => t('Thumbnails')),
-      '#default_value' => empty($gallery_config['teaser']['gallery_display_type']) ? 'cover' : $gallery_config['teaser']['gallery_display_type'],
-    );
-    $form['config']['teaser']['thumbnails_num'] = array(
-      '#type' => 'textfield',
-      '#title' => t('Number of Thumbnails to Display'),
-      '#description' => t('If thumbnails are selected as the display type above, enter the number of thumbnails to show in the teaser.'),
-      '#default_value' => $gallery_config['teaser']['thumbnails_num'],
-    );
-    $form['config']['teaser']['image'] = array(
-      '#type' => 'select',
-      '#title' => t('Image Size for Display Type'),
-      '#options' => $imagecaches,
-      '#description' => t('Select the Imagecache preset that will be used for the display type selected above.'),
-      '#default_value' => $gallery_config['teaser']['image'],
-    );
-    
-    /**
-     * Gallery Landing page
-     */
-    $form['config']['gallery'] = array(
-      '#type' => 'fieldset',
-      '#title' => t('Gallery Landing Page Setting'),
-      '#description' => t('Specify how to display the gallery landing page images when viewing the node as a teaser'),
-    );
-    
-    $form['config']['gallery']['gallery_display_type'] = array(
-      '#type' => 'radios',
-      '#title' => t('Gallery Display Type'),
-      '#attributes' => array('class' => 'gallery-display-type-radios'),
-      '#options' => array('thumbnails' => t('Thumbnails'), 'cover' => t('Cover')),
-      '#default_value' => empty($gallery_config['gallery']['gallery_display_type']) ? 'thumbnails' : $gallery_config['gallery']['gallery_display_type'],
-    );
-    
-    //gallery upload limitation settings;
-    node_gallery_upload_limits_form($form, $gallery_config['upload_limits'], $gallery_config['image_type']);
-    
-    $form['previous'] = array(
-      '#type' => 'submit',
-      '#value' => t('Previous'),
-      '#submit' => array('node_gallery_config_form_prev_submit'),
-    );
-    $form['submit'] = array(
-      '#type' => 'submit',
-      '#value' => t('Submit'),
-    );
-    
-  }
-  
+  $form['submit'] = array(
+    '#type' => 'submit',
+    '#value' => t('Save'),
+    '#weight' => 8,
+  );
+  $form['#submit'] = array('node_gallery_relationship_settings_form_submit');
+
+
   return $form;
 }
 
-function node_gallery_config_form_validate($form, &$form_state) {
-  if ($form_state['values']['step'] == 1) {
-    if ($form_state['values']['config']['gallery_type'] == $form_state['values']['config']['image_type']) {
-      unset($form_state['values']['step']);
-      form_set_error('Type', t('The gallery type and image type can\'t be the same.'));
+/**
+ * Validation callback for the relationship form.
+ * @param $form
+ * @param $form_state
+ */
+function node_gallery_relationship_content_types_form_validate($form, &$form_state) {
+  $gallery_type = $form_state['values']['relationship']['gallery_type'];
+  $image_type = $form_state['values']['relationship']['image_type'];
+  if ($gallery_type == $image_type) {
+    form_set_error('Type', t('The gallery type and image type can\'t be the same.'));
+  }
+  if (($r = node_gallery_get_relationship($gallery_type)) && $r['rid'] != $form['#relationship']['rid']) {
+    form_set_error('relationship][gallery_type', t('The !gallery_type type is already part of a relationship.', array('!gallery_type' => $gallery_type)));
+  }
+  if (($r = node_gallery_get_relationship(NULL, $image_type)) && $r['rid'] != $form['#relationship']['rid']) {
+    form_set_error('relationship][image_type', t('The !image_type type is already part of a relationship.', array('!image_type' => $image_type)));
+  }
+}
+
+/**
+ * Submit handler for relationship settings form
+ *
+ * @param $form
+ * @param $form_state
+ */
+function node_gallery_relationship_content_types_form_submit($form, &$form_state) {
+  $r = (object)$form['#relationship'];
+  $send_to_settings_form = FALSE;
+  foreach ($form_state['values']['relationship'] as $k => $v) {
+    if ($r->{$k} != $v) {
+      $r->{$k} = $v;
+      if ($k == 'image_type' && $r->{k}) {
+        // They need to update the imagefield setting if they change image types
+        $send_to_settings_form = TRUE;
+        drupal_set_message(t('Image content type changed, please verify the Image storage field below.'), 'warning');
+      }
     }
-    /*$gallery_types = node_gallery_get_types();
-    if (in_array($form_state['values']['config']['gallery_type'], (array)$gallery_types)) {
-      unset($form_state['values']['step']);
-      form_set_error('Type', t('The gallery type selected is already being used, please choose a different one.'));
-    }*/
   }
-  if ($form_state['values']['step'] == 2) {
-    node_gallery_upload_limits_form_validate($form, $form_state['values']['data']['upload_limits']);
+  if (!isset($r->rid)) {
+    //New relationship
+    $r->settings = node_gallery_relationship_settings_defaults();
+    $r->imagefield_name = '';
+    $send_to_settings_form = TRUE;
+    drupal_write_record('node_gallery_relationships', $r);
+    menu_cache_clear_all();
+    drupal_set_message(t('Default settings applied, please verify the Image storage field below.'), 'warning');
   }
+  else {
+    drupal_write_record('node_gallery_relationships', $r, 'rid');
+    menu_cache_clear_all();
+    drupal_set_message(t('Node Gallery relationship updated'));
+  }
+  if ($send_to_settings_form) {
+    $form_state['redirect'] = 'admin/settings/node_gallery/relationship/settings/'. $r->rid;
+  }
+  else {
+    $form_state['redirect'] = 'admin/settings/node_gallery';
+  }
+  // Repopulate the cache
+  node_gallery_get_relationship($r->gallery_type, TRUE);
 }
 
-function node_gallery_config_form_next_submit($form, &$form_state) {
-  $form_state['storage'] = array_merge((array)$form_state['storage'], (array)$form_state['values']['config']);
-}
+/**
+ * Submit handler for relationship settings form
+ *
+ * @param $form
+ * @param $form_state
+ */
+function node_gallery_relationship_settings_form_submit($form, &$form_state) {
+  $r = (object)$form['#relationship'];
+  $r->imagefield_name = $form_state['values']['imagefield'];
 
-function node_gallery_config_form_prev_submit($form, &$form_state) {
-  $form_state['storage'] = array_merge((array)$form_state['storage'], (array)$form_state['values']['config']);
-  unset($form_state['values']['step']);  
-}
+  if ($r->imagefield_name == 'field_node_gallery_image') {
+    // if the field is named 'field_node_gallery_image' check if it exists
+    // or if we need to create it. We could hack around that check with a pre- or
+    // suffix, but I rate this way cleaner (though more costly).
+    $param = array(
+      'type_name' => $r->image_type,
+      'field_name' => $r->imagefield_name,
+    );
+    if (! node_gallery_cck_field_exists($param)) {
+      // @todo: there's a little bit of DRY going on here and in node_gallery_install_cck_type() in .install.
+      //  We should pull this into a common function at some point.
 
-function node_gallery_config_form_submit($form, &$form_state) {
-  $submit_values = array_merge((array)$form_state['storage'], (array)$form_state['values']['config']);
-  
-  $node_gallery_id = 'node_gallery_'. $submit_values['gallery_type'];
-  variable_set($node_gallery_id, $submit_values);
-  
-  unset($form_state['storage']);
-  $form_state['rebuild'] = FALSE;
+      // create the default imagefield read out of the default type
+      $path = drupal_get_path('module', 'node_gallery') . "/cck_types";
+      $cck_file = $path . '/node_gallery_image.cck';
+      $param = array('type_name' => $r->image_type);
+      $content = array();
+      eval(file_get_contents($cck_file));
+      $param = array_merge($param, array_pop($content['fields']));
+      unset($content);
+      content_field_instance_create($param);
+      drupal_set_message(t('Node Gallery imagefield created.'));
+    }
+  }
+  $settings = isset($r->settings) ? $r->settings : array();
+  $valid_settings = array_keys(node_gallery_relationship_settings_defaults());
+  foreach ((array)$form_state['values'] as $k => $v) {
+    if (in_array($k, $valid_settings)) {
+      $settings[$k] = $v;
+    }
+  }
+  $r->settings = $settings;
+  drupal_write_record('node_gallery_relationships', $r, 'rid');
+  menu_cache_clear_all();
+  drupal_set_message(t('Node Gallery relationship updated'));
+  // Repopulate the cache
+  node_gallery_get_relationship($r->gallery_type, TRUE);
+
   $form_state['redirect'] = 'admin/settings/node_gallery';
 }
 
 /**
- * copy from cck module for no cck dependency.
+ * Builds the form used to delete relationships.
  *
- * @param unknown_type $type_name
- * @return unknown
- */
-function node_gallery_get_type_fields($type_name) {
-  $type = node_get_types('type', $type_name);
-  $extra = array();
-
-  if ($type->has_title) {
-    $extra['title'] = array(
-      'label' => $type->title_label,
-      'description' => t('Node module form.'),
-      'weight' => -5
-    );
-  }
-  if ($type->has_body) {
-    $extra['body_field'] = array(
-      'label' => $type->body_label,
-      'description' => t('Node module form.'),
-      'weight' => 0,
-      'view' => 'body'
-    );
-  }
-  if (module_exists('locale') && variable_get("language_content_type_$type_name", 0)) {
-    $extra['language'] = array(
-      'label' => t('Language'),
-      'description' => t('Locale module form.'),
-      'weight' => 0
-    );
-  }
-  if (module_exists('taxonomy') && taxonomy_get_vocabularies($type_name)) {
-    $extra['taxonomy'] = array(
-      'label' => t('Taxonomy'),
-      'description' => t('Taxonomy module form.'),
-      'weight' => -3
-    );
-  }
-
-  return $extra;
-}
-
-/**
- * gallery upload limitation settings. seperate from upload module for more flexibility.
+ * @param $form_state
+ * @param $relationship
+ *   The relationship array.
  *
- * @param unknown_type $default_settings
- * @param unknown_type $image_type
- * @return unknown
+ * @return
+ *   A confirmation form.
  */
-function node_gallery_upload_limits_form(&$parent_form, $default_settings, $image_type) {
-  $default_value = array(
-    'file_extension' => 'jpg jpeg gif png',
-    'file_resolution' => 0,
-    'file_max_size' => 1,
-    'user_max_size' => 2,
-    'user_max_number' => 0,
-  );
-  
-  $default_settings['general'] = array_merge($default_value, (array)$default_settings['general']);
-  
-  $form['general'] = array(
-    '#type' => 'fieldset',
-    '#tree' => TRUE,
-    '#title' => t('Image Upload Limitation Default Settings'),
-    '#description' => t('Specify the image upload limitations'),
-    '#collapsible' => TRUE,
-    '#collapsed' => TRUE,
-  );
-  $form['general']['file_extension'] = array(
-    '#type' => 'textfield',
-    '#title' => t('Default permitted file extensions'),
-    '#maxlength' => 255,
-    '#description' => t('Default extensions that users can upload. Separate extensions with a space and do not include the leading dot.'),
-    '#default_value' => $default_settings['general']['file_extension'],
-  );
-  $form['general']['file_resolution'] = array(
-    '#type' => 'textfield',
-    '#title' => t('Maximum resolution for uploaded images'),
-    '#size' => 15,
-    '#maxlength' => 10,
-    '#description' => t('The maximum allowed image size (e.g. 640x480). Set to 0 for no restriction. If an <a href="!image-toolkit-link">image toolkit</a> is installed, files exceeding this value will be scaled down to fit.', array('!image-toolkit-link' => url('admin/settings/image-toolkit'))),
-    '#field_suffix' => '<kbd>'. t('WIDTHxHEIGHT') .'</kbd>',
-    '#default_value' => $default_settings['general']['file_resolution'],
-  );
-  $form['general']['file_max_size'] = array(
-    '#type' => 'textfield',
-    '#title' => t('Default maximum file size per upload'),
-    '#default_value' => $default_settings['general']['file_max_size'],
-    '#size' => 5,
-    '#maxlength' => 5,
-    '#description' => t('The default maximum file size a user can upload. If an image is uploaded and a maximum resolution is set, the size will be checked after the file has been resized.'),
-    '#field_suffix' => t('MB'),
-  );
-  $form['general']['user_max_size'] = array(
-    '#type' => 'textfield',
-    '#title' => t('Default total file size per user'),
-    '#default_value' => $default_settings['general']['user_max_size'],
-    '#size' => 5,
-    '#maxlength' => 5,
-    '#description' => t('The default maximum size of all files a user can have on the gallery.'),
-    '#field_suffix' => t('MB'),
-  );
-
-  $form['general']['upload_max_size'] = array('#value' => '<p>'. t('Your PHP settings limit the maximum file size per upload to %size.', array('%size' => format_size(file_upload_max_size()))) .'</p>');
-  
-  $form['general']['user_max_number'] = array(
-    '#type' => 'textfield',
-    '#title' => t('Default total file number per user'),
-    '#default_value' => $default_settings['general']['user_max_number'],
-    '#size' => 5,
-    '#maxlength' => 5,
-    '#description' => t('The maximum number of images a user can upload to the gallery. (Set to 0 for unlimited)'),
-  );
-  
-  $roles = user_roles(FALSE, 'create '. $image_type .' content');
-  $form['roles'] = array('#type' => 'value', '#value' => $roles);
-  
-  foreach ($roles as $rid => $role) {
-    $form['role_'. $rid] = array(
-      '#type' => 'fieldset',
-      '#title' => t('Image Upload Limitation Settings for @role', array('@role' => $role)),
-      '#tree' => TRUE,
-      '#collapsible' => TRUE,
-      '#collapsed' => TRUE,
-    );
-    $form['role_'. $rid]['role_name'] = array(
-      '#type' => 'hidden',
-      '#value' => $role,
-    );
-    $form['role_'. $rid]['file_max_size'] = array(
-      '#type' => 'textfield',
-      '#title' => t('Maximum file size per upload'),
-      '#default_value' => empty($default_settings['role_'. $rid]['file_max_size']) ? $default_settings['general']['file_max_size'] : $default_settings['role_'. $rid]['file_max_size'],
-      '#size' => 5,
-      '#maxlength' => 5,
-      '#description' => t('The maximum size of a file a user can upload. If an image is uploaded and a maximum resolution is set, the size will be checked after the file has been resized.'),
-      '#field_suffix' => t('MB'),
-    );
-    $form['role_'. $rid]['user_max_size'] = array(
-      '#type' => 'textfield',
-      '#title' => t('Total file size per user'),
-      '#default_value' => empty($default_settings['role_'. $rid]['user_max_size']) ? $default_settings['general']['user_max_size'] : $default_settings['role_'. $rid]['user_max_size'],
-      '#size' => 5,
-      '#maxlength' => 5,
-      '#description' => t('The maximum size of all files a user can have on the gallery.'),
-      '#field_suffix' => t('MB'),
-    );
-    $form['role_'. $rid]['user_max_number'] = array(
-      '#type' => 'textfield',
-      '#title' => t('Total file number per user'),
-      '#default_value' => empty($default_settings['role_'. $rid]['user_max_number']) ? $default_settings['general']['user_max_number'] : $default_settings['role_'. $rid]['user_max_number'],
-      '#size' => 5,
-      '#maxlength' => 5,
-      '#description' => t('The maximum number of images a user can upload to the gallery. (Set to 0 for unlimited)'),
-    );
-  }
-  
-  $parent_form['#validate'][] = 'node_gallery_upload_limits_form_validate';
-  $parent_form['config']['upload_limits'] = array_merge(array(), $form);
-  
-}
-
-function node_gallery_upload_limits_form_validate($form, &$form_state) {
-  $has_error = FALSE;
-  
-  if ($form_state['values']['step'] == 2) {
-    $upload_limit_values = $form_state['values']['config']['upload_limits'];
-    
-    $default_file_max_size = $upload_limit_values['general']['file_max_size'];
-    $default_user_max_size = $upload_limit_values['general']['user_max_size'];
-    $exceed_max_msg = t('Your PHP settings limit the maximum file size per upload to %size.', array('%size' => format_size(file_upload_max_size()))) .'<br/>';
-    $more_info = t("Depending on your server environment, these settings may be changed in the system-wide php.ini file, a php.ini file in your Drupal root directory, in your Drupal site's settings.php file, or in the .htaccess file in your Drupal root directory.");
-    
-    foreach ($upload_limit_values as $role_key => $role_values) {
-      foreach ($role_values as $key => $value) {
-        switch ($key) {
-          case 'file_resolution':
-            if ($value != '0') {
-              if (!preg_match('/^[0-9]+x[0-9]+$/', $value)) {
-                form_set_error('file_resolution', t('The maximum allowed image size expressed as WIDTHxHEIGHT (e.g. 640x480). Set to 0 for no restriction.'));
-                $has_error = TRUE;
-              }
-            }
-            break;
-          case 'file_max_size':
-            if (!is_numeric($value) || ($value <= 0)) {
-              form_set_error('file_max_size', t('The %role file size limit must be a number and greater than zero.', array('%role' => ($role_key == 'general') ? t('default') : $role_values['role_name'])));
-              $has_error = TRUE;
-            }
-            if ($value * 1024 * 1024 > file_upload_max_size()) {
-              form_set_error('file_max_size', $exceed_max_msg . $more_info);
-              $has_error = TRUE;
-            }
-            if ($value > $role_values['user_max_size']) {
-              form_set_error('file_max_size', t('The %role maximum file size per upload is greater than the total file size allowed per user', array('%role' => ($role_key == 'general') ? t('default') : $role_values['role_name'])));
-              $has_error = TRUE;
-            }
-            break;
-          case 'user_max_size':
-            if (!is_numeric($value) || ($value <= 0)) {
-              form_set_error('user_max_size', t('The %role maximum file size limit must be a number and greater than zero.', array('%role' => ($role_key == 'general') ? t('default') : $role_values['role_name'])));
-              $has_error = TRUE;
-            }
-            if ($value < $role_values['file_max_size']) {
-              form_set_error('user_max_size', t('The %role file size per upload is greater than the total file size allowed per user', array('%role' => ($role_key == 'general') ? t('default') : $role_values['role_name'])));
-              $has_error = TRUE;
-            }
-            break;
-        }
-      }
-    }
-    if ($has_error) {
-      $form_state['values']['step'] --;
-    }
-  }
-}
-
-function node_gallery_config_delete_form($form_state, $gallery_config) {
-  $form['gallery_id'] = array(
+function node_gallery_relationship_delete_form($form_state, $relationship) {
+  $form['rid'] = array(
     '#type' => 'value',
-    '#value' => 'node_gallery_'. $gallery_config['gallery_type'],
+    '#value' => $relationship['rid'],
   );
-  $form['gallery_name'] = array(
+  $form['relationship_name'] = array(
     '#type' => 'value',
-    '#value' => $gallery_config['name'],
+    '#value' => $relationship['settings']['name'],
   );
-  
-  return confirm_form($form, t('Are you sure you want to delete gallery type config %name?', array('%name' => $gallery_config['name'])),
+
+  return confirm_form($form, t('Are you sure you want to delete the relationship %name?', array('%name' => $relationship['settings']['name'])),
    'admin/settings/node_gallery', NULL, t('Delete'), t('Back'));
 }
 
-function node_gallery_config_delete_form_submit($form, &$form_state) {
-  
-  variable_del($form_state['values']['gallery_id']);
-  drupal_set_message(t('Gallery type config %name has been deleted.', array('%name' => $form_state['values']['gallery_name'])));
+/**
+ * Submit handler for the deletion form.
+ *
+ * @param $form
+ * @param $form_state
+ */
+function node_gallery_relationship_delete_form_submit($form, &$form_state) {
+
+  node_gallery_delete_relationship($form_state['values']['rid']);
+  drupal_set_message(t('Relationship %name has been deleted.', array('%name' => $form_state['values']['relationship_name'])));
   watchdog(
     'node_gallery',
     'Node Gallery relationship deleted.',
-    WATCHDOG_NOTICE
+  WATCHDOG_NOTICE
   );
-  
-    $form_state['redirect'] = 'admin/settings/node_gallery';
+
+  $form_state['redirect'] = 'admin/settings/node_gallery';
 }

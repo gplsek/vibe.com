@@ -1,4 +1,3 @@
-; $Id: README.txt,v 1.4.4.3 2010/05/08 14:02:30 justintime Exp $
 
 NODE GALLERY MODULE
 -------------------
