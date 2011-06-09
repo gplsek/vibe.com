@@ -2991,7 +2991,8 @@ li.flag-reaction_smh, li.flag-reaction_sexy, li.flag-reaction_lol, li.flag-react
 }
 
 
-.gallery_title {
+.gallery_title,
+#hottest-celeb-landing-block #latest_on_vibe_posts .views-field-title {
  	padding-left: 6px;
 	padding-top: 0;
 	line-height: 1;
@@ -3006,7 +3007,8 @@ li.flag-reaction_smh, li.flag-reaction_sexy, li.flag-reaction_lol, li.flag-react
 
 
 
-.gallery_title_bg {
+.gallery_title_bg,
+#hottest-celeb-landing-block #latest_on_vibe_posts .views-field-title {
 	background-color: #000000;
 	opacity: .5;
  	filter:alpha(opacity=50);
@@ -4825,3 +4827,46 @@ Celebrity Page Stuff
     color:#CCC;
     text-align:center;
 }
+
+/* Hotest Celeb block - Casey EDITS Start */
+#hottest-celeb-landing-block #latest_on_vibe_posts {
+  /*width: 100px;*/
+  display: inline;
+}
+
+#hottest-celeb-landing-block #latest_on_vibe_posts .views-row {
+  position: relative;
+  width: 140px;
+  height: 105px;
+  display: inline;
+  float: left;
+  margin-left: 8px;
+  margin-bottom: 16px;
+}
+
+#hottest-celeb-landing-block #latest_on_vibe_posts .views-row.views-row-3,
+#hottest-celeb-landing-block #latest_on_vibe_posts .views-row.views-row-6
+{
+  margin-right: 8px;
+}
+
+#hottest-celeb-landing-block #latest_on_vibe_posts .views-field-field-celebrity-thumbnail-fid {
+  position: absolute;
+}
+
+#hottest-celeb-landing-block #latest_on_vibe_posts .views-field-title {
+  position: absolute;
+  bottom: 0px;
+  font-size: 1.25em;
+}
+
+#hottest-celeb-landing-block #latest_on_vibe_posts .views-field-title a {
+  color: white;
+  text-decoration: none;
+}
+
+.page-celebrities .panel-pane {
+  clear: both;
+}
+
+/* Hotest Celeb block - Casey EDITS Start */
