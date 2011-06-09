@@ -1,7 +1,0 @@
-; $Id
-name = Jetpack V-Links
-description = Create a block that displays vlinks below each story
-package = Jetpack
-core = 6.x
-
-dependencies[] = imagecache

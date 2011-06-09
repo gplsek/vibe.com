@@ -1,7 +1,0 @@
-; $Id
-name = Jetpack Collection
-description = Create a collection of nodes which can be arranged in an arbitrary order
-package = Jetpack
-core = 6.x
-
-dependencies[] = imagecache
