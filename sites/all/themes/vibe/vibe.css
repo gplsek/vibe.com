@@ -1815,7 +1815,7 @@
   }
 
 
-#story_title {
+#story_title, #celeb-title {
 	width: 515px;
 	height: auto;
 	padding-top: 5px;
@@ -1823,6 +1823,11 @@
 	line-height: 25px;
 	font-size: 24px;
 	background: transparent url(/sites/all/themes/vibe/images/blue_fade.png) no-repeat;
+}
+
+#celeb-title {
+  height: 1.5em;
+  text-decoration: underline;
 }
 
 .story_title_text_outer {
@@ -1843,6 +1848,10 @@
 	/*float: left;*/
 	margin-bottom: 10px;
 	border-bottom: 1px solid black;
+}
+
+#story_body:first-letter {
+  font-size: 2.5em;
 }
 
 
@@ -3659,19 +3668,21 @@ li.flag-reaction_smh, li.flag-reaction_sexy, li.flag-reaction_lol, li.flag-react
   
 #fbshare{
 	float:left;
-	margin-left: 53px;
-	margin-top: -37px;
+	/*margin-left: 53px;*/
+	/*margin-top: -37px;*/
 }
 
 
 
 #fbrecommend{
-	margin-left: 70px;
-	margin-top: -29px;
-	
+	/*margin-left: 70px;*/
+	/*margin-top: -29px;*/
+	width: 285px;
+	position: absolute;
 }
 
 #tweetshare{
+  float: right;
 }
 
 #fbrecommend .facebook_recommend iframe {
@@ -3685,14 +3696,17 @@ li.flag-reaction_smh, li.flag-reaction_sexy, li.flag-reaction_lol, li.flag-react
 }
 
 #social_network{
-	margin: 9px 156px 0px 10px;
+	/*margin: 9px 156px 0px 10px;*/
 	width: 525px;
-	height: 30px;
-	
+	height: 22px;
+	border-top: dotted 1px;
+	border-bottom: dotted 1px;
+	padding-top: 4px;
+	padding-bottom: 5px;
+	margin-bottom: 5px;
 }
 
 #social_wrapper{
-	float:left;
 	width: 500px;
 }
 
