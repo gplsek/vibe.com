@@ -1,0 +1,15 @@
+/* $Id: node_gallery.css,v 1.3.4.12 2010/05/08 14:02:30 justintime Exp $ */
+
+.gallery-operations {text-align:right;border-bottom:1px solid #CCCCCC; padding-bottom:1em}
+.gallery-operations li {display:inline; padding-left:1em; background:url(image/list-lt.gif) no-repeat 0 center; }
+.image-navigator tr {background:#fff}
+.gallery-cover-view ul.gallery-operations {border:none}
+.gallery-cover-view ul.gallery-operations li {display:block; background:none}
+.image-navigator ul.gallery-operations {border:none; padding-bottom:0}
+.image-preview {text-align:center}
+
+table.image-navigator td.image-navigator-left {width:33%}
+table.image-navigator td.image-navigator-mid {width:33%; text-align:center}
+table.image-navigator td.image-navigator-right {width:33%}
+
+.gallery-upload-thumb img { width: 100px; }

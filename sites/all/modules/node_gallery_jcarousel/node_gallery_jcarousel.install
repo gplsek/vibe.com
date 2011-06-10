@@ -1,0 +1,75 @@
+<?php
+
+/**
+ * @file
+ * Installation file for node_gallery_jcarousel
+ */
+
+/**
+ * Installs default node-gallery-jcarousel-thumbnail imagecache preset if it doesn't already exist.
+ */
+function node_gallery_jcarousel_install_imagecache_presets() {
+  // First, build an array of all the preset names so we do not make duplicates
+  // Set the argument to TRUE to reset the cache
+  $presets = imagecache_presets(TRUE);
+  $preset_names = array();
+  
+  // If there are any presets
+  if ($presets != '') {
+    foreach ($presets as $preset) {
+      $preset_names[] = $preset['presetname'];
+    }
+  }
+  
+  // Prepare to install ImageCache presets
+  $imagecache_presets = array();
+  $imagecache_actions = array();
+  
+  // We are checking to make sure the preset name does not exist before creating
+  if (!in_array('node-gallery-jcarousel-thumbnail', $preset_names)) {
+    $imagecache_presets[] = array(
+      'presetname' => 'node-gallery-jcarousel-thumbnail',
+    );
+    $imagecache_actions['node-gallery-jcarousel-thumbnail'][] = array(
+      'action' => 'imagecache_scale_and_crop',
+      'data' => array(
+        'width' => 60,
+        'height' => 60,
+      ),
+      'weight' => 0,
+    );
+  }
+  
+  // Need to install preset, id will be returned by function,
+  // Then install action add presetid to action prior to install:
+  foreach ($imagecache_presets as $preset) {
+    $preset = imagecache_preset_save($preset);
+    foreach ($imagecache_actions[$preset['presetname']] as $action) {
+      $action['presetid'] = $preset['presetid'];
+      imagecache_action_save($action);
+    }
+    drupal_set_message(t('ImageCache preset %id: %name and corresponding actions saved.', array('%id' => $preset['presetid'], '%name' => $preset['presetname'])));
+  }
+}
+
+/**
+ * Gives everyone the permission to view this module's imagecache presets.
+ */
+function node_gallery_jcarousel_set_imagecache_permissions() {
+  $permissions = array('view imagecache node-gallery-jcarousel-thumbnail');
+  module_load_include('install', 'node_gallery');
+  _node_gallery_give_all_users_permission($permissions);
+}
+
+
+/**
+ * Implementation of hook_install().
+ */
+function node_gallery_jcarousel_install() {
+  node_gallery_jcarousel_install_imagecache_presets();
+  node_gallery_jcarousel_set_imagecache_permissions();
+  drupal_set_message(t('Node Gallery jcarousel installed - please enable it by editing your !relationships.',
+    array('!relationships' => l('relationships', 'admin/settings/node_gallery/list'))));
+  $weight = db_result(db_query("SELECT weight FROM {system} WHERE name = 'node_gallery' AND type = 'module'"));
+  db_query("UPDATE {system} SET weight = %d WHERE name = 'node_gallery_jcarousel' AND type = 'module'", $weight + 1);
+}

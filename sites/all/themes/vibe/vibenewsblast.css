@@ -1,0 +1,38 @@
+#header #topbar {
+	height: 30px;
+	width: 850px;
+	background: url(images/header-top-bg.png) repeat-x;	
+}
+
+a.image-link {}
+
+a.image-link span {
+	display: none;
+}
+
+
+a#vibe-lifestyle-network {
+	position: absolute; 
+	top: 0px; 
+	left: 0px; 
+	width: 175px; 
+	height: 30px; 
+	background: url(images/vibe-lifestyle-network.png) no-repeat;	
+}
+
+a#vibe-blast-top {
+	position: absolute; 
+	top: 0px; 
+	left: 273px; 
+	width: 304px; 
+	height: 30px; 	
+	background: url(images/vibe-blast-blue.gif) no-repeat;
+}
+
+a#vibe-blast-middle {	
+	background: url(images/vibe-blast-red.gif) no-repeat;
+	width: 225px;
+	height: 52px;
+	float: right;
+	margin: -5px 5px 0 0;	
+}

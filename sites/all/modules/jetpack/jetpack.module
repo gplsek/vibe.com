@@ -1,0 +1,517 @@
+<?php
+
+/*function jetpack_init() {
+	$check_node_access = db_result(db_query("SELECT grant_view FROM {node_access} WHERE realm = 'all' AND nid = 0 AND grant_view = 1"));
+  if(!$check_node_access) {
+    db_query("INSERT INTO node_access (nid, gid, realm, grant_view, grant_update, grant_delete) VALUES (0, 0, 'all', 1, 0, 0)");
+  }
+}*/
+
+
+function get_more_text($type) {
+	$more_link_text = "READ MORE";
+ 	switch($type) {
+ 	case 'story': 
+ 		$more_link_text = "READ MORE";
+ 		break;
+ 	case 'photo_gallery': 
+ 		$more_link_text = "VIEW PHOTOS";
+ 		break;
+ 	case 'watch_video': 
+ 		$more_link_text = "WATCH VIDEO";
+ 		break;
+ 	}
+ 	
+ 	return $more_link_text;
+
+}
+
+function get_feed_nodes($feeds = array(), $limit=5) {
+   $feed_nodes = array();
+  
+   foreach($feeds as $feed) {
+   	$sql = "SELECT n.*, f.* FROM node n, feeds_node_item f, node n2 WHERE f.feed_nid = n2.nid AND n2.title = '$feed' AND n.nid = f.nid ORDER BY n.changed desc LIMIT $limit";
+   	$results = db_query($sql);
+   	while($result = db_fetch_object($results)) {
+   			$feed_nodes[$feed][] = $result;
+   	}
+   }
+  
+   return $feed_nodes;
+}
+
+function get_top_links($limit = 5) {
+	/*$links = array();
+	$sql = "SELECT n.*, u.*, url.dst, fl.filepath FROM node n  INNER JOIN flag_counts c on(c.content_id = n.nid AND c.content_type = 'node') INNER JOIN flags f on(f.name = 'rating_plus' AND f.fid = c.fid) INNER JOIN users u on(n.uid = u.uid) INNER JOIN  url_alias url on(url.src = concat('node/',n.nid)) LEFT JOIN content_type_link img on (n.nid = img.nid) LEFT JOIN files fl on (fl.fid = img.field_link_image_fid) WHERE n.type = 'link' ORDER BY c.count desc LIMIT $limit";
+
+	$results = db_query(db_rewrite_sql($sql));
+	while($link = db_fetch_object($results)) {
+		$links[] = $link;
+	}
+	
+	return $links;*/
+}
+
+function get_top_users($limit = 5) {
+	$users = array();
+	
+	$sql = "SELECT u.*, sum(c.count) count FROM node n, flags f, flag_counts c, users u WHERE f.name = 'rating_plus' AND f.fid = c.fid AND c.content_id = n.nid AND c.content_type = 'node' AND n.uid = u.uid GROUP BY uid ORDER BY count desc  LIMIT $limit";
+	$results = db_query(db_rewrite_sql($sql));
+	while($user = db_fetch_object($results)) {
+		// Get total number of comments
+		$sql = "SELECT count(*) comment_count FROM comments WHERE uid = $user->uid";
+		$results2 = db_query(db_rewrite_sql($sql));
+		$obj = db_fetch_object($results2);
+		$user->comment_count = $obj->comment_count;
+		$users[] = $user;
+	}
+	
+	return $users;
+
+}
+
+function get_most_recent_feed_items($limit = 5) {
+	$feed_items = array();
+	
+	$sql = "SELECT n.*, f.*, s.*, url.dst FROM node n INNER JOIN feeds_node_item f on(f.nid = n.nid) INNER JOIN feeds_source s on(f.feed_nid = s.feed_nid) INNER JOIN url_alias url on (src = concat('node/',n.nid)) ORDER BY n.changed desc LIMIT $limit";
+	$results = db_query(db_rewrite_sql($sql));
+	while($feed_item = db_fetch_object($results)) {
+		// Get total number of comments
+		$sql = "SELECT count(*) comment_count FROM comments WHERE nid= $feed_item->nid";
+		$results2 = db_query(db_rewrite_sql($sql));
+		$obj = db_fetch_object($results2);
+		$feed_item->comment_count = $obj->comment_count;
+		$feed_items[] = $feed_item;
+	}
+	
+	return $feed_items;
+}
+
+function get_top_reactions() {
+	$reactions = array();
+	
+	$sql = "select * from (SELECT f.name reaction_name, f.title reaction_title, c.count, n.*, u.picture, u.name username, fl.fid, fl.filepath, url.dst link FROM node n INNER JOIN url_alias url on (src = concat('node/',n.nid)) INNER JOIN flags f on (f.name like  'reaction_%') INNER JOIN flag_counts c on (f.fid = c.fid and c.content_id = n.nid and c.content_type = 'node') INNER JOIN users u on(n.uid = u.uid) LEFT JOIN content_type_story img on (n.nid = img.nid) LEFT JOIN files fl on (fl.fid = img.field_story_thumb_fid) WHERE (n.created >= UNIX_TIMESTAMP()-432000)order by c.count desc) tmp group by reaction_name";
+	$results = db_query($sql);
+	while($reaction = db_fetch_object($results)) {
+		$reactions[$reaction->reaction_name] = $reaction;
+	}
+	
+	return $reactions;
+}
+
+
+function time_ago_string($d1, $d2) {
+	$timeago = "";
+	
+	//var_dump("<br />Now: ".$d1);
+	//var_dump("<br />PostTime: ".);
+	
+	$diff = date_diff3($d1, $d2);
+	
+	if($diff["year"] > 0) {
+		$pl = ($diff["year"]>1)?"s":"";
+		$timeago = date("M jS Y",$d2);
+	} else if($diff["month"] > 0) {
+		$pl = ($diff["month"]>1)?"s":"";
+		$timeago = date("M jS Y",$d2);
+	} else if($diff["day"] > 0) {
+		$pl = ($diff["day"]>1)?"s":"";
+		$timeago = date("M jS Y",$d2);
+	} else if($diff["hour"] > 0) {
+		$pl = ($diff["hour"]>1)?"s":"";
+		$timeago = $diff["hour"] . " hour" . $pl . " ago";
+	} else if($diff["minute"] > 0) {
+		$pl = ($diff["minute"]>1)?"s":"";
+		$timeago = $diff["minute"] . " minute" . $pl . " ago";
+	} else {
+		$timeago = "Now";
+	}
+	
+	return $timeago;
+}
+
+function date_diff3($d1, $d2){
+   $diff = array();
+   if ($d1 < $d2){
+    $temp = $d2;
+    $d2 = $d1;
+    $d1 = $temp;
+  }
+  
+  //echo date_default_timezone_get();
+  //$d1- 3600;
+   $dateDiff    = $d1 - $d2;
+   //echo ":".$d1.":".$d2.":" . $dateDiff;
+   $diff['day']    	= floor(($dateDiff)/86400);
+   $diff['hour']   	= floor(($dateDiff)/3600);
+   $diff['minute']  = floor(($dateDiff)/60);
+   $diff['month']   = floor(($dateDiff)/2628000);
+   $diff['year']    = floor(($dateDiff)/31536000);
+   $diff['second'] 	= $dateDiff;
+  
+	return $diff;   
+}
+ function date_diff2($d1, $d2){
+
+  //check higher timestamp and switch if neccessary
+  if ($d1 < $d2){
+    $temp = $d2;
+    $d2 = $d1;
+    $d1 = $temp;
+  }
+  else {
+    $temp = $d1; //temp can be used for day count if required
+  }
+  $d1 = date_parse(date("Y-m-d H:i:s",$d1));
+  $d2 = date_parse(date("Y-m-d H:i:s",$d2));
+  //seconds
+  if ($d1['second'] >= $d2['second']){
+    $diff['second'] = $d1['second'] - $d2['second'];
+  }
+  else {
+    $d1['minute']--;
+    $diff['second'] = 60-$d2['second']+$d1['second'];
+  }
+  //minutes
+  if ($d1['minute'] >= $d2['minute']){
+    $diff['minute'] = $d1['minute'] - $d2['minute'];
+  }
+  else {
+    $d1['hour']--;
+    $diff['minute'] = 60-$d2['minute']+$d1['minute'];
+  }
+  //hours
+  if ($d1['hour'] >= $d2['hour']){
+    $diff['hour'] = $d1['hour'] - $d2['hour'];
+  }
+  else {
+    $d1['day']--;
+    $diff['hour'] = 24-$d2['hour']+$d1['hour'];
+  }
+  //days
+  if ($d1['day'] >= $d2['day']){
+    $diff['day'] = $d1['day'] - $d2['day'];
+  }
+  else {
+    $d1['month']--;
+    $diff['day'] = date("t",$temp)-$d2['day']+$d1['day'];
+  }
+  //months
+  if ($d1['month'] >= $d2['month']){
+    $diff['month'] = $d1['month'] - $d2['month'];
+  }
+  else {
+    $d1['year']--;
+    $diff['month'] = 12-$d2['month']+$d1['month'];
+  }
+  //years
+  $diff['year'] = $d1['year'] - $d2['year'];
+  return $diff;   
+}
+
+function get_next_node($nid) {
+	//$node = node_load($nid);
+	//return $node;
+	
+   $sql = "SELECT n.nid FROM node n WHERE n.nid > ";
+   $sql .= $nid . " AND n.type in ('story','photo_gallery','advpoll_binary','video','event') AND n.status = 1 ORDER BY n.nid asc limit 1";
+
+   $result = db_fetch_array(db_query(db_rewrite_sql($sql)));
+   if (!$result) {
+     return NULL;
+   } else {
+     return node_load($result['nid']);
+   }
+}
+
+function get_prev_node($nid) {
+	$sql = "SELECT n.nid FROM node n WHERE n.nid < ";
+   $sql .= $nid . " AND  n.type in ('story','photo_gallery','advpoll_binary','video','event') AND n.status = 1 ORDER BY n.nid desc limit 1";
+   $result = db_fetch_array(db_query(db_rewrite_sql($sql)));
+   if (!$result) {
+     return NULL;
+   } else {
+     return node_load($result['nid']);
+   }
+}
+
+function ellipse($paragraph, $limit) {
+	$clean_paragraph = strip_tags($paragraph);
+	
+	if (strlen($clean_paragraph) > $limit) {
+		$substr = substr($clean_paragraph, 0, $limit);
+		$pos1 = strrpos($substr, " ");
+		$cleanstr = substr($substr, 0, $pos1+1);
+	
+		if(strlen($paragraph) > $limit) {
+			$cleanstr .= "...";
+		}
+	} else {
+		$cleanstr = $clean_paragraph;
+	}
+	return $cleanstr;
+}
+
+function excerpt($paragraph, $limit){
+	
+	$clean_paragraph = strip_tags($paragraph);
+	
+	$substr = substr($clean_paragraph, 0, $limit);
+	
+	$pos1 = strrpos($substr, "!");
+	$pos2 = strrpos($substr, ".");
+	$pos3 = strrpos($substr, "?");
+	
+	$lastpos = 0;
+	if($pos1 > -1 && $pos1 > $pos2 && $pos1 > $pos3) {
+		$lastpos = $pos1;
+	} else if($pos2 > -1 && $pos2 > $pos3 && $pos2 > $pos1) {
+		$lastpos = $pos2;
+	} else if($pos3 > -1) {
+		$lastpos = $pos3;
+	} else {
+		return $substr;
+	}
+	
+	return substr($substr, 0, $lastpos+1);
+}
+
+function jetpack_user($op, &$edit, &$account, $category = NULL) {
+  /*if ($op == 'insert' && $category == 'account') {
+  	$account->password = $edit['pass'];
+  	_user_mail_notify('register_no_approval_required', $account);
+   	drupal_goto('registration-sent'); 
+   //exit;
+  }*/
+}
+
+function get_itunes_code($identifier) {
+	$cookie_name = "v" . substr(md5($identifier),0,5);
+	if($_COOKIE[$cookie_name]) {
+		$result = db_query("select id, code from itunes_codes where identifier='$identifier' and cookie_code='" . $_COOKIE[$cookie_name] . "' limit 1");
+		$row = db_fetch_array($result);
+		return $row["code"];
+	}
+
+	$result = db_query("select id, code from itunes_codes where identifier='$identifier' and delivered is null order by id asc limit 1");
+	$row = db_fetch_array($result);
+	
+	if($row) {
+		// Set a cookie on the user, and update the database
+		$cookie_code = md5($row["code"] . ":" .  $_SERVER['REMOTE_ADDR']);
+
+		// Set the cookie for 10 years
+		setcookie($cookie_name, $cookie_code, time()+60*60*24*3650);
+
+		db_query("update itunes_codes set cookie_code = '" . $cookie_code . "', delivered=now(), ip_address='" . $_SERVER['REMOTE_ADDR'] . "' where id = " . $row["id"]);
+		return $row["code"];
+	} else {
+		return "No code";
+	}
+}
+
+function jetpack_form_alter(&$form, &$form_state, $form_id)
+{
+	//var_dump($form_id);
+	//file_put_contents("/tmp/form_".$form_id,"$form_id");
+	if($form_id == 'user_pass')
+	{
+		$form['#ajax'] = array(
+                        'enabled' => TRUE
+                );
+
+		$form['name'] = array(
+			'#type' => 'textfield',
+			'#title' => t('Username or e-mail address'),
+			'#size' => 60,
+			'#maxlength' => max(USERNAME_MAX_LENGTH, EMAIL_MAX_LENGTH),
+			'#required' => TRUE,
+		 );
+		 $form['submit'] = array('#type' => 'submit', '#value' => t('E-mail new password'));
+		 $form['submit']['#button_type'] = 'image';
+		 $form['submit']['#attributes'] = array(
+		    'style' => t('cursor: pointer; float: right;  background-color: rgb(40, 170, 225); display: block !important;color: #ffffff; font-size: 16px; border: none; padding: 4px; width: 180px; height: 34px; position: relative; margin-top: 7px; margin-right: 100px; /right: 0px; /top: -6px; _height: 32px; _margin_top: 20px; _margin_right: -100px; _border: 1px solid red; _postion: relative; _float: right;'),
+		    'alt' => t('Pass'),
+		);
+		
+		$form['#action'] = 'ajax_register/login';
+		$form['#redirect'] = '#TB_inline?height=430&amp;width=540&amp;inlineId=userloginModal&amp;modal=true';
+		
+	} else if($form_id == 'user_login_block') {
+
+		$form['#ajax'] = array(
+			'enabled' => TRUE,
+		);
+
+		
+		 $form['submit']['#button_type'] = 'image';
+ 		 $form['submit']['#attributes'] = array(
+		    'style' => t('cursor: pointer; float: right; background-color: rgb(40, 170, 225); display: block !important;color: #ffffff; font-size: 16px; border: none; padding: 4px; width: 90px; height: 32px; position: relative; margin-top: -59px; margin-right: 190px; /right: 0px; _height: 32px; _margin_top: 100px; _right: -200px; _postion: relative; _float: right; '),
+		    'alt' => t('Login'),
+  		 );
+		
+	}else if($form_id == 'user_register') {
+
+		$form['#ajax'] = array(
+			'enabled' => TRUE
+		);
+		
+		 $form['submit']['#button_type'] = 'image';
+ 		 $form['submit']['#attributes'] = array(
+		    'style' => t('cursor: pointer; float: right; background-color: rgb(40, 170, 225); display: block !important;color: #ffffff; font-size: 16px; border: none; padding: 4px; width: 180px; height: 31px; position: relative; margin-top: 60px; margin-right: 92px; /right: -20px; top/*\**/: 0px\9 _height: 0px; _position: relative;  _padding: 0px; _margin-top: 60px; _margin-right: 0px; _float: right;'),
+		    'alt' => t('Register'),
+  		 );
+		 
+		 
+		 
+	}else if ($form_id == 'comment_form') {
+			
+			$form['#ajax'] = array(
+			'enabled' => TRUE
+		);
+			$form['redirect_comment'] = array(
+			'#type' => 'hidden', 
+			'#id' => t('edit-field-redirect-comment-0-value'),
+			'#default_value' => drupal_get_normal_path(arg(1)),
+			);
+			
+			$form['redirect_reply'] = array(
+			'#type' => 'hidden', 
+			'#id' => t('edit-field-redirect-comment-0-value'),
+			'#default_value' => drupal_get_normal_path(arg(2)),
+			);
+			
+			$form['redirect_url'] = array(
+			'#type' => 'hidden', 
+			'#id' => t('edit-field-redirect-url-0-value'),
+			'#default_value' => curPageURL(),
+			);
+	}
+}
+
+function jetpack_nodeapi(&$node, $op, $a3 = NULL, $a4 = NULL) {
+   
+  switch ($op)
+   {
+	 case 'presave':		
+			$node->title = fix_ms_smart_quotes($node->title);
+					
+  // OPTIONAL: The node passed validation and is about to be saved. Modules may
+  //  use this to make changes to the node before it is saved to the database.
+  			break;
+	
+  }
+}
+
+function fix_ms_smart_quotes($string)
+{
+	$text = str_replace(array("\xe2\x80\x98", "\xe2\x80\x99", "\xe2\x80\x9c", "\xe2\x80\x9d", "\xe2\x80\x93", "\xe2\x80\x94", "\xe2\x80\xa6"),array("'", "'", '"', '"', '-', '--', '...'),$string);
+	// Next, replace their Windows-1252 equivalents.
+	$text = str_replace(array(chr(145), chr(146), chr(147), chr(148), chr(150), chr(151), chr(133)),array("'", "'", '"', '"', '-', '--', '...'),$text);
+	return $text;
+}
+
+function jetpack_views_execute(&$views) {
+	var_dump($views->build_info);
+
+}
+/** Debug Output File **/
+function debug_output($error){
+	$errorFile = "/tmp/debugOutput.txt";
+	$fh = fopen($errorFile, 'a') or die("can't open file");
+	fwrite($fh, $error);
+	fclose($fh);
+}
+
+function curPageURL() {
+ $pageURL = 'http';
+ if ($_SERVER["HTTPS"] == "on") {$pageURL .= "s";}
+ $pageURL .= "://";
+ if ($_SERVER["SERVER_PORT"] != "80") {
+  $pageURL .= $_SERVER["SERVER_NAME"].":".$_SERVER["SERVER_PORT"].$_SERVER["REQUEST_URI"];
+ } else {
+  $pageURL .= $_SERVER["SERVER_NAME"].$_SERVER["REQUEST_URI"];
+ }
+ return $pageURL;
+}
+
+function get_filepaths_via_nid($nid)
+{
+  $fids = array();
+  $filepaths = array();
+  foreach (content_fields() as $field) {
+    // If Field is an Image (imagefield.module) or filefield then
+    if ($field['type'] == 'image' || $field['type'] == 'filefield') {
+      $db_info = content_database_info($field);
+      // Get Content Type DB name - FROM statement
+      $tablename = $db_info['table'];
+      //Get File ID DB Column Name - SELECT statement
+      $fid_column = $db_info['columns']['fid']['column'];
+     
+      //get file id's
+      $sql = "SELECT ".$fid_column." FROM ".$tablename." WHERE nid = '%s'";
+      $result = db_query($sql, array($nid));
+      while ($fileid_row = db_fetch_array($result)) {
+        $fids[] = array('fid' => $fileid_row[$fid_column], 'type' => $field['type']);
+      }
+    }
+  }
+  foreach ($fids as $fid) {
+    //get paths for file id
+    $sql = "SELECT filepath FROM files WHERE fid = '%s'";
+    $result = db_query($sql, array($fid['fid']));
+    while ($filepath_row = db_fetch_array($result)) {
+      $filepaths[] = array('fid' => $fid['fid'], 'type' => $fid['type'], 'path' => $filepath_row['filepath']);
+    }
+  }
+  return $filepaths;
+}
+
+function get_path_alias($nid){
+	$path = 'node/'. $nid;
+	$alias = drupal_get_path_alias($path);
+	return $alias;
+}
+
+function get_image_filepath($fid){
+	$sql = "SELECT filepath from files where fid = '%d'";
+	$query = db_query($sql,$fid);
+	$result = db_fetch_object($query);
+	return $result->filepath;
+}
+
+function get_blog_id($bid){
+	$sql = "SELECT nid from jp_blog_node WHERE bid = %d";
+	$query = db_query($sql,$bid);
+	$results = db_fetch_object($query);
+	
+	return $results;
+
+}
+
+function get_bid_from_nid($nid){
+	$sql = "SELECT jpn.bid,jp.name from {jp_blog_node} jpn INNER JOIN {jp_blog} jp ON jp.bid = jpn.bid WHERE nid = %d";
+	$query = db_query($sql,$nid);
+	$results = db_fetch_object($query);
+	
+	return $results;
+}
+
+function validate_user_blog($uid){
+	$sql = "SELECT bid from jp_blog_user WHERE uid = %d";
+	$result = db_query($sql,$uid);
+	while($row = db_fetch_object($result)){
+		$res[] = $row->bid;
+	}
+	
+	return $res;
+}
+
+function get_comment_ip($cid){
+	$sql = "SELECT hostname from {comments} WHERE cid = %d";
+	$query = db_query($sql,$cid);
+	$results = db_fetch_object($query);
+	
+	return $results->hostname;
+
+}

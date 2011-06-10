@@ -1,0 +1,96 @@
+$Id: CHANGELOG.txt,v 1.23.4.52 2010/06/06 20:26:54 justintime Exp $
+
+node_gallery-6.x-2.0-dev
+
+node_gallery-6.x-2.0-BETA-2
+#814984: Gallery views disappeared after updating! 
+
+node_gallery-6.x-2.0-BETA-1
+#693588: Users other than admin can't access through breadcrumb + breadcrumb fixes
+#802548: upload images only appear as guest
+#550995: Admin editing gallery changes user ID - use db_rewrite_sql()
+#801012: Conflict with i18n: Sorting/Managing Galleries empty - uploads failing (Dev broken?)
+#601186: Image total count not being flushed on failed uploads
+#748054: after sorting images nodes are re-published
+#609150: How to enable "My galleries" on the navigation menu?
+#550995: Admin editing gallery changes user ID & #784328: pathauto creates url collisions for node gallery
+#791930: warning: Parameter 1 to theme_gallery_edit_images_form() expected to be a reference, value given in /usr/share/drupal6/includes/
+#765024: CCK & Node Gallery Solution - thanks kgnet!
+#743980: Gallery displays unpublished 'gallery image's (fixed count on Galleries list)
+#762672: Gallery deletion returns user to gallery list even if user has no permissions to view it
+#743980: Gallery displays unpublished 'gallery image's
+#701456: Authenticated User gets error message after image upload but Admin doesn't. Error: Invalid 
+argument.... form.inc on line 1429
+#713430: Array-related warnings when there are no gallery or image types - thanks shaisachs
+#684546: Should Gallery and Image nodes be 'promoted' to the front page by default?
+#523294: Uninstall does not remove records created by this module
+#683312: Missing a translation string?
+#693066: Views integration for Node Gallery 6.x-3.x branch
+#684546: Should Gallery and Image nodes be 'promoted' to the front page by default?
+#523294: Uninstall does not remove records created by this module
+#683312: Missing a translation string?
+
+node_gallery-6.x-2.0-ALPHA-12
+#679202: Node Gallery Access needs to be moved out of contrib and into it's own module
+#646990: by DesignWork: Previous and Next links should disappear if there's only one image in the gallery
+#680436: Different password URL from 'cover image' compaired to 'gallery title' in views list
+#670544: Gallery directory: Token problems - we shouldn't strip /'s from paths
+#659624: Node Gallery image deletion should clean up the imagecache copies of itself
+#601186: Image directorys and uploaded image information not being flushed on failed uploads &/or delete
+#656618: format of 'rebuild permissions' link on access settings page
+#550900: add a named anchor to pre/next links that load top of page at the image node content
+Making sure the admin theme is used on Manage and Sort Images
+#650022: default cover for galleries password protected not show
+#645650: Node Gallery Access Password Protection isnt' working
+#637958 by justintime: Node Gallery effectively setting author of node == author
+of the file on the filesystem representing the image
+#636104 by DesignWork: PHP Warning on 'Manage Images' page with an empty Gallery
+#637746 by justintime: node_gallery_gallery_to_arg will call node_load with a
+'%' as the nid
+#516068: Users with the permission to "administer nodes" are not capable of uploading/editing images
+#622792: Make module meet coding standards (Coder finds 13 errors)
+
+node_gallery-6.x-2.0-ALPHA-11
+#598380 by justintime: Add transliteration support to node gallery tokens
+#612122 by justintime: node_gallery_access doesn't let users with 'access
+protected contents' or 'edit protected contents' view password galleries
+#626740 by vb: Node Gallery list page bug fix
+#603600: Add a sort images page with small thumbnails and limited editing
+functions
+#500460: Make the Upload/Manage Images template narrower
+#619308: Gallery Landing Page set to 'cover' does not show any images
+#357423: Ensure Node Gallery Meets Drupal Coding Standards to Allow for
+Translation
+Reintroduced the cover display for gallery landing pages (was available in
+version 1.x)
+#500766: Make upload images, edit images and delete gallery menu tabs instead of text links
+Cleaned up Lightbox2 contrib to better adhere to Drupal's coding standards
+#481420 by UdarEC: Image caption not appearing below image in lightbox view
+#547982: Integration with views, "illegal choice" error always returned when
+rearranging fields when you display the "Gallery Operations" field.
+
+** Note, the above fix will break *ANY* view using the "Gallery Operations"
+field.  Please read http://drupal.org/node/547982#comment-2199342 for more info
+
+#601738 by dbell: Rework the module language for the new release
+#527910: Use admin theme on 'adding images' pages
+#523456 #593648 by dbeall: Cleaning up the module's grammar
+#532360: All Gallery Image content-types should not appear on node/add
+#579074 by roderik: Installation fails if imagecache not already installed
+#500252 by dbeall: Update README.txt (huge thanks to dbeall for his work)
+#475974 by divamys: Path auto problems - replacement patterns not working when
+editing from a standard node/#/edit page
+#531762: Cannot override gallery-cover-view.tpl.php
+         On an unfortunate side note, I had to change some preprocess func names
+         for the fix
+#584092 by roderik: Editing empty gallery gives lots of errors when
+node_gallery_access enabled
+#584096 by roderik: 'strange' characters in directory name will cause the image to not display / breaks ImageCache
+#576406 by roderik: PostgreSQL fix for Access Contrib
+#485920 by lelizondob: Node Gallery should not limit the number of uploads per
+gallery by default
+Grammar issue noted by Tally in #485920
+#335634 by dddave: Spelling / Grammar Mistakes
+#512810 by dddave: Remove upload limit messages for User/1
+#484502 by luc-m: Unicode Characters in filename will cause the image to not display
+Cleaned up CHANGELOG to only apply to 2.0

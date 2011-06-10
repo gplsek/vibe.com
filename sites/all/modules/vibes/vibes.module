@@ -1,0 +1,32 @@
+<?php
+/* 
+ * To change this template, choose Tools | Templates
+ * and open the template in the editor.
+ */
+
+function vibes_block($op = 'list', $delta = 0, $edit = array()){
+  if ($op == 'list') {
+    $blocks['vibes_alphabetical_index'] = array(
+      'info' => t('Orders celebrities alphabetical'),
+    );
+
+    return $blocks;
+  }
+  else if ($op == 'view') {
+    switch ($delta) {
+      case 'vibes_alphabetical_index':
+        // Your module will need to define this function to render the block.
+        $block = array(
+          //'subject' => t('Title of block #1'),
+          'content' => vibes_get_celebrity_index(),
+        );
+        break;
+    }
+    return $block;
+  }
+}
+
+
+function vibes_get_celebrity__index(){
+  
+}

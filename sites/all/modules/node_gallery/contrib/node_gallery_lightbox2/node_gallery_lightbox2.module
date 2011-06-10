@@ -1,0 +1,116 @@
+<?php
+// $Id: node_gallery_lightbox2.module,v 1.1.2.6 2010/05/08 14:02:30 justintime Exp $
+
+/**
+ * @file node_gallery_lightbox2.module
+ *
+ * Basic module for lightbox2 support for node_gallery
+ */
+ 
+/**
+ * Implementation of hook_enable()
+ */
+function node_gallery_lightbox2_enable() {
+  $weight = db_query("SELECT weight FROM {system} WHERE name = 'node_gallery' AND type = 'module'");
+  db_query("UPDATE {system} SET weight = %d WHERE name = 'node_gallery_lightbox2' AND type = 'module'", $weight + 2);
+}
+
+/**
+ * Implementation of hook_form_alter()
+ */
+function node_gallery_lightbox2_form_alter(&$form, $form_state, $form_id) {
+  static $imagecaches;
+  
+  if ($form_id == 'node_gallery_config_form') {
+    $step = empty($form_state['values']['step']) ? 1 : 2;
+    if ($step == 2) {
+      $gallery_config = $form['#gallery_config'];
+      if (empty($imagecaches)) {
+        foreach (imagecache_presets() as $id => $imagecache) {
+          $imagecaches[$imagecache['presetname']] = $imagecache['presetname'];
+        }
+      }
+      
+      drupal_add_js(drupal_get_path('module', 'node_gallery_lightbox2') .'/node_gallery_lightbox2.admin.js', 'module');
+      
+      $form['config']['original']['view_original']['#options']['lightbox2'] = t('Enable as Lightbox2 Popup');
+      $form['config']['original']['lightbox2'] = array(
+        '#type' => 'select',
+        '#title' => t('Imagecache Preset for Lightbox2'),
+        '#options' => $imagecaches,
+        '#description' => t('Select an Imagecache preset that will be used with the Lightbox2 popup.  Please note that this preset should be larger than your Display preset.'),
+        '#default_value' => $gallery_config['original']['lightbox2'],
+        '#prefix' => '<div class="lightbox2-preset">', 
+        '#suffix' => '</div>',
+        '#weight' => 6
+      );
+      
+      $form['config']['teaser']['gallery_display_type']['#options']['lightbox2_gallery'] = t('Thumbnails that open a Lightbox2 Gallery');
+      $form['config']['teaser']['lightbox2_gallery'] = array(
+        '#type' => 'select',
+        '#title' => t('Image Size for Lightbox2 Gallery'),
+        '#options' => $imagecaches,
+        '#description' => t('Select an Imagecache preset that will be used with the Lightbox2 popup.'),
+        '#default_value' => $gallery_config['teaser']['lightbox2_gallery'],
+        '#prefix' => '<div class="lightbox2-gallery-preset">', 
+        '#suffix' => '</div>',
+        '#weight' => 10,
+      );
+      
+      $form['config']['gallery']['gallery_display_type']['#options']['lightbox2_gallery'] = t('Thumbnails that open a Lightbox2 Gallery');
+      $form['config']['gallery']['lightbox2_gallery_preset'] = array(
+        '#type' => 'select',
+        '#title' => t('Image Size for Lightbox2 Gallery'),
+        '#options' => $imagecaches,
+        '#description' => t('Select an Imagecache preset that will be used with the Lightbox2 popup.'),
+        '#default_value' => $gallery_config['gallery']['lightbox2_gallery_preset'],
+        '#prefix' => '<div class="gallery-lightbox2-gallery-preset">', 
+        '#suffix' => '</div>',
+        '#weight' => 10,
+      );
+    }
+  }
+}
+
+/**
+ * Implementation of hook_nodeapi
+ */
+function node_gallery_lightbox2_nodeapi(&$node, $op, $a3 = NULL, $a4 = NULL) {
+  switch ($op) {
+    case 'view':
+      if (in_array($node->type, (array)node_gallery_get_types('image'))) {
+        $config = node_gallery_get_image_parent_gallery_config($node);
+      
+        if ($a4 && $config['original']['view_original'] == 'lightbox2') {
+          $image_view = theme('image_view', $config['image_size']['preview'], $node);
+          $node->content['image']['#value'] = "<div class='image-preview'>".
+           l($image_view, imagecache_create_url($config['original']['lightbox2'], $node->filepath), array('attributes' => array('rel' => 'lightbox'), 'html' => TRUE))
+            ."</div>";
+        }
+      }
+      break;
+  }
+}
+
+function node_gallery_lightbox2_preprocess_gallery_image_thumbnail(&$vars) {
+  $image = $vars['image'];
+  $config = $vars['config'];
+  $mode = $vars['mode'];
+  
+  switch ($mode) {
+    case NODE_GALLERY_VIEW_TEASER:
+      if ($config['teaser']['gallery_display_type'] == 'lightbox2_gallery') {
+        $image_tag = theme('image_view', $config['image_size']['thumbnail'], $image);
+        $vars['image_output'] = l($image_tag, imagecache_create_url($config['teaser']['lightbox2_gallery'], $image->filepath),
+         array('html' => TRUE, 'attributes' => array('title' => $image->title, 'rel' => 'lightshow['. $image->gid .']')));
+      }
+      break;
+    case NODE_GALLERY_VIEW_IMAGE_LIST:
+      if ($config['gallery']['gallery_display_type'] == 'lightbox2_gallery') {
+        $vars['image_output'] = l(theme('image_view', $config['image_size']['thumbnail'], $image),
+         imagecache_create_url($config['gallery']['lightbox2_gallery_preset'], $image->filepath),
+          array('html' => TRUE, 'attributes' => array('title' => $image->title, 'rel' => 'lightshow[hi]')));
+      }
+      break;
+  }
+}

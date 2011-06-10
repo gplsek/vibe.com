@@ -1,0 +1,502 @@
+<?php
+// $Id: zenophile.module,v 1.9.2.1 2009/09/30 23:44:19 garrettalbright Exp $
+
+/**
+ * @file
+ * Creates Zen subthemes quickly and easily.
+ *
+ * Zenophile is a tiny module which allows themers to very easily create Zen
+ * subthemes without all the tedious file copying and find-and-replacing
+ * required when creating subthemes by hand. With this module, subthemes can be
+ * created in a fraction of the time just by entering information into a
+ * single-page form and clicking "Submit."
+ */
+
+define('ZENOPHILE_DEBUG', FALSE);
+
+/**
+ * Implementation of hook_menu().
+ */
+function zenophile_menu() {
+  return array(
+    'admin/build/themes/zenophile' => array(
+      'title' => 'Create Zen subtheme',
+      'description' => 'Quickly create a Zen subtheme for theming.',
+      'page callback' => 'drupal_get_form',
+      'page arguments' => array('zenophile_create'),
+      'access arguments' => array('create zen theme with zenophile'),
+      'type' => MENU_LOCAL_TASK,
+    ),
+  );
+}
+
+/**
+ * Implementation of hook_perm().
+ */
+function zenophile_perm() {
+  return array('create zen theme with zenophile');
+}
+
+/**
+ * Form to create the subtheme. drupal_get_form() callback.
+ */
+function zenophile_create() {
+  // Check for Zen
+  if (drupal_get_path('theme', 'STARTERKIT') === '') {
+    drupal_set_message(t('The STARTERKIT theme could not be found. Please check that the <a href="!zen">Zen theme</a> is properly installed.', array('!zen' => 'http://drupal.org/project/zen')), 'error');
+  }
+  else {
+    $zen_based = array();
+    foreach (list_themes(TRUE) as $theme) {
+      if (isset($theme->base_theme) && $theme->base_theme === 'zen') {
+        $zen_based[$theme->name] = t('@tname (@tsname)', array('@tname' => $theme->info['name'], '@tsname' => $theme->name));
+      }
+    }
+    return array(
+      'sysname' => array(
+        '#title' => t('System name'),
+        '#description' => t('The machine-compatible name of the new theme. This name may only consist of lowercase letters plus the underscore character.'),
+        '#type' => 'textfield',
+        '#required' => TRUE,
+        '#weight' => 10,
+      ),
+      'friendly' => array(
+        '#title' => t('Human name'),
+        '#description' => t('A human-friendly name for the new theme. This name may contain uppercase letters, spaces, punctuation, etc. If left blank, the system name will also be used here.'),
+        '#type' => 'textfield',
+        '#weight' => 20,
+      ),
+      'description' => array(
+        '#title' => t('Description'),
+        '#description' => t('A short description of this theme.'),
+        '#type' => 'textfield',
+        '#required' => TRUE,
+        '#weight' => 30,
+      ),
+      'site' => array(
+        '#title' => t('Site directory'),
+        '#description' => t('Which site directory will the new theme to be placed in? If in doubt, select &ldquo;all&rdquo;.'),
+        '#type' => 'select',
+        '#options' => _zenophile_find_sites(),
+        '#default_value' => array('all'),
+        '#required' => TRUE,
+        '#weight' => 50,
+      ),
+      'advanced_fset' => array(
+        '#title' => t('More options'),
+        '#type' => 'fieldset',
+        '#collapsible' => TRUE,
+        '#collapsed' => TRUE,
+        '#weight' => 60,
+        'parent' => array(
+          '#title' => t('Starter theme'),
+          '#description' => t('The parent theme for the new theme. If in doubt, select &ldquo;STARTERKIT&rdquo;.'),
+          '#type' => 'select',
+          '#options' => $zen_based,
+          '#default_value' => 'STARTERKIT',
+          '#required' => TRUE,
+          '#weight' => 0,
+        ),
+        'layout' => array(
+          '#title' => t('Layout type'),
+          '#description' => t('Fixed layouts are always the same width. Liquid layouts adjust their width to fit the browser window. If in doubt, try a fixed layout.'),
+          '#type' => 'radios',
+          '#options' => array(
+            'fixed' => t('Fixed'),
+            'liquid' => t('Liquid'),
+          ),
+          '#default_value' => 'fixed',
+          '#required' => TRUE,
+          '#weight' => 10,
+        ),
+        'fresh' => array(
+          '#title' => t('Create fresh CSS file'),
+          '#description' => t('If checked, Zenophile will add a blank CSS file named &ldquo;[theme_name]-fresh.css&rdquo; to the new theme. Some themers prefer to start with a blank CSS file rather than adapt the pre-created CSS files which will be copied over from the parent theme directory.'),
+          '#type' => 'checkbox',
+          '#default_value' => TRUE,
+          '#weight' => 20,
+        ),
+        'sidebars_fset' => array(
+          '#title' => t('Adjust sidebar widths'),
+          '#type' => 'fieldset',
+          '#collapsible' => FALSE,
+          '#collapsed' => FALSE,
+          '#weight' => 30,
+          'sidebars_desc' => array(
+            '#type' => 'item',
+            '#value' => t('The widths and position of the new themes theme&rsquo;s sidebars and main content area may be altered with the fields below. If the default values are altered, Zenophile will do the math and add the rules to a new CSS file named &ldquo;sidebars.css&rdquo; which will be added to the new theme. The default values provided assume the STARTERKIT starter theme is being used. Note that some starter themes may add or remove sidebars; you may have varying success with starter themes other than STARTERKIT.'),
+            '#weight' => 0,
+          ),
+          'page' => array(
+            '#title' => t('Page wrapper width (#page)'),
+            '#type' => 'textfield',
+            '#size' => 4,
+            '#field_suffix' => 'px',
+            '#default_value' => '960',
+            '#description' => t('This value is ignored if your theme will have a liquid layout.'),
+            '#weight' => 10,
+          ),
+          'sidebar-left' => array(
+            '#title' => t('Left sidebar width (#sidebar-left)'),
+            '#type' => 'textfield',
+            '#size' => 4,
+            '#field_suffix' => 'px',
+            '#default_value' => '200',
+            '#weight' => 20,
+          ),
+          'sidebar-right' => array(
+            '#title' => t('Right sidebar width (#sidebar-right)'),
+            '#type' => 'textfield',
+            '#size' => 4,
+            '#field_suffix' => 'px',
+            '#default_value' => '200',
+            '#weight' => 30,
+          ),
+          'sidebar-pos' => array(
+            '#title' => t('Sidebar positioning'),
+            '#type' => 'radios',
+            '#options' => array(
+              'normal' => t('Sidebars on their respective sides (left, main, right)'),
+              'left' => t('Both sidebars on left (left, right, main)'),
+              'right' => t('Both sidebars on right (main, left, right)'),
+            ),
+            '#default_value' => 'normal',
+            '#weight' => 40,
+          ),
+        ),
+      ),
+      'submit' => array(
+        '#type' => 'submit',
+        '#value' => t('Submit'),
+        '#weight' => 1000,
+      ),
+    );
+  }
+}
+
+/**
+ * Validate function for zenophile_create().
+ */
+function zenophile_create_validate($form, &$form_state) {
+  // Check that the system name of the theme is valid
+  if (preg_match('/[^a-z_]/', $form_state['values']['sysname'])) {
+    form_set_error('sysname', t('The <em>System name</em> may only consist of lowercase letters and the underscore character.'));
+  }
+  if (drupal_get_path('theme', $form_state['values']['sysname'])) {
+    form_set_error('sysname', t('A theme with this <em>System name</em> already exists.'));
+  }
+  if (in_array($form_state['values']['sysname'], array('layout', 'print', 'sidebars'))) {
+    // drupal6-reference and html-elements should also be excluded, but the
+    // regex above will catch those since they have hyphens.
+    form_set_error('sysname', t('That <em>System name</em> value cannot be used. Zenophile will need to create @sysname.css to continue, but that filename is reserved for another important Zen CSS file. Please choose a different <em>System name</em> value.', array('@sysname' => $form_state['values']['sysname'])));
+  }
+  // Test if we can make these directories
+  $site_dir = 'sites/' . $form_state['values']['site'];
+  $themes_dir = $site_dir . '/themes';
+  if (!file_exists($themes_dir) && !mkdir($themes_dir, 0755)) {
+    form_set_error('site', t('The <em>themes</em> directory for the %site site directory does not exist, and it could not be created automatically. This is likely a permissions problem. Check that the web server has permissions to write to the %site directory, or create the %themes directory manually and try again.', array('%site' => $site_dir, '%themes' => $themes_dir)), 'error');
+  }
+  else {
+    $dir = "{$themes_dir}/{$form_state['values']['sysname']}";
+    // Make the theme directory
+    if (file_exists($dir)) {
+      // This theoretically should have been caught by the validate function
+      // above, but it's possible that there's a directory in this site's
+      // themes directory which is not a proper theme… or it's a regular file.
+      form_set_error('sysname', t('That <em>System name</em> value cannot be used with that <em>Site directory</em> value. Zenophile wants to create and use the directory %dir, but a file or directory with that name already exists.', array('%dir' => $dir)));
+      
+    }
+    elseif (ZENOPHILE_DEBUG) {
+      drupal_set_message(t('Zenophile is in DEBUG mode. Despite what it may say below, your theme will not actually be created. Set ZENOPHILE_DEBUG to FALSE in zenophile.module to take Zenophile out of debug mode.'), 'error');
+    }
+    elseif (!mkdir($dir, 0755)) {
+      form_set_error('sysname', t('The directory %dir could not be created. This is likely a permissions problem. Check that the web server has permissions to write to the %themes directory.', array('%dir' => $dir, '%themes' => $themes_dir)));
+    }
+  }
+}
+
+/**
+ * Submit function for zenophile_create().
+ */
+function zenophile_create_submit($form, &$form_state) {
+  $info = array(
+    't_name' => $form_state['values']['sysname'],
+    't_dir' => "sites/{$form_state['values']['site']}/themes/{$form_state['values']['sysname']}",
+    'parent' => $form_state['values']['parent'],
+    'parent_dir' => drupal_get_path('theme', $form_state['values']['parent']),
+    'zen_dir' => drupal_get_path('theme', 'zen') ,
+    'form_values' => $form_state['values'],
+  );
+  
+  $cur_path = '';
+  $file_list = _zenophile_populate_files($info['parent_dir'], $cur_path);
+
+  $files = array();
+  $weight = -10;
+  foreach ($file_list as $file => $type) {
+    $files[$file] = array(
+      'from' => "{$info['parent_dir']}/{$file}",
+      'type' => $type,
+      'repl' => array(),
+      'weight' => $weight += 10,
+    );
+  }
+
+  // Call alter hooks
+/*   $continue = module_invoke_all('zenophile_alter', &$files, $info); */
+  // We can't do module_invoke_all() because it doesn't pass $files by reference
+  // to the hook implementations. We'll do it manually. (Thanks, catch in
+  // #drupal!)
+  foreach (module_implements('zenophile_alter') as $module) {
+    $function = $module . '_zenophile_alter';
+    if ($function($files, $info) === FALSE) {
+      // One of the hook implementations wants to stop everything. It should
+      // have thrown an error with drupal_set_message. Return without processing
+      // any files.
+      return;
+    }
+  }
+  // Process the $files array.
+  if (_zenophile_process($files, $info['t_dir']) !== FALSE) {
+    drupal_set_message(t('A new subtheme was successfully created in %dir.', array('%dir' => $info['t_dir'])));
+  }
+  
+  // Flush the cached theme data so the new subtheme appears in the parent
+  // theme list
+  system_theme_data();
+}
+
+/**
+ * Make a copied Zen subtheme usable.
+ *
+ * This is our own implementation of hook_zenophile_alter(). This one should
+ * fire first because we're setting the module's weight in the {system} table to
+ * -10 in hook_install(). Otherwise, this implementation would probably fire
+ * last due to the name of this module, which places it near the end of any
+ * alphabetical ordering.
+ */
+function zenophile_zenophile_alter(&$files, $info) {
+  $weight = 59990;
+  // Step 2: Rename the .info file, and replace instances of the parent name
+  // that of the child name. Also, add the name and description.
+  $dotinfo = $info['t_name'] . '.info';
+  $files[$dotinfo] = $files[$info['parent'] . '.info'];
+  $files[$dotinfo]['repl']["/{$info['parent']}/"] = $info['t_name'];
+  $files[$dotinfo]['repl']['/^name\s*=.*/m'] = 'name        = ' . ($info['form_values']['friendly'] === '' ? $info['t_name'] : $info['form_values']['friendly']);
+  $files[$dotinfo]['repl']['/^description\s*=.*/m'] = 'description = ' . $info['form_values']['description'];
+  unset($files[$info['parent'] . '.info']);
+  
+  // Do we also want to create the the fresh stylesheet?
+  if ($info['form_values']['fresh']) {
+    $files[$info['t_name'] . '-fresh.css'] = array(
+      'from' => '',
+      'type' => 'file',
+      'repl' => array(),
+      'weight' => $weight += 10,
+    );
+    // Add it to the .info file
+    $files[$dotinfo]['repl']['/^stylesheets\[all\]\[\]\s*=\s*zen\.css$/m'] = "stylesheets[all][]   = zen.css\n\n  ; Specifying a nice clean stylesheet\nstylesheets[all][] = {$info['t_name']}-fresh.css";
+  }
+  
+  // What about the sidebars?
+  if ($info['form_values']['sidebar-left'] !== '200' || $info['form_values']['sidebar-right'] !== '200' || $info['form_values']['page'] !== '960' || $info['form_values']['sidebar-pos'] !== 'normal') {
+    // Which sidebars.css template are we going to copy?
+    $files['sidebars.css'] = array(
+      // Dictating a file name like this would normally be hella insecure, but
+      // FAPI will limit the available choices to those that were in the form we
+      // created.
+      'from' => drupal_get_path('module', 'zenophile') . "/sidebars_css/sidebars-{$info['form_values']['sidebar-pos']}-{$info['form_values']['layout']}.css",
+      'type' => 'file',
+      'weight' => $weight += 10,
+    );
+    $page = intval($info['form_values']['page']);
+    $ls = intval($info['form_values']['sidebar-left']);
+    $rs = intval($info['form_values']['sidebar-right']);
+    $ls_content_width = $page - $ls;
+    $rs_content_width = $page - $rs;
+    $both_sidebars_width = $ls + $rs;
+    $both_content_width = $page - $both_sidebars_width;
+    $files['sidebars.css']['repl'] = array(
+      '/PAGE/' => $page,
+      '/LSB-SB/' => $ls,
+      '/RSB-SB/' => $rs,
+      '/BOTHSB-SB/' => $both_sidebars_width,
+      '/LSB-CONTENT/' => $ls_content_width,
+      '/RSB-CONTENT/' => $rs_content_width,
+      '/BOTHSB-CONTENT/' => $both_content_width,
+      // Reset the $ I d $ line - the line is broken up below so that CVS
+      // doesn't replace it in this actual code.
+      '~^/* $Id.+$~' => '/* $I' . 'd$ */',
+    );
+    // Add sidebars.css to the .info file's list
+    // Note we're using tildes in the regex in the key because a key using
+    // slashes may have been set when we added the fresh stylesheet above, and
+    // we don't want to clobber that.
+    $files[$dotinfo]['repl']['~^stylesheets\[all\]\[\]\s*=\s*zen\.css$~m'] = "stylesheets[all][]  = zen.css\n  ; Customized sidebar/content widths and positions\nstylesheets[all][]    = sidebars.css";
+  }
+  // Copy the liquid or fixed stylesheet, zen.css, print.css and
+  // html-elements.css from the actual Zen theme (not the parent theme). Steps 3
+  // through 6. Only do this if the parent is STARTERKIT - otherwise these
+  // should already be in the subtheme directory, and therefore already in the
+  // $files array.
+  if ($info['parent'] === 'STARTERKIT') {
+    $files['layout.css'] = array(
+      'from' => $info['zen_dir'] . "/layout-{$info['form_values']['layout']}.css",
+      'type' => 'file',
+      'repl' => array(),
+      'weight' => $weight += 10,
+    );
+    $files['print.css'] = array(
+      'from' => $info['zen_dir'] . '/print.css',
+      'type' => 'file',
+      'repl' => array(),
+      'weight' => $weight += 10,
+    );
+    $files['html-elements.css'] = array(
+      'from' => $info['zen_dir'] . '/html-elements.css',
+      'type' => 'file',
+      'repl' => array(),
+      'weight' => $weight += 10,
+    );
+  }
+
+  // If there is a starter_theme.css file in the directory already,
+  // rename it to this_theme.css. Otherwise, copy over zen.css and
+  // rename it.
+  $parent_css = "{$info['parent_dir']}/{$info['parent']}.css";
+  $files[$info['t_name'] . '.css'] = array(
+    'from' => file_exists($parent_css) ? $parent_css : $info['zen_dir'] . '/zen.css',
+    'type' => 'file',
+    'repl' => array(),
+    'weight' => $weight += 10,
+  );
+
+  // Copy template.php and theme-settings.php and replace the parent theme's
+  // name. Kind of Step 1 plus Step 7 mixed together. The files should already
+  // be there in $files, so we'll just tweak their repl arrays.
+/*
+  $files['template.php'] = array(
+    'from' => $info['parent_dir'] . '/template.php',
+    'type' => 'file',
+    'repl' => array(
+      "/{$info['parent']}/" => $info['t_name'],
+    ),
+    'weight' => $weight += 10,
+  );
+*/
+  $files['template.php']['repl']["/{$info['parent']}/"] = $info['t_name'];
+/*
+  $files['theme-settings.php'] = array(
+    'from' => $info['parent_dir'] . '/theme-settings.php',
+    'type' => 'file',
+    'repl' => array(
+      "/{$info['parent']}/" => $info['t_name'],
+    ),
+    'weight' => $weight += 10,
+  );
+*/
+  $files['theme-settings.php']['repl']["/{$info['parent']}/"] = $info['t_name'];
+}
+
+/**
+ * Helper function to populate a list of files in a directory.
+ *
+ * @param $dir
+ *   Directory to add files from
+ */
+function _zenophile_populate_files($dir, $cur_path) {
+  $files = array();
+  if ($cur_path !== '') {
+    $cur_path .= '/';
+  }
+  $h = opendir("{$dir}/{$cur_path}");
+  while (($file = readdir($h)) !== FALSE) {
+    if ($file{0} !== '.') {
+      if (is_dir("{$dir}/{$cur_path}{$file}")) {
+        $files["{$cur_path}{$file}"] = 'dir';
+        $files = array_merge($files, _zenophile_populate_files($dir, "{$cur_path}{$file}"));
+      }
+      else {
+        $files["{$cur_path}{$file}"] = 'file';
+      }
+    }
+  }
+  return $files;
+}
+
+/**
+ * Process the file queue.
+ *
+ * @param $files
+ *   The files to process.
+ */
+function _zenophile_process($files, $t_dir) {
+  // Reorder the queue according to weight
+  $weights = array();
+  foreach ($files as $file) {
+    $weights[] = $file['weight'];
+  }
+  array_multisort($weights, SORT_ASC, $files);
+  
+  if (ZENOPHILE_DEBUG) {
+    if (function_exists('dsm')) {
+      dsm($files);
+    }
+    return;
+  }
+  
+  foreach ($files as $file => $opts) {
+    $dest = "{$t_dir}/{$file}";
+    // If there's no "from", create a blank file/dir.
+    if ($opts['type'] === 'dir') {
+      // We can't copy directories, so don't bother checking the 'from' value.
+      // Just make an empty directory.
+      mkdir($dest);
+    }
+    elseif ($opts['type'] === 'file') {
+      if ($opts['from'] === '') {
+        // No 'from' value, so just make a blank file
+        touch($dest);
+      }
+      else {
+        if (!count($opts['repl'])) {
+          // We're not going to do replacements, so simply copy the file
+          copy($opts['from'], $dest);
+        }
+        else {
+          // Open the file, do replacements and save it
+          $text = file_get_contents($opts['from']);
+          $text = preg_replace(array_keys($opts['repl']), array_values($opts['repl']), $text);
+          // Avoid file_put_contents() for PHP 4 l4mz0rz
+          $h = fopen($dest, 'w');
+          fwrite($h, $text);
+          fclose($h);
+        }
+      }
+    }
+  }
+}
+
+/**
+ * List this Drupal installation's site directories.
+ *
+ * @return An array of directories in the sites directory.
+ */
+function _zenophile_find_sites() {
+  $sites = array();
+  if ($h = opendir('sites')) {
+    while (($site = readdir($h)) !== FALSE) {
+      $sitepath = 'sites/' . $site;
+      // Don't allow dot files or links for security reasons (redundancy, too)
+      if (is_dir($sitepath) && !is_link($sitepath) && $site{0} !== '.') {
+        $sites[] = $site;
+      }
+    }
+    closedir($h);
+    return drupal_map_assoc($sites);
+  }
+  else {
+    drupal_set_message(t('The <em>sites</em> directory could not be read.'), 'error');
+    return array();
+  }
+}

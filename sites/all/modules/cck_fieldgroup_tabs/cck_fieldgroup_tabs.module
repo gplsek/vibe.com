@@ -1,0 +1,194 @@
+<?php
+// $Id: cck_fieldgroup_tabs.module,v 1.26 2009/08/19 15:25:51 nedjo Exp $
+
+/**
+ * @file
+ * Add tabs display option for CCK fieldgroups.
+ */
+
+/**
+ * Implementation of hook_menu().
+ */
+function cck_fieldgroup_tabs_menu() {
+  $items = array();
+  $items['admin/settings/cck-fieldgroup-tabs'] = array(
+    'title' => 'CCK Fieldgroup Tabs',
+    'description' => 'Configuration for CCK fieldgroup tabs',
+    'page callback' => 'drupal_get_form',
+    'page arguments' => array('cck_fieldgroup_tabs_admin_settings'),
+    'access arguments' => array('administer site configuration'),
+  );
+  return $items;
+}
+
+/**
+ * Admin settings.
+ */
+function cck_fieldgroup_tabs_admin_settings() {
+  $form = array();
+  $form['cck_fieldset_basics'] = array('#type' => 'fieldset', '#title' => t('Basics Tab Info'));
+  $form['cck_fieldset_basics']['cck_fieldset_tabs_residual'] = array(
+    '#type' => 'radios',
+    '#title' => t('Basics tab'),
+    '#description' => t('Enable this option to give nodes with tabs a new tab containing all fields (e.g., node title and body) not already on a tab.'),
+    '#options' => array(t('Disabled'), t('Enabled')),
+    '#default_value' => variable_get('cck_fieldset_tabs_residual', 0),
+  );
+  $form['cck_fieldset_basics']['cck_fieldset_tabs_residual_weight'] = array(
+    '#type' => 'weight',
+    '#delta' => 30,
+    '#title' => t('Basics Tab weight'),
+    '#description' => t('Enter a weight for the "Basics" tab.'),
+    '#default_value' => variable_get('cck_fieldset_tabs_residual_weight', -20),
+  );
+  $form['cck_fieldset_titles'] = array('#type' => 'fieldset', '#title' => t('Basics Tab Titles'));
+  foreach (node_get_types() as $type => $object) {
+    $form['cck_fieldset_titles']['cck_fieldset_tabs_residual_title_'.$type] = array(
+      '#type' => 'textfield',
+      '#title' => t('%type', array('%type' => $object->name)),
+      '#default_value' => variable_get('cck_fieldset_tabs_residual_title_'.$type, t('Basics')),
+    );
+  }
+
+  $form = system_settings_form($form);
+  return $form;
+}
+
+/*
+ * Implementation of hook_form_alter().
+ */
+function cck_fieldgroup_tabs_form_alter(&$form, $form_state, $form_id) {
+  if (isset($form['type']) && isset($form['type']['#value']) && $form['type']['#value'] .'_node_form' == $form_id) {
+    if (!isset($form['#pre_render'])) {
+      $form['#pre_render'] = array();
+    }
+    // Register a process callback.
+    $form['#pre_render'][] = 'cck_fieldgroup_tabs_pre_render';
+  }
+  else if ($form_id == 'content_display_overview_form') {
+    if (isset($form['#groups']) && $form['#groups']) {
+      $contexts = content_build_modes($form['#contexts']);
+      foreach ($form['#groups'] as $name) {
+        foreach (array_keys($contexts) as $key) {
+          $form[$name][$key]['format']['#options']['tabs'] = t('tabs');
+        }
+      }
+    }
+  }
+  else if ($form_id == 'fieldgroup_group_edit_form') {
+    $form['settings']['form']['style']['#options']['tabs'] = t('tabs');
+  }
+}
+
+/*
+ * Form pre-render callback.
+ *
+ * Convert fieldset elements to tabs.
+ */
+function cck_fieldgroup_tabs_pre_render($form) {
+  if (!isset($form['fieldgroup_tabs'])) {
+    foreach (fieldgroup_groups($form['type']['#value']) as $group_name => $group) {
+      if (isset($form[$group_name]) && $group['settings']['form']['style'] == 'tabs' && (!isset($form[$group_name]['#access']) || $form[$group_name]['#access'])) {
+        // Add a tabset if not already added.
+        if (!isset($form['fieldgroup_tabs'])) {
+          $form['fieldgroup_tabs'] = array(
+            '#type' => 'tabset',
+            '#weight' => $group['weight'],
+          );
+        }
+        // Otherwise, reset the weight if lower than what's already set.
+        // This ensures the tabset has the weight of the lowest fieldgroup
+        // it includes.
+        else if ($group['weight'] < $form['fieldgroup_tabs']['#weight']) {
+          $form['fieldgroup_tabs']['#weight'] = $group['weight'];
+        }
+        $element = $form[$group_name];
+        $element['#type'] = 'tabpage';
+        unset($element['#collapsible'], $element['#collapsed']);
+        $form['fieldgroup_tabs'][$group_name] = $element;
+        unset($form[$group_name]);
+      }
+    }
+    $node_type = $form['type']['#value'];
+    if (isset($form['fieldgroup_tabs']) && variable_get('cck_fieldset_tabs_residual', FALSE)) {
+      // Add residual content to a tab if desired.
+      $title = t(variable_get('cck_fieldset_tabs_residual_title_' . $node_type, variable_get('cck_fieldset_tabs_residual_title', t('Basics'))));
+      $residual = array(
+        '#type' => 'tabpage',
+        // Pass the value through t() if needed.
+        '#title' =>  t($title != t('Basics') ? $title : 'Basics'),
+        '#weight' => variable_get('cck_fieldset_tabs_residual_weight', -20),
+      );
+      foreach (element_children($form) as $key) {
+        // Skip the buttons so that they are below the tabset. Don't process
+        // hidden or value fields.
+        if ($key != 'fieldgroup_tabs' && $key != 'buttons' && (!isset($form[$key]['#type']) || !in_array($form[$key]['#type'], array('hidden', 'value')))) {
+          $residual[$key] = $form[$key];
+          unset($form[$key]);
+        }
+      }
+      $form['fieldgroup_tabs']['fieldgroup_tabs_basic'] = $residual;
+    }
+    // A #theme property prevents child elements from being passed to pre_render callbacks
+    // so we need to explicitly call the pre_render functions in tabs module.
+    if (isset($form['fieldgroup_tabs']) && isset($form['#theme']) && empty($form['#theme_used'])) {
+      $form['fieldgroup_tabs'] = tabs_pre_render_tabset($form['fieldgroup_tabs']);
+    }
+  }
+  return $form;
+}
+
+/*
+ * Implementation of hook_nodeapi().
+ */
+function cck_fieldgroup_tabs_nodeapi(&$node, $op, $teaser, $page) {
+  switch ($op) {
+    case 'view':
+      $context = $teaser ? 'teaser' : 'full';
+      foreach (fieldgroup_groups($node->type) as $group_name => $group) {
+        // $node->content[$group_name] will be set only if there was visible content.
+        if (isset($node->content[$group_name]) && $group['settings']['display'][$context]['format'] == 'tabs') {
+          // Add a tabset if not already added.
+          if (!isset($node->content['fieldgroup_tabs'])) {
+            $node->content['fieldgroup_tabs'] = array(
+              '#type' => 'tabset',
+              '#weight' => $group['weight'],
+            );
+          }
+          // Otherwise, reset the weight if lower than what's already set.
+          // This ensures the tabset has the weight of the lowest fieldgroup
+          // it includes.
+          else if ($group['weight'] < $node->content['fieldgroup_tabs']['#weight']) {
+            $node->content['fieldgroup_tabs']['#weight'] = $group['weight'];
+          }
+          $element = $node->content[$group_name];
+          $element['#type'] = 'tabpage';
+          $element['#weight'] = $group['weight'];
+          // Title is required for tabs.
+          $element['#title'] = t(check_plain($group['label']));
+          $node->content['fieldgroup_tabs'][$group_name] = $element;
+          unset($node->content[$group_name]);
+        }
+      }
+      if (isset($node->content['fieldgroup_tabs'])) {
+        // Add residual content to a tab if desired.
+        if (variable_get('cck_fieldset_tabs_residual', FALSE)) {
+          $title = t(variable_get('cck_fieldset_tabs_residual_title_' . $node_type, variable_get('cck_fieldset_tabs_residual_title', t('Basics'))));
+          $residual = array(
+            '#type' => 'tabpage',
+            '#title' =>  t($title != t('Basics') ? $title : 'Basics'),
+            '#weight' => variable_get('cck_fieldset_tabs_residual_weight', -20),
+          );
+          foreach (element_children($node->content) as $key) {
+            if ($key != 'fieldgroup_tabs') {
+              $residual[$key] = $node->content[$key];
+              unset($node->content[$key]);
+            }
+          }
+          $node->content['fieldgroup_tabs']['fieldgroup_tabs_basic'] = $residual;
+        }
+      }
+      break;
+  }
+}
+

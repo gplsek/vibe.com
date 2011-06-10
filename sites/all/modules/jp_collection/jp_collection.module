@@ -1,0 +1,524 @@
+<?php
+// $Id:
+
+/**
+ * @file
+ * Maintains collections of nodes in arbitrary order.
+ */
+
+/* --- HOOKS ---------------------------------------------------------------- */
+
+/**
+ * Implementation of hook_access
+ */
+function jp_collection_access($op, $node, $account) {
+	if ($op == 'create') {
+    	// Only users with permission to do so may create this node type.
+    	return user_access('create jp_collection', $account);
+  	}
+
+  // Users who create a node may edit or delete it later, assuming they have the
+  // necessary permissions.
+  if ($op == 'update' || $op == 'delete') {
+    if (user_access('edit jp_collection', $account) && ($account->uid == $node->uid)) {
+      return TRUE;
+    }
+  }
+}
+
+/**
+ * Implementation of hook_info
+ */
+function jp_collection_node_info() {
+	return array(
+    'jp_collection' => array(
+      'name' => t('Jetpack collection'),
+      'module' => 'jp_collection',
+      'description' => "Create a collection of nodes which can be arranged in an arbitrary order.",
+      'has_title' => TRUE,
+      'title_label' => t('collection Title'),
+      'has_body' => TRUE,
+      'body_label' => t('collection Body'),
+    )
+  );
+}
+
+/**
+ * Implementation of hook_form
+ */
+function jp_collection_form(&$node) {
+ // The site admin can decide if this node type has a title and body, and how
+  // the fields should be labeled. We need to load these settings so we can
+  // build the node form correctly.
+  $type = node_get_types('type', $node);
+
+  if ($type->has_title) {
+    $form['title'] = array(
+      '#type' => 'textfield',
+      '#title' => check_plain($type->title_label),
+      '#required' => TRUE,
+      '#default_value' => $node->title,
+      '#weight' => -5,
+    );
+  }
+
+  if ($type->has_body) {
+    // In Drupal 6, we can use node_body_field() to get the body and filter
+    // elements. This replaces the old textarea + filter_form() method of
+    // setting this up. It will also ensure the teaser splitter gets set up
+    // properly.
+    $form['body_field'] = node_body_field($node, $type->body_label, $type->min_word_count);
+  }
+  
+  // set a count of how many nodes you can add.
+  $form['size'] = array(
+    '#type' => 'textfield',
+    '#title' => t('Size'),
+    '#default_value' => isset($node->size) ? $node->size : '0',
+    '#size' => 2,
+    '#maxlength' => 2,
+    '#description' => t('The maximum number of nodes will appear in the collection. Enter 0 for no limit'),
+
+  );
+  
+  /* TODO add content type restriction 
+   $nodes = node_get_types('names');
+
+  $form['types'] = array(
+    '#type' => 'checkboxes',
+    '#title' => t('Types'),
+    '#default_value' => is_array($node->types) ? $node->types : array(),
+    '#options' => $nodes,
+    '#description' => t('Check each node type that can be added to this collection.'),
+  ); 
+ */
+  return $form;
+}
+
+/**
+ * Implementation of hook_perm
+ */
+function jp_collection_perm() {
+  return array('edit jp_collection', 'create jp_collection');
+}
+
+/**
+ * Implementation of hook_help
+ */
+function jp_collection_help() {
+	//TODO add some help info
+	switch ($path) {
+    	case 'admin/help#jp_collection':
+      		return '<p>'. t('Create a collection of nodes which can be arranged in an arbitrary order.') .'</p>';
+  }
+}
+
+/**
+ * Implementation of hook_validate().
+ *
+ * Our "quantity" field requires a number to be entered. This hook lets
+ * us ensure that the user entered an appropriate value before we try
+ * inserting anything into the database.
+ *
+ * Errors should be signaled with form_set_error().
+ */
+function jp_collection_validate(&$node) {
+ if ($node->quantity) {
+    if (!is_numeric($node->quantity)) {
+      form_set_error('quantity', t('The quantity must be a number.'));
+    }
+  }
+  else {
+    // Let an empty field mean "zero."
+    $node->quantity = 0;
+  }
+}
+
+/**
+ * Implementation of hook_insert().
+ *
+ * As a new node is being inserted into the database, we need to do our own
+ * database inserts.
+ */
+function jp_collection_insert($node) {
+  db_query("INSERT INTO {jp_collection} (nid, vid, size) VALUES (%d, %d, %d)", $node->nid, $node->vid, $node->size);
+  // TODO insert content types
+  if (is_array($node->types)) {
+    foreach ($node->types as $type) {
+    	if (!empty($type)) {
+      		db_query("INSERT INTO {jp_collection_types} (nid, vid, type) VALUES (%d, %d, '%s')", $node->nid, $node->vid, $type);
+      	}
+  	}
+  }
+  //return $queue->qid;
+}
+
+/**
+ * Implementation of hook_update().
+ *
+ * As an existing node is being updated in the database, we need to do our own
+ * database updates.
+ */
+function jp_collection_update($node) {
+  // if this is a new node or we're adding a new revision,
+  if ($node->revision) {
+    jp_collection_insert($node);
+  }
+  else {
+    db_query("UPDATE {jp_collection} SET size = %d WHERE vid = %d", $node->size, $node->vid);
+    db_query("DELETE FROM {jp_collection_types} WHERE vid = %d", $node->vid);
+    if (is_array($node->types)) {
+    	foreach ($node->types as $type) {
+    		if (!empty($type)) {
+      			db_query("INSERT INTO {jp_collection_types} (nid, vid, type) VALUES (%d, %d, '%s')", $node->nid, $node->vid, $type);
+      		}
+  		}
+  	}
+  	//TODO add update to image node associations
+  }
+}
+
+/**
+ * Implementation of hook_nodeapi().
+ *
+ * When a node revision is deleted, we need to remove the corresponding record
+ * from our table. The only way to handle revision deletion is by implementing
+ * hook_nodeapi().
+ */
+function jp_collection_nodeapi(&$node, $op, $teaser, $page) {
+
+  switch ($op) {
+    case 'delete revision':
+      // Notice that we're matching a single revision based on the node's vid.
+      db_query('DELETE FROM {jp_collection_types} WHERE vid = %d', $node->vid);
+      db_query('DELETE FROM {jp_collection_nodes} WHERE vid = %d', $node->vid);
+      db_query('DELETE FROM {jp_collection} WHERE vid = %d', $node->vid);
+      break;
+  }
+}
+
+/**
+ * Implementation of hook_delete().
+ *
+ * When a node is deleted, we need to remove all related records from out table.
+ */
+function jp_collection_delete($node) {
+  // remove associated data first, then the collection.
+  db_query('DELETE FROM {jp_collection_nodes} WHERE nid = %d', $node->nid);
+  db_query('DELETE FROM {jp_collection_types} WHERE nid = %d', $node->nid);
+  db_query('DELETE FROM {jp_collection} WHERE nid = %d', $node->nid);
+}
+
+/**
+ * Implementation of hook_load().
+ *
+ * Now that we've defined how to manage the node data in the database, we
+ * need to tell Drupal how to get the node back out. This hook is called
+ * every time a node is loaded, and allows us to do some loading of our own.
+ */
+function jp_collection_load($node) {
+ 	$additions = db_fetch_object(db_query('SELECT size FROM {jp_collection} WHERE vid = %d', $node->vid));
+ 	$types = db_query('SELECT type from {jp_collection_types} WHERE vid = %d', $node->vid);
+ 	$additions->types = array();
+ 	while ($type = db_fetch_object($types)) {
+ 		$additions->types[] = $type->type;
+ 	}
+ 	$additions->nodes = jp_collection_load_nodes($node->vid, 0, 0);
+    return $additions;
+}
+
+function jp_collection_load_nodes($vid, $from = 0, $count = null, $published_only = TRUE) {
+ 	$orderby = "ASC";
+  	if ($published_only) {
+    	$published_sql = 'AND n.status = 1';
+  	}
+  	
+  	$sql = db_rewrite_sql("SELECT n.nid, nn.override_title, nn.override_link, nn.imagecache_setting FROM {node} n INNER JOIN {jp_collection_nodes} nn ON n.nid = nn.cnid WHERE nn.vid = %d $published_sql ORDER BY nn.position $orderby");
+  	
+  	if ($count) {
+    	$result = db_query_range($sql, $vid, $from, $count);
+  	}
+  	else {
+    	$result = db_query($sql, $vid);
+  	}
+
+  	$nodes = array();
+  	if ($result) {
+  		while ($collectionNode = db_fetch_object($result)) {
+  			$node = node_load($collectionNode->nid);
+  			$nodes[]= (object) array_merge((array) $collectionNode, (array) $node);
+    		//$nodes[] = node_load($collectionNode->nid);
+  		}
+  	}
+
+  	return $nodes;
+}
+
+/**
+ * Implementation of hook_init().
+ *
+ * Loads subsidiary includes for other modules.
+ */
+function jp_collection_init() {
+ // drupal_flush_all_caches();
+	//menu_rebuild();
+  include_once drupal_get_path('module', 'jp_collection') .'/include/jp_collection_theme.inc';
+}
+
+function _jp_collection_manage_items(&$jp_collection) {
+// var_dump($jp_collection);
+ 	if (!isset($jp_collection->nodes)) {
+ 		$jp_collection->nodes = jp_collection_load_nodes($jp_collection->vid, 0, 0);
+ 	}
+	
+	$content = theme('jp_collection_items_admin', $jp_collection->nodes, $jp_collection->nid, $jp_collection->vid);
+	return $content;
+ }
+ 
+ function _jp_collection_manage_access($node=false) {
+ 	if (($node && $node->type == 'jp_collection')) return true;
+ 	else return false;
+ }
+
+/**
+ * Implementation of hook_menu
+ */
+function jp_collection_menu() {
+
+  $items = array();
+	// administrative items
+
+  $items['node/%node/manage_nodes'] = array(
+		'title' 		=> 'Manage Nodes',
+		'access callback' => '_jp_collection_manage_access',
+		'page callback' => '_jp_collection_manage_items',
+    	'page arguments' => array(1),
+    	'access arguments' => array(1),
+		'description' 	=> 'Manage which content nodes to include in collection',
+		'type'			=> MENU_LOCAL_TASK
+  );
+  
+  $items['admin/jp_collection/browse_items'] = array(
+		'title' 		=> 'browse items',
+		'access callback' => TRUE,
+		'page callback' => 'jp_collection_nodebrowser',
+    	//'page arguments' => array(1),
+    	//'access arguments' => array(true),
+		'description' 	=> 'Browse nodes',
+		'type'			=> MENU_CALLBACK
+  );
+  
+  $items['admin/jp_collection/add_items'] = array(
+		'title' 		=> 'browse items',
+		'access callback' => TRUE,
+		'page callback' => 'jp_collection_add_nodes',
+    	//'page arguments' => array(1),
+    	//'access arguments' => array(true),
+		'description' 	=> 'Browse image nodes',
+		'type'			=> MENU_CALLBACK
+  );
+  
+  $items['admin/jp_collection/update_item'] = array(
+		'title' 		=> 'update item data',
+		'access callback' => TRUE,
+		'page callback' => '_jp_collection_update_item',
+    	//'page arguments' => array(1),
+    	//'access arguments' => array(true),
+		'description' 	=> 'Updates item settings',
+		'type'			=> MENU_CALLBACK
+  );
+    
+  $items['admin/jp_collection/item_data'] = array(
+		'title' 		=> 'get item dat',
+		'access callback' => TRUE,
+		'page callback' => '_jp_collection_item_data',
+    	//'page arguments' => array(1),
+    	//'access arguments' => array(true),
+		'description' 	=> 'get item settings',
+		'type'			=> MENU_CALLBACK
+  );
+ /* $items['admin/jp_collection/add_new'] = array(
+  		'title' 		=> 'upload new images',
+		'access callback' => TRUE,
+		'page callback' => 'jp_collection_add_new_images',
+		'type'			=> MENU_CALLBACK
+  );
+   $items['admin/jp_collection/add_image/list_imagefields'] = array(
+  		'title' 		=> 'update new image data',
+    	'access arguments' => array('create jp_collection'),
+    	'page callback' => 'drupal_get_form',
+    	'page arguments' => array('jp_collection_add_new_images_lists_imagefields', 2),    
+    	'type' => MENU_CALLBACK,
+  );*/
+  return $items;
+}
+/**
+ * update settings for a node attached to the collection
+ */
+ function _jp_collection_update_item() {
+ //	$collectionId = $_POST['gid'];
+ 	$gvid = $_POST['gvid'];
+ 	$nodeId = $_POST['nid'];
+ 	
+ 	 db_query("UPDATE {jp_collection_nodes} SET override_title = '%s', override_link = '%s', subtitle = '%s', imagecache_setting = '%s' WHERE vid = %d and cnid= %d", $_POST['override_title'], $_POST['override_link'], $_POST['subtitle'],$_POST['imagecache_settings'], $gvid, $nodeId);
+ }
+ 
+ function _jp_collection_item_data() {
+ 	$cnid = $_POST['cnid'];
+ 	$vid = $_POST['vid'];
+ 	$data  = db_fetch_object(db_query('SELECT * FROM {jp_collection_nodes} WHERE vid = %d and cnid= %d', $vid, $cnid));
+ 	 drupal_get_messages(null, true);
+ 	echo drupal_to_js($data);
+ }
+ 
+/**
+ * The image browser powered by Views.
+ */
+function jp_collection_nodebrowser() {
+	//$output = "";
+	$searchTerm = (!empty($_POST)) ? $_POST['search_term'] : false;
+	$nodes = array();
+	if (!$searchTerm) { // this will only happen when there are no search terms
+		//$types = array('img');//TODO get this from the jp collection settings
+		$type_str = "'" . implode("', '", $types) . "'";
+		$sql = "SELECT node.nid AS nid FROM node"; // WHERE node.type in ($type_str)";
+		$results = db_query($sql);
+		while ( $data = db_fetch_object($results) ) {
+  			$nodes[] = node_load($data->nid);
+  			//$output .= node_view($node);
+		}
+	} else { // we must have some search terms
+		//$searchTerms = 'hip-hop';
+		//echo $searchTerm;
+		//$find = do_search($searchTerm, 'node', 'INNER JOIN {node} n ON n.nid = i.sid', '(n.type = "img")');
+        $find = do_search($searchTerm, 'node', 'INNER JOIN {node} n ON n.nid = i.sid');
+         // Load results.
+      	$results = array();
+      	foreach ($find as $item) {
+        	// Build the node body.
+        	$nodes[] = node_load($item->sid);
+        }
+    }
+    
+   echo  jp_collection_items_browse($nodes);
+}
+
+function jp_collection_add_nodes() {
+	$collectionVid = $_POST['vid'];
+	$collectionNid = $_POST['nid'];
+	$collectionNodeIds = explode(",", $_POST['nodeIds']);
+	
+	$origData = array();
+	$results = db_query('SELECT * FROM {jp_collection_nodes} WHERE vid = %d', $collectionVid);
+	while ($data = db_fetch_object($results)) {
+  		$origData[$data->cnid] = $data;
+	}
+	
+	db_query('DELETE FROM {jp_collection_nodes} WHERE vid = %d', $collectionVid);
+	if (!empty($collectionVid) && !empty($collectionNodeIds)) {
+		//print 'sees nodes!';
+		$i = 1;
+		foreach ($collectionNodeIds as $cnid) {
+    		if (!empty($cnid)) {
+    		//if (isset($origData[$cnid])) {
+    			$override_title = !(empty($origData[$cnid]->override_title)) ? $origData[$cnid]->override_title : "";
+    			$subtitle = !(empty($origData[$cnid]->subtitle)) ? $origData[$cnid]->subtitle : "";
+    		//}
+    			db_query("INSERT INTO {jp_collection_nodes} (nid, vid, cnid, override_title, subtitle, position, timestamp) VALUES (%d, %d, %d, '%s', '%s', %d, %d )", $collectionNid, $collectionVid, $cnid, $override_title, $subtitle, $i, time());
+      		}
+			$i++;
+  		}
+		
+	}
+	
+	node_init();
+        global $memcache;
+        $memcache->delete($memcache->drupal_prefix . $collectionNid);
+}
+
+function jp_collection_add_new_images($id=null) {
+ global $user;
+ module_load_include('inc', 'node', 'node.pages');
+  
+  if (node_access('create', 'img', $user)) {
+    $node = array(
+      'uid' => $user->uid,
+      'name' => $user->name,
+      'type' => 'img'
+    );
+    $content = '<h1>' . t('Create Image') . '</h1>';
+    $content .= drupal_get_form($node['type'] .'_node_form', $node);
+    echo theme_jp_collection_popup($content);
+  }
+  else {
+    drupal_access_denied();
+  }
+  exit;
+}
+
+/*function jp_collection_add_new_images_lists_imagefields(&$form_state, $node_type='img') {
+	//module_load_include('inc', 'image_fupload', 'images.previewlist.imagefield.inc'); 
+	include_once drupal_get_path('module', 'image_fupload') .'/includes/images.previewlist.imagefield.inc';
+  	$form = fupload_list_images_imagefield($form_state, 'img');
+  	//print_r($form);
+  	return $form;
+}*/
+
+/**
+ * Implementation of hook_form_alter().
+ */
+/*function jp_collection_form_alter(&$form, &$form_state, $form_id) {
+ if ($form_id == 'img_node_form' && arg(1) == 'jp_collection') {
+  	$form['redirect']['#value'] = url('admin/jp_collection/add_image/list_imagefields');
+  	$form['redirect']['#type'] = 'hidden';
+   // $form['buttons']['fupload_submit']['#submit'] = array('jp_collection_add_img_form_submit');
+    //  print_r($form);
+  }
+  //echo $form_id;
+  if ($form_id == 'jp_collection_add_new_images_lists_imagefields') {
+  //	print_r($form);
+   $form['buttons']['submit']['#submit'] = array('jp_collection_add_img_form_submit');
+  }
+}
+*/
+
+/**
+ * Submit callback for image_node_form.
+ */
+function jp_collection_add_img_form_submit($form, &$form_state) {
+  // Execute regular node submit handler.
+//echo "HIHIHIHH";
+/*node_form_submit($form, $form_state);
+
+  if ($form_state['nid']) {
+    $id = arg(2);
+    $form_state['redirect'] = 'noderef_image_helper/insert/' . $id . '/' . $form_state['nid'];
+  }
+  */
+}
+
+/**
+ *  views hook
+ */
+function jp_collection_views_pre_execute(&$view) {
+ //drupal_set_message($view->build_info['query']); 
+   if($view->tag == 'jpcollection') {
+  		$find = array('SELECT', 'FROM {node} node', 'term_node ON node.vid = term_node.vid', 'ON node.vid = node_data_field_extra_html.vid');
+  		$replace = array('SELECT jpc_node.subtitle AS subtitle, jpc_node.override_title AS override_title, ', 'FROM {jp_collection_nodes} jpc_node', 'term_node ON jpc_node.vid = term_node.vid INNER JOIN {node} node on jpc_node.cnid = node.nid','ON jpc_node.vid = node_data_field_extra_html.vid');
+  		$view->build_info['query'] = str_replace($find, $replace, $view->build_info['query']);
+  		$view->build_info['query'] .= " ORDER BY jpc_node.position ASC";
+  		//drupal_set_message($view->build_info['query']); 
+   }
+}
+
+function jp_collection_views_pre_render(&$view) {
+ //drupal_set_message($view->build_info['query']); 
+   if($view->tag == 'jpcollection') {
+   if (!empty($view->result[0]->node_data_field_extra_html_field_extra_html_value)) {
+   		$view->attachment_after .= $view->result[0]->node_data_field_extra_html_field_extra_html_value;
+   }
+  // krumo($view);
+  		//drupal_set_message(var_export(array_keys((array)$view), TRUE));
+  		//drupal_set_message(var_export(array_keys((array)$view->display['default']->handler->view), TRUE));
+   }
+}

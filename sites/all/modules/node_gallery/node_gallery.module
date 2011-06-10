@@ -1,0 +1,748 @@
+<?php
+// $Id: node_gallery.module,v 1.17.4.24 2010/05/20 22:29:44 justintime Exp $
+
+/**
+ * @file
+ *
+ * Node gallery module file
+ */
+
+define("NODE_GALLERY_PERM_ADMIN_GALLERY", 'administer node gallery');
+define("NODE_GALLERY_PERM_VIEW_GALLERY", 'view node gallery');
+
+define("NODE_GALLERY_IMAGE_PAGER_ELEMENT", 2);
+
+define("NODE_GALLERY_VIEW_TEASER", 'teaser');
+define("NODE_GALLERY_VIEW_IMAGE_LIST", 'gallery');
+define("NODE_GALLERY_VIEW_IMAGE_DETAIL", 'detail');
+
+module_load_include('inc', 'node_gallery', 'node_gallery');
+
+if (module_exists('token')) {
+  module_load_include('inc', 'node_gallery', 'node_gallery.token');
+}
+
+function node_gallery_init() {
+  drupal_add_css(drupal_get_path('module', 'node_gallery') .'/node_gallery.css');
+
+  // Use the administrative theme if the user is looking at the upload page
+  // and has "use admin theme while editing content" enabled
+  if (variable_get('node_admin_theme', '0') && arg(0) == 'node' && (arg(2) == 'upload' || arg(2) == 'images' || arg(2) == 'sort')) {
+    global $custom_theme;
+    $custom_theme = variable_get('admin_theme', '0');
+    drupal_add_css(drupal_get_path('module', 'system') .'/admin.css', 'module');
+  }
+
+}
+
+/**
+ * Implementation of hook_perm().
+ */
+function node_gallery_perm() {
+  return array('administer node gallery', 'view node gallery');
+}
+
+/**
+ * Implementation of hook_menu().
+ */
+function node_gallery_menu() {
+  $items = array();
+
+  $items['admin/settings/node_gallery'] = array(
+    'title' => 'Node Gallery',
+    'description' => 'Create and manage your Node Gallery relationships.',
+    'page callback' => 'node_gallery_config_list',
+    'access arguments' => array(NODE_GALLERY_PERM_ADMIN_GALLERY),
+    'file' => 'node_gallery.admin.inc',
+    'type' => MENU_NORMAL_ITEM,
+  );
+  $items['admin/settings/node_gallery/list'] = array(
+    'title' => 'List',
+    'type' => MENU_DEFAULT_LOCAL_TASK,
+    'weight' => -10,
+  );
+  $items['admin/settings/node_gallery/settings'] = array(
+    'title' => 'Common Settings',
+    'description' => "Manage node gallery's common settings.",
+    'page callback' => 'drupal_get_form',
+    'page arguments' => array('node_gallery_settings_form'),
+    'access arguments' => array(NODE_GALLERY_PERM_ADMIN_GALLERY),
+    'file' => 'node_gallery.admin.inc',
+    'type' => MENU_LOCAL_TASK,
+  );
+  $items['admin/settings/node_gallery/add'] = array(
+    'title' => 'Add a Gallery Relationship',
+    'page callback' => 'drupal_get_form',
+    'page arguments' => array('node_gallery_config_form'),
+    'access arguments' => array(NODE_GALLERY_PERM_ADMIN_GALLERY),
+    'file' => 'node_gallery.admin.inc',
+    'type' => MENU_LOCAL_TASK,
+  );
+  $items['admin/settings/node_gallery/edit/%node_gallery_config'] = array(
+    'title' => 'Node Gallery - Edit Configuration',
+    'page callback' => 'drupal_get_form',
+    'page arguments' => array('node_gallery_config_form', 4),
+    'access arguments' => array(NODE_GALLERY_PERM_ADMIN_GALLERY),
+    'file' => 'node_gallery.admin.inc',
+    'type' => MENU_CALLBACK,
+  );
+  $items['admin/settings/node_gallery/delete/%node_gallery_config'] = array(
+    'title' => 'Node Gallery - Delete Configuration',
+    'page callback' => 'drupal_get_form',
+    'page arguments' => array('node_gallery_config_delete_form', 4),
+    'access arguments' => array(NODE_GALLERY_PERM_ADMIN_GALLERY),
+    'file' => 'node_gallery.admin.inc',
+    'type' => MENU_CALLBACK,
+  );
+
+  $items['galleries'] = array(
+    'title' => 'Gallery List',
+    'page callback' => 'node_gallery_list',
+    'access arguments' => array(NODE_GALLERY_PERM_VIEW_GALLERY),
+    'file' => 'node_gallery.pages.inc',
+    'type' => MENU_NORMAL_ITEM,
+  );
+  $items['galleries/%user_uid_optional'] = array(
+    'title' => 'My Galleries',
+    'title callback' => 'node_gallery_list_title',
+    'title arguments' => array(1),
+    'page callback' => 'node_gallery_list',
+    'page arguments' => array(1),
+    'access callback' => 'node_gallery_user_access',
+    'access arguments' => array('view My Galleries', NULL, 1),
+    'file' => 'node_gallery.pages.inc',
+    'type' => MENU_NORMAL_ITEM,
+  );
+  $items['galleries/%user/%node_gallery_config'] = array(
+    'title' => 'My Galleries',
+    'title callback' => 'node_gallery_list_title',
+    'title arguments' => array(1, 2),
+    'page callback' => 'node_gallery_list',
+    'page arguments' => array(1, 2),
+    'access arguments' => array(NODE_GALLERY_PERM_VIEW_GALLERY),
+    'file' => 'node_gallery.pages.inc',
+    'type' => MENU_NORMAL_ITEM,
+  );
+  $items['node/%node_gallery_gallery/upload'] = array(
+    'title' => 'Upload Images',
+    'page callback' => 'drupal_get_form',
+    'page arguments' => array('node_gallery_upload_form', 1),
+    'access callback' => 'node_gallery_user_access',
+    'access arguments' => array('upload', 1),
+    'file' => 'node_gallery.pages.inc',
+    'type' => MENU_LOCAL_TASK,
+  );
+  $items['node/%node_gallery_gallery/images'] = array(
+    'title' => 'Manage Images',
+    'page callback' => 'drupal_get_form',
+    'page arguments' => array('node_gallery_edit_images_form', 1),
+    'access callback' => 'node_gallery_user_access',
+    'access arguments' => array('edit image', 1),
+    'file' => 'node_gallery.pages.inc',
+    'type' => MENU_LOCAL_TASK,
+  );
+  $items['node/%node_gallery_gallery/sort'] = array(
+    'title' => 'Sort Images',
+    'page callback' => 'drupal_get_form',
+    'page arguments' => array('node_gallery_sort_images_form', 1),
+    'access callback' => 'node_gallery_user_access',
+    'access arguments' => array('edit image', 1),
+    'file' => 'node_gallery.pages.inc',
+    'type' => MENU_LOCAL_TASK,
+  );
+
+  $items['node_gallery/upload/js'] = array(
+    'title' => 'Gallery Image Upload',
+    'page callback' => 'node_gallery_upload_js',
+    'access callback' => TRUE,
+    'file' => 'node_gallery.pages.inc',
+    'type' => MENU_CALLBACK,
+  );
+
+  return $items;
+}
+
+/**
+ * Implementation hook_views_api().
+ */
+function node_gallery_views_api() {
+  return array('api' => 2.0);
+}
+
+/**
+ * Implementation of hook_menu_alter().
+ */
+function node_gallery_menu_alter(&$items) {
+  // Disable all Node Gallery image types from showing up on node/add
+  $types = node_gallery_get_types('image');
+  foreach ($types as $type) {
+    $items['node/add/'. str_replace('_', '-', $type)]['type'] = MENU_CALLBACK;
+  }
+} //node_gallery_menu_alter()
+
+/**
+ * Implementation of hook_theme()
+ */
+function node_gallery_theme() {
+  $file = 'theme.inc';
+  $path = drupal_get_path('module', 'node_gallery') ."/theme";
+
+  $themes = array(
+    'gallery_list' => array(
+      'arguments' => array('items' => NULL, 'account' => NULL),
+    ),
+    'gallery_cover_view' => array(
+      'template' => 'gallery-cover-view',
+      'arguments' => array('gallery' => NULL),
+      'path' => $path,
+    ),
+    'gallery_teaser' => array(
+      'arguments' => array('gallery' => NULL, 'config' => NULL),
+      'template' => 'gallery-teaser',
+      'path' => $path,
+    ),
+    'gallery_images_list' => array(
+      'arguments' => array('gallery' => NULL, 'config' => NULL),
+      'template' => 'gallery-images-list',
+      'path' => $path,
+    ),
+    'image_detail_view' => array(
+      'template' => 'image-detail-view',
+      'arguments' => array('image' => NULL, 'config' => NULL),
+      'path' => $path,
+    ),
+    'gallery_image_thumbnail' => array(
+      'template' => 'gallery-image-thumbnail',
+      'arguments' => array('image' => NULL, 'config' => NULL, 'mode' => NULL),
+    ),
+    'image_view' => array(
+      'arguments' => array('imagecache' => NULL, 'image' => NULL),
+    ),
+    'gallery_image_navigator' => array(
+      'arguments' => array('navigator' => NULL, 'image' => NULL),
+    ),
+    'gallery_meta' => array(
+      'arguments' => array('gallery' => NULL),
+    ),
+    'gallery_edit_images_form' => array(
+      'arguments' => array('form' => NULL),
+    ),
+    'gallery_sort_images_form' => array(
+      'arguments' => array('form' => NULL),
+    ),
+  );
+  foreach ($themes as &$theme) {
+    $theme['path'] = $path;
+    $theme['file'] = $file;
+  }
+  return $themes;
+}
+
+function node_gallery_form_alter(&$form, $form_state, $form_id) {
+  if (isset($form['type']) && isset($form['#node']) && $form['type']['#value'] .'_node_form' == $form_id) {
+    //this is an image type edit form.
+    if (in_array($form['type']['#value'], (array)node_gallery_get_types('image'))) {
+      $image = $form['#node'];
+      if (!empty($image->filepath)) {
+        $config = node_gallery_get_image_parent_gallery_config($image);
+        $form['image_preview'] = array(
+          '#value' => theme('image_view', $config['image_size']['preview'], $image),
+          '#weight' => -10,
+        );
+      }
+    }
+  }
+}
+
+/**
+ * Implementation of hook_nodeapi().
+ */
+function node_gallery_nodeapi(&$node, $op, $a3 = NULL, $a4 = NULL) {
+  switch ($op) {
+    case 'load':
+      if (in_array($node->type, (array)node_gallery_get_types())) {
+        // If we are sorting images, we don't want to load the pager
+        if (arg(2) == 'sort' || arg(2) == 'images') {
+          $node->images = node_gallery_get_gallery_images($node, TRUE);
+        }
+        else {
+          $node->images = node_gallery_get_gallery_images($node);
+        }
+        $node->config = node_gallery_get_config($node->type);
+      }
+      if (in_array($node->type, (array)node_gallery_get_types('image'))) {
+        //$node->image = node_gallery_get_image_file($node);
+        $node = (object)array_merge((array)$node, (array)node_gallery_get_image_file($node));
+      }
+      break;
+    case 'view':
+      //viewing node gallery page.
+      if (in_array($node->type, (array)node_gallery_get_types())) {
+        _node_gallery_gallery_view($node, $a3, $a4);
+      }
+      elseif (in_array($node->type, (array)node_gallery_get_types('image'))) {
+        _node_gallery_image_view($node, $a3, $a4);
+      }
+      break;
+    case 'delete':
+      _node_gallery_delete($node);
+      break;
+  }
+}
+
+function _node_gallery_gallery_view(&$node, $teaser = NULL, $page = NULL) {
+  $config = node_gallery_get_config($node->type);
+
+  if ($page) {
+    //$node->content['gallery_operations'] = array('#value' => node_gallery_operations('gallery', $node), '#weight' => -5);
+    if ($config['gallery']['gallery_display_type'] == 'cover') {
+      $no_cover = TRUE;
+
+      // if there are some images
+      if ($node->images) {
+        foreach ($node->images as $image) {
+          if ($image->is_cover) {
+            $cover = $image;
+            $no_cover = FALSE;
+            break;
+          }
+        }
+        unset($image);
+
+        // If there is no cover image, use the first one
+        if ($no_cover == TRUE) {
+          $keys = array_keys($node->images);
+          $first_key = $keys[0];
+          $cover = $node->images[$first_key];
+          unset($keys, $first_key);
+        }
+      }
+      else { // no images in the gallery
+        $cover = new stdClass();
+      }
+
+      // Make sure the node title matches the gallery and not the cover image
+      $cover->title = $node->title;
+
+      //make sure there is a cover image before we try to load the navigator
+      if (!empty($cover->filepath)) {
+        // Load the navigator
+        // $node->nid = gallery id (gid)
+        $navigator = node_gallery_get_image_navigator($node->nid, $cover->nid);
+        
+        $output .= l(theme('image_view', $config['image_size']['cover'], $cover), 'node/'. $navigator['next_nid'], array('html' => TRUE));
+        $output .= '<p>'. l(t('Continue to the Next Photo'), 'node/'. $navigator['next_nid']) .'</p>';
+      }
+      else { // If there are no images, display the default cover
+        $cover->filepath = empty($cover->filepath) ? $config->default_cover : $cover->filepath;
+        
+        // only display the default cover image if a default exists
+        if (!empty($cover->filepath)) {
+          $output .= theme('image_view', $config->gallery['image'], $cover);
+        }
+      }
+      
+      $node->content['gallery'] = array('#value' => $output, '#weight' => -3);
+    }
+    else { //looking at thumbnails, the default
+      $node->content['gallery'] = array('#value' => theme('gallery_images_list', $node, $config), '#weight' => -3);
+      $node->content['pager'] = array('#value' => theme('pager', NULL, variable_get('node_images_page_number', 20), NODE_GALLERY_IMAGE_PAGER_ELEMENT), '#weight' => 10);
+    }
+    
+    drupal_set_breadcrumb(array(
+      l(t('Home'), NULL),
+      l(t('Galleries'), 'galleries'),
+      l(t('!user\'s Galleries', array('!user' => $node->name)), 'galleries/'. $node->uid), 
+    ));
+  }
+  
+  else {
+    $node->content['gallery'] = array('#value' => theme('gallery_teaser', $node, $config), '#weight' => -3);
+  }
+}
+
+function _node_gallery_image_view(&$node, $teaser = NULL, $page = NULL) {
+  $config = node_gallery_get_image_parent_gallery_config($node);
+  if ($config['content_display'] == 'gallery') {
+    $node->content['body']['#value'] = node_gallery_get_gallery_content($node->gid, $teaser);
+    $tmp = $node->content['body'];
+    unset($node->content);
+    $node->content['body'] = $tmp;
+  }
+  if ($config['image_comment'] == 'gallery') {
+    $node->comment = variable_get('comment_'. $config['gallery_type'], COMMENT_NODE_READ_WRITE);
+  }
+  elseif ($config['image_comment' == 'image']) {
+    $node->image_comment = $node->comment;
+    //this is a hack for display comments in vars['comment'];
+    $node->comment = 0;
+  }
+  if ($page) {
+    $gallery_node = node_load($node->gid);
+    drupal_set_breadcrumb(array(
+      l(t('Home'), NULL),
+      l(t('Galleries'), 'galleries'),
+      l(t('!user\'s Galleries', array('!user' => $node->name)), 'galleries/'. $node->uid),
+      l($gallery_node->title, 'node/'. $gallery_node->nid)
+    ));
+  }
+  
+  if ($page) {
+    $node->content['image_navigator'] = array('#value' => theme('gallery_image_navigator', node_gallery_get_image_navigator($node->gid, $node->nid), $node),
+     '#weight' => -10);
+    $node->content['image'] = array('#value' => theme('image_detail_view', $node, $config), '#weight' => -5);
+    }
+    else {
+      $node->content['image'] = array('#value' => theme('image_view', $config['teaser']['image'], $node), '#weight' => -3);
+    }
+}
+
+/**
+ * Implementation of hook_nodeapi(op='delete').
+ */
+function _node_gallery_delete(&$node) {
+  global $user;
+  
+  if (in_array($node->type, (array)node_gallery_get_types())) {
+    $images = node_gallery_get_all_images($node);
+    if (!empty($images)) {
+      $operations[] = array('image_delete_process', array($images));
+      $batch = array(
+        'operations' => $operations,
+        'finished' => 'image_process_finished',
+        'title' => t('Processing Gallery Delete.'),
+        'init_message' => t('Gallery Delete is starting.'),
+        //'progress_message' => t('Processed @current out of @total.'),
+        'error_message' => t('Gallery Delete has encountered an error.'),
+      );
+      
+      batch_set($batch);
+      $redirect = user_access(NODE_GALLERY_PERM_VIEW_GALLERY) ? 'galleries/'. $user->uid : NULL;
+      batch_process($redirect);
+    }
+  }
+  if (in_array($node->type, (array)node_gallery_get_types('image'))) {
+    node_gallery_delete_image($node);
+  }
+}
+
+function image_delete_process($images, &$context) {
+  if (!isset($context['sandbox']['progress'])) {
+    $context['sandbox']['progress'] = 0;
+    $context['sandbox']['total'] = count($images);
+    $context['results'][] = t('You deleted !num.', array('!num' => format_plural(count($images), '1 image', '@count images')));
+  }
+  foreach ($images as $image) {
+    node_delete($image->nid);
+    $context['sandbox']['progress'] ++;
+  }
+  node_gallery_set_cover($image->gid);
+  $context['finished'] = $context['sandbox']['progress']/$context['sandbox']['total'];
+}
+
+/**
+ * We can't put this function to node_gallery.pages.inc
+ * because the batch was started after reboot.
+ *
+ * @param unknown_type $file
+ * @param unknown_type $fid
+ * @param unknown_type $num
+ * @param unknown_type $context
+ */
+function image_upload_process($images, $is_upload, &$context) {
+  
+  if (!isset($context['sandbox']['progress'])) {
+    $context['sandbox']['progress'] = 0;
+    $context['sandbox']['total'] = count($images);
+    $context['results'][] = $is_upload ? t('You uploaded !num.', array('!num' => format_plural(count($images), '1 image', '@count images'))) :
+      t('You edited !num.', array('!num' => format_plural(count($images), '1 image', '@count images')));
+  }
+  foreach ($images as $fid => $image) {
+    node_gallery_image_save($image);
+    $context['sandbox']['progress'] ++;
+  }
+  node_gallery_set_cover($image->gid);
+  $context['finished'] = $context['sandbox']['progress']/$context['sandbox']['total'];
+}
+
+function image_process_finished($success, $results, $operations) {
+  if ($success) {
+    // Here we do something meaningful with the results.
+    drupal_get_messages('status', TRUE);
+    $results = is_string($results) ? array($results) : $results;
+    foreach ($results as $result) {
+      drupal_set_message($result);
+    }
+  }
+  else {
+    // An error occurred.
+    // $operations contains the operations that remained unprocessed.
+    $error_operation = reset($operations);
+    $message = 'An error occurred while processing '. $error_operation[0] .' with arguments :'. print_r($error_operation[0], TRUE);
+    drupal_set_message($message);
+  }
+}
+
+function node_gallery_config_load($type) {
+  $ng_configs = node_gallery_get_config();
+  return $ng_configs[$type];
+}
+
+function node_gallery_list_title($user, $gallery_config = NULL) {
+  return t('!user\'s !gallery Galleries', array('!user' => $user->name, '!gallery' => $gallery_config['name']));
+}
+
+function node_gallery_gallery_load($nid) {
+  $types = node_gallery_get_types('all');
+  if (is_numeric($nid)) {
+    $node = node_load($nid);
+    
+    //is the current node used in any ng relationships?
+    if (in_array($node->type, $types)) {
+      return $node;
+    }
+    else {
+      // this is not a ng node
+      return FALSE;
+    }
+  }
+  return FALSE;
+  
+  /* static $galleries;
+
+  if (empty($galleries[$nid])) {
+    $galleries[$nid] = node_load($nid);
+    //this is a gallery type;
+    if (in_array($galleries[$nid]->type, (array)node_gallery_get_types())) {
+      return $galleries[$nid];
+    }
+  }*/
+}
+
+function node_gallery_gallery_to_arg($arg) {
+  if (!is_numeric($arg)) {
+    return $arg;
+  }
+  $types = node_gallery_get_types('all');
+  $nid = $arg;
+  $node = node_load($nid);
+  
+  //is the current node used in any ng relationships?
+  if (in_array($node->type, $types)) {
+    // If looking at an image, we'll want the nid to be the gallery nid
+    if (in_array($node->type, node_gallery_get_types('image'))) {
+      return $node->gid;
+    }
+    else {
+      return $nid;
+    }
+  }
+  else {
+    // this is not a ng node
+    return $nid;
+  }
+}
+
+function node_gallery_user_access($op, $gallery = NULL, $account = NULL) {
+  global $user;
+  
+  //$gallery_config = $gallery->config;
+  $image_type = $gallery->config['image_type'];
+  $gallery_type = $gallery->type;
+  
+  switch ($op) {
+    case 'view':
+      return user_access('administer nodes') || user_access(NODE_GALLERY_PERM_VIEW_GALLERY);
+      break;
+    case 'view My Galleries':
+      if (isset($user->status) || ($user->uid == 0 && $user->uid != $account->uid)) {
+        return user_access('administer nodes') || user_access(NODE_GALLERY_PERM_VIEW_GALLERY);
+      }
+      break;
+    case 'upload':
+      if ($user->uid == $gallery->uid) {
+        return user_access('administer nodes') || user_access('create '. $image_type .' content');
+      }
+      else {
+        return user_access('administer nodes') || user_access('edit any '. $gallery_type .' content');
+      }
+      break;
+    case 'edit':
+      if ($user->uid == $gallery->uid) {
+        return user_access('administer nodes') || user_access('edit own '. $gallery_type .' content') || user_access('edit any '. $gallery_type .' content');
+      }
+      else {
+        return user_access('administer nodes') || user_access('edit any '. $gallery_type .' content');
+      }
+      break;
+    case 'edit image':
+      if ($user->uid == $gallery->uid) {
+        return user_access('administer nodes') || user_access('edit own '. $image_type .' content') || user_access('edit any '. $image_type .' content');
+      }
+      else {
+        return user_access('administer nodes') || user_access('edit any '. $image_type .' content');
+      }
+      break;
+    case 'delete':
+      if ($user->uid == $gallery->uid) {
+        return user_access('administer nodes') || user_access('delete own '. $image_type .' content') || user_access('delete any '. $image_type .' content');
+      }
+      else {
+        return user_access('administer nodes') || user_access('delete any '. $image_type .' content');
+      }
+      break;
+    case 'create':
+      return user_access('administer nodes') || user_access('create '. $gallery_type .' content');
+      break;
+  }
+}
+
+function node_gallery_image_user_access($op, $image = NULL) {
+  global $user;
+  
+  switch ($op) {
+    case 'edit':
+      if ($user->uid == $image->uid) {
+        return user_access("edit own $image->type content") || user_access("edit any $image->type content");
+      }
+      if ($user->uid != $image->uid) {
+        return user_access("edit any $image->type content");
+      }
+      break;
+  }
+}
+
+function node_gallery_operations($type, $a2 = NULL) {
+  global $user;
+  $items = array();
+  
+  switch ($type) {
+    case 'list':
+      $account = $a2;
+      //all gallery list or current user's gallery list;
+      if ($account->uid == $user->uid) {
+        $node_types = node_get_types();
+        $gallery_types = node_gallery_get_types();
+        foreach ($gallery_types as $type) {
+          if (user_access("create $type content", $user)) {
+            $items[] = array(
+              'title' => t('Create !type', array('!type' => $node_types[$type]->name)),
+              'href' => 'node/add/'. str_replace('_', '-', $type),
+            );
+          }
+        }
+      }
+      break;
+    case 'cover':
+      $gallery = $a2;
+      if (node_gallery_user_access('edit', $gallery)) {
+        $items[] = array('title' => t('Edit gallery'), 'href' => "node/$gallery->nid/edit", 'query' => array('destination' => "galleries/$gallery->uid"));
+      }
+      if (node_gallery_user_access('upload', $gallery)) {
+        $items[] = array('title' => t('Upload images'), 'href' => "node/$gallery->nid/upload");
+      }
+      if (node_gallery_user_access('delete', $gallery)) {
+        $items[] = array('title' => t('Delete gallery'), 'href' => "node/$gallery->nid/delete",
+        'query' => array('destination' => "galleries/$gallery->uid"));
+      }
+      break;
+    case 'gallery':
+      $gallery = $a2;
+      if (node_gallery_user_access('edit', $gallery)) {
+        $items[] = array(
+          'title' => t('Edit gallery'),
+          'href' => "node/$gallery->nid/edit",
+          'query' => array('destination' => "node/$gallery->nid"),
+        );
+      }
+      if (node_gallery_user_access('upload', $gallery)) {
+        $items[] = array(
+          'title' => t('Upload images'),
+          'href' => "node/$gallery->nid/upload",
+          'query' => array('destination' => "node/$gallery->nid"),
+        );
+      }
+      if (node_gallery_user_access('edit image', $gallery) && count($gallery->images)) {
+        $items[] = array(
+          'title' => t('Manage images'),
+          'href' => "node/$gallery->nid/images",
+          'query' => array('destination' => "node/$gallery->nid"),
+        );
+      }
+      if (node_gallery_user_access('delete', $gallery)) {
+        $items[] = array(
+          'title' => t('Delete gallery'),
+          'href' => "node/$gallery->nid/delete",
+          'query' => array('destination' => "galleries/$gallery->uid"),
+        );
+      }
+      break;
+    case 'image':
+      $image_node = $a2;
+      /*if (node_gallery_image_user_access('edit', $image_node)) {
+        $items[] = array('title' => t('Edit image'), 'href' => 'node/'. $image_node->nid ."/edit");
+      }*/
+      $items[] = array('title' => t('Back to gallery'), 'href' => 'node/'. $image_node->gid);
+      break;
+  }
+  return theme('links', $items, array('class' => 'gallery-operations'));
+}
+
+/**
+ * Implementation of hook_link_alter().
+ */
+function node_gallery_link_alter(&$links, $node) {
+  if (in_array($node->type, (array)node_gallery_get_types('image'))) {
+    $config = node_gallery_get_image_parent_gallery_config($node);
+    if ($config['image_comment'] == 'gallery') {
+      foreach ($links as $k => $link) {
+        if (strpos($k, 'comment') !== FALSE && is_array($link)) {
+          foreach ($link as $k2 => $v) {
+            if ($k2 == 'href') {
+              $links[$k][$k2] = preg_replace('/(\w+)\/(\d+)/i', "\$1/". $node->gid, $v);
+            }
+            if ($k2 == 'query') {
+              $links[$k][$k2] = is_array($v) ? array_merge($v, array('destination' => 'node/'. $node->nid)) : $v ."&destinatioin=$node->nid";
+            }
+          }
+        }
+      }
+    }
+  }
+}
+
+/**
+ * Implementation of hook_theme_registry_alter().
+ */
+function node_gallery_theme_registry_alter(&$theme_registry) {
+  $theme_registry['node']['theme paths'][] = drupal_get_path('module', 'node_gallery') ."/theme";
+}
+
+function node_gallery_preprocess_node(&$vars) {
+  $node = $vars['node'];
+  $page = $vars['page'];
+  
+  if (in_array($node->type, (array)node_gallery_get_types('image'))) {
+    if ($page) {
+      $config = node_gallery_get_image_parent_gallery_config($node);
+      if (function_exists('comment_render')) {
+        if ($config['image_comment'] == 'image' && $node->image_comment) {
+          $vars['comments'] = comment_render($node);
+        }
+        elseif ($config['image_comment'] == 'gallery') {
+          $gallery_node = node_load($node->gid);
+          if ($gallery_node->comment) {
+            $vars['comments'] = comment_render($gallery_node);
+          }
+        }
+      }
+    }
+
+    array_pop($vars['template_files']);
+    $vars['template_files'][] = "node-image-default";
+    $vars['template_files'][] = "node-" . $node->type;
+    $node_classes[] = 'node-node_gallery-image';
+  }
+  $node_classes[] = 'node-'. $node->type;
+  $vars['node_classes'] = implode(' ', $node_classes);
+}

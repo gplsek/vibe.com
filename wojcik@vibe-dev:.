@@ -1,0 +1,250 @@
+#
+# Apache/PHP/Drupal settings:
+#
+
+# Protect files and directories from prying eyes.
+<FilesMatch "\.(engine|inc|info|install|make|module|profile|test|po|sh|.*sql|theme|tpl(\.php)?|xtmpl|svn-base)$|^(code-style\.pl|Entries.*|Repository|Root|Tag|Template|all-wcprops|entries|format)$">
+  Order allow,deny
+</FilesMatch>
+
+# Don't show directory listings for URLs which map to a directory.
+Options -Indexes
+
+# Follow symbolic links in this directory.
+Options +FollowSymLinks
+
+# Make Drupal handle any 404 errors.
+ErrorDocument 404 /index.php
+
+# Force simple error message for requests for non-existent favicon.ico.
+<Files favicon.ico>
+  # There is no end quote below, for compatibility with Apache 1.3.
+  ErrorDocument 404 "The requested file favicon.ico was not found.
+</Files>
+
+# Set the default handler.
+DirectoryIndex index.php
+
+# Override PHP settings. More in sites/default/settings.php
+# but the following cannot be changed at runtime.
+
+# PHP 4, Apache 1.
+<IfModule mod_php4.c>
+  php_value magic_quotes_gpc                0
+  php_value register_globals                0
+  php_value session.auto_start              0
+  php_value mbstring.http_input             pass
+  php_value mbstring.http_output            pass
+  php_value mbstring.encoding_translation   0
+</IfModule>
+
+# PHP 4, Apache 2.
+<IfModule sapi_apache2.c>
+  php_value magic_quotes_gpc                0
+  php_value register_globals                0
+  php_value session.auto_start              0
+  php_value mbstring.http_input             pass
+  php_value mbstring.http_output            pass
+  php_value mbstring.encoding_translation   0
+</IfModule>
+
+# PHP 5, Apache 1 and 2.
+<IfModule mod_php5.c>
+  php_value magic_quotes_gpc                0
+  php_value register_globals                0
+  php_value session.auto_start              0
+  php_value mbstring.http_input             pass
+  php_value mbstring.http_output            pass
+  php_value mbstring.encoding_translation   0
+</IfModule>
+
+# Requires mod_expires to be enabled.
+<IfModule mod_expires.c>
+  # Enable expirations.
+  ExpiresActive On
+
+  # Cache all files for 2 weeks after access (A).
+  ExpiresDefault A1209600
+
+  <FilesMatch \.php$>
+    # Do not allow PHP scripts to be cached unless they explicitly send cache
+    # headers themselves. Otherwise all scripts would have to overwrite the
+    # headers set by mod_expires if they want another caching behavior. This may
+    # fail if an error occurs early in the bootstrap process, and it may cause
+    # problems if a non-Drupal PHP file is installed in a subdirectory.
+    ExpiresActive Off
+  </FilesMatch>
+</IfModule>
+
+# Various rewrite rules.
+<IfModule mod_rewrite.c>
+  RewriteEngine on
+
+  # If your site can be accessed both with and without the 'www.' prefix, you
+  # can use one of the following settings to redirect users to your preferred
+  # URL, either WITH or WITHOUT the 'www.' prefix. Choose ONLY one option:
+  #
+  # To redirect all users to access the site WITH the 'www.' prefix,
+  # (http://example.com/... will be redirected to http://www.example.com/...)
+  # adapt and uncomment the following:
+  # RewriteCond %{HTTP_HOST} ^example\.com$ [NC]
+  # RewriteRule ^(.*)$ http://www.example.com/$1 [L,R=301]
+  #
+  # To redirect all users to access the site WITHOUT the 'www.' prefix,
+  # (http://www.example.com/... will be redirected to http://example.com/...)
+  # uncomment and adapt the following:
+  # RewriteCond %{HTTP_HOST} ^www\.example\.com$ [NC]
+  # RewriteRule ^(.*)$ http://example.com/$1 [L,R=301]
+
+  # Modify the RewriteBase if you are using Drupal in a subdirectory or in a
+  # VirtualDocumentRoot and the rewrite rules are not working properly.
+  # For example if your site is at http://example.com/drupal uncomment and
+  # modify the following line:
+  # RewriteBase /drupal
+  #
+  # If your site is running in a VirtualDocumentRoot at http://example.com/,
+  # uncomment the following line:
+  RewriteBase /
+
+#  RewriteCond %{REQUEST_FILENAME} !-f
+#  RewriteCond %{REQUEST_FILENAME} !-d
+#  RewriteCond %{REQUEST_URI} \.(png|gif|jpe?g|s?html?|ico|swf|flv|jpgpub.*)$
+#  RewriteRule ^(.*)$ http://www.vibe.com/$1 [L,QSA]
+
+  # Rewrite URLs of the form 'x' to the form 'index.php?q=x'.
+  RewriteCond %{REQUEST_URI} !^/server-status
+  RewriteCond %{REQUEST_URI} !^/server-info
+  RewriteCond %{REQUEST_FILENAME} !-f
+  RewriteCond %{REQUEST_FILENAME} !-d
+  RewriteCond %{REQUEST_URI} !=/favicon.ico
+  RewriteRule ^(.*)$ index.php?q=$1 [L,QSA]
+</IfModule>
+
+# $Id: .htaccess,v 1.90.2.5 2010/02/02 07:25:22 dries Exp $
+
+
+<Files "cron.php">
+        Order Deny,Allow
+        Deny from all
+        Allow from localhost
+        Allow from 127.0.0.1
+</Files>
+
+
+
+###############################################################################
+##  Mobify Apache Redirect Plugin v1.3                                       ##
+##  http://mobify.me                                                         ##
+##                                                                           ##
+##  Installation:                                                            ##
+##                                                                           ##
+##  First: for this to work, you need to configure a mobile site for         ##
+##  yourself using Mobify.  Then follow the CNAME setup instructions for     ##
+##  pointing m.vibe.com to your Mobify account:                          ##
+##  http://support.mobify.me/faqs/general/dns                                ##
+##                                                                           ##
+##  This code goes in the .htaccess file in the root directory of your       ##
+##  website.  If you already have a .htaccess file, generally these lines    ##
+##  should go at the bottom of that file.  If you have sophisticated         ##
+##  htaccess redirect logic already, it's possible some of those rules may   ##
+##  prevent these rules for running and you may need to modify your rules or ##
+##  this plugin.                                                             ##
+##                                                                           ##
+##  For example, if your website is located in /www/vibe.com/ the        ##
+##  contents of this file should go in /www/vibe.com/.htaccess           ##
+##                                                                           ##
+##  Do a search and replace on 'vibe.com' with the domain of             ##
+##  your site. So you might replace 'vibe.com' with                      ##
+##  'widgetsandneatstuff.net'                                                ##
+##                                                                           ##
+##  If your cname is not m.vibe.com, for example if it is                ##
+##  mobile.vibe.com, you will also need to run a search and replace from ##
+##  m.vibe.com to mobile.vibe.com.                                   ##
+##                                                                           ##
+##  Troubleshooting tips:                                                    ##
+##                                                                           ##
+##  1) If you have other RewriteRule lines above this plugin in your         ##
+##     .htaccess file, make sure they do not specify the [L] option, as this ##
+##     option bypasses further RewriteRule tags.                             ##
+##                                                                           ##
+##  2) Make sure you have mod_rewrite installed and enabled in your apache   ##
+##     configuration.  Ask your system administrator to verify that this is  ##
+##     the case.                                                             ##
+##                                                                           ##
+##  3) Your sysadmin can enable a rewrite debugging log file if you're       ##
+##     having trouble.  These lines must be placed in the apache global      ##
+##     configuration files for your site and cannot be placed in this        ##
+##     .htaccess file.  The lines are as follows:                            ##
+##                                                                           ##
+##       RewriteLog "/path/to/log/file/rewrite.log"                          ##
+##       RewriteLogLevel 3                                                   ##
+##                                                                           ##
+##     A word of caution - the lines above should be used for debugging only ##
+##     as they produce verbose logs that might affect performance on a       ##
+##     busy site.                                                            ##
+##                                                                           ##
+##  4) Apache mod_rewrite documentation is available here:                   ##
+##                                                                           ##
+##     http://httpd.apache.org/docs/2.0/mod/mod_rewrite.html                 ##
+##                                                                           ##
+##                                                                           ##
+###############################################################################
+
+<IfModule mod_rewrite.c>
+
+RewriteEngine On
+RewriteBase /
+
+# CNAME: http://m.vibe.com/
+# COOKIE DOMAIN: .vibe.com
+
+## First, check if this is a type of resource that should NOT cause a redirect
+RewriteRule \.(png|jpg|jpeg|jif|jfif|jp2|jpx|j2k|j2c|fpx|pcd|bmp|gif|mp\d|wav|iso|css|rss|fnt|exe|dmg|msi|torrent|com|app|tif|tiff|zip|tar|gz|pdf|ps|ogg|txt|rtf|xls|ppt|pps|doc\w?|svg|mov|avi|swf|mpeg|rpm|deb|wmv|qt|ico|bz2)$                              - [L,NC]
+
+## Second we check for query string parameters.  These can be used to force a
+## desktop or a mobile view and they override all other rules.  To force a
+## desktop view, set the parameter ?mobify=0 at the end of your url.  To
+## force a mobile view, set ?mobify=1 at the end of your url
+
+# check for query string param mobify=0 or mobify=1, set appropriate cookie
+#RewriteCond %{QUERY_STRING}                     .*mobify=0.* [NC]
+#RewriteRule ^(.*)$                              - [L,CO=mobify:0:.vibe.com:120:/]
+RewriteCond %{QUERY_STRING}                     .*mobify=1.* [NC]
+RewriteRule ^(.*)$                              http://m.vibe.com/$1 [R,L,CO=mobify:1:.vibe.com:120:/]
+
+# check for cookie mobify=0 or 1
+# if mobify=1 then redirect to the mobile view, and set a cookie
+# telling clients to keep using the mobile view for 120 minutes.
+#RewriteCond %{HTTP_COOKIE}                      .*mobify=0.* [NC]
+#RewriteRule ^(.*)$                              - [L]
+RewriteCond %{HTTP_COOKIE}                      .*mobify=1.* [NC]
+RewriteRule ^(.*)$                              http://m.vibe.com/$1 [R,L,CO=mobify:1:.vibe.com:120:/]
+
+# 'negative' mobile matches, check for UAs set by desktop browsers
+#RewriteCond %{HTTP_USER_AGENT} ^.*(iPad|Intel\s+Mac\s+OS\s+X|PPC\s+Mac\s+OS\s+X|Mac_powerPC|SunOS|Windows\s+NT|Windows\s+98|WinNT).* [NC]
+#RewriteRule ^(.*)$                              - [L,CO=mobify:0:.vibe.com:525600:/]
+
+# 'Positive' mobile matches, check for phone UAs and HTTP headers only set by phones
+RewriteCond %{HTTP:X-OperaMini-Features}   !="" [NC,OR]
+RewriteCond %{HTTP:X-OperaMini-Phone}      !="" [NC,OR]
+RewriteCond %{HTTP:X-Mobile-Gateway}       !="" [NC,OR]
+RewriteCond %{HTTP_ACCEPT}                 ^.*application/vnd\.wap\.xhtml\+xml.* [NC,OR]
+RewriteCond %{HTTP_USER_AGENT} ^.*(alcatel|audiovox|au\-mic|avantgo|bolt|blackberry|blazer|cldc\-|danger|dopod|epoc|ericsson|Google\s+Wireless\s+Transcoder|htc|huawei|iemobile|ipaq|iphone|ipod|j2me|lg|midp|mobile|mot|moto|motorola|nec\-|netfront|netfront|nitro|nokia|novarra\-vision|opera\s+mini|palm|palmsource|panasonic|philips|pocketpc|portalmmm|rover|sagem|samsung|sanyo|sec|series60|sharp|sie\-|smartphone|sony|symbian|t\-mobile|untrusted|up\.browser|up\.link|vodafone\/|wap1\.|wap2\.|webOS|windows\s+ce).* [NC]
+RewriteRule ^(.*)$                              http://m.vibe.com/$1 [R,L,CO=mobify:1:.vibe.com:120:/]
+
+# this runs only if none of the rules above matched. (because of the [L] option used for those rules)
+# This means the user is not using a mobile device.  We mark this using a cookie
+# to speed up future interactions.
+#RewriteRule ^(.*)$                  - [CO=mobify:0:.vibe.com:120:/]
+
+</IfModule>
+
+###############################################################################
+##  End Mobify Apache Redirect Plugin v1.2                                   ##
+##  http://mobify.me                                                         ##
+###############################################################################
+
+Redirect 301 /subscribe https://secure.palmcoastd.com/pcd/eSv?iMagId=26601&i4Ky=ISU1
+Redirect 301 /customerservice https://secure.palmcoastd.com/pcd/eServ?iServ=MjY2MDE2OTE4Ng
+Redirect 301 /renew https://secure.palmcoastd.com/pcd/eServ?iServ=MjY2MDE2OTE4Ng
+

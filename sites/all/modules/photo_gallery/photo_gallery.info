@@ -1,0 +1,7 @@
+; $Id
+name = Photo Gallery
+description = Create a collection of nodes which can be arranged in an arbitrary order
+package = Photo Gallery
+core = 6.x
+
+dependencies[] = imagecache

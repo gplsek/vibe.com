@@ -1,0 +1,21 @@
+<?php
+/*
+ * @file
+ * Installation functions for node gallery slideshow.
+ */
+function node_gallery_slideshow_install() {
+}
+
+function node_gallery_slideshow_uninstall() {
+  $variables = array(
+    'node_gallery_slideshow_initial_interval',
+    'node_gallery_slideshow_preload_count',
+    'node_gallery_slideshow_enable_microthumb_navigator',
+    'node_gallery_slideshow_microthumb_count',
+    'node_gallery_slideshow_chunk_size',
+    'node_gallery_slideshow_retrieve_interval',
+  );
+  foreach ($variables as $var) {
+    variable_del($var);
+  }
+}

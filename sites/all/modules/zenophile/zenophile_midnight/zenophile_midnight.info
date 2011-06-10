@@ -1,0 +1,12 @@
+; $Id: zenophile_midnight.info,v 1.1.2.1 2009/09/30 23:44:19 garrettalbright Exp $
+name = Zenophile Midnight
+description = Aids in creating light-on-dark color schemes with Zenophile.
+package = Development
+core = 6.x
+dependencies[] = zenophile
+; Information added by drupal.org packaging script on 2009-10-02
+version = "6.x-2.0-beta2"
+core = "6.x"
+project = "zenophile"
+datestamp = "1254505650"
+
