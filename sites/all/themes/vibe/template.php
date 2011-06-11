@@ -195,7 +195,9 @@ function vibe_menu_local_tasks() {
  *   The name of the template being rendered ("page" in this case.)
  */
 function vibe_preprocess_page(&$vars, $hook) {
-  
+  drupal_set_html_head('<script type="text/javascript" src="http://m.vibe.com/mobify/redirect.js"></script>');
+  drupal_set_html_head('<script type="text/javascript">try{_mobify("http://m.vibe.com/");} catch(err) {};</script>');
+  $vars['head'] = drupal_get_html_head();
 	$vars['head_title'] = str_replace('Vibe','VIBE',$vars['head_title']);
   // Add conditional stylesheets.
   if (!module_exists('conditional_styles')) {
