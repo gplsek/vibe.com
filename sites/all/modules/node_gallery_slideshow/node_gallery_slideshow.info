@@ -1,0 +1,13 @@
+name = Node Gallery Slideshow
+description = "A simple jquery slideshow for Node Gallery."
+core = 6.x
+dependencies[] = node_gallery
+dependencies[] = jquery_ui
+package = Node Gallery
+
+; Information added by drupal.org packaging script on 2011-02-25
+version = "6.x-1.x-dev"
+core = "6.x"
+project = "node_gallery_slideshow"
+datestamp = "1298619764"
+

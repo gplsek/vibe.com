@@ -135,12 +135,17 @@ $terms = vibe_separate_terms($node->taxonomy);
 			<?php $created_date = $fields["created"]?>
 			<?php 
 				
-				$now = time();
-				$posttime = strtotime(str_replace(" - ", " ",$created_date->content));
+				//$now = time();
+				//$posttime = strtotime(str_replace(" - ", " ",$created_date->content));
 				//echo $posttime;
 				//$date = date("Y-m-d H:i:s", $posttime);
 				//echo "::" . $date;
-				$timeago = time_ago_string($now, $posttime);
+				//$diff = (REQUEST_TIME - $fields['created']->raw);
+				//$timeago = format_interval($diff,1);
+				//$timeago = time_ago_string($now, $posttime);
+				$diff = ($_SERVER[REQUEST_TIME] - $fields['created']->raw);
+        			//print $_SERVER[REQUEST_TIME];
+				$timeago = format_interval($diff, $granularity = 1, $langcode = NULL);
 			?>
 			
 				
