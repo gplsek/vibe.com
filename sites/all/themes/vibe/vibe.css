@@ -1101,7 +1101,7 @@
   }
   
   .vibe-lifestyle-network-site-image_top {
-  	height: auto;
+  	height: 50px;
 	margin-bottom: 15px;
   }
   
@@ -1815,7 +1815,7 @@
   }
 
 
-#story_title {
+#story_title, #celeb-title {
 	width: 515px;
 	height: auto;
 	padding-top: 5px;
@@ -1823,6 +1823,11 @@
 	line-height: 25px;
 	font-size: 24px;
 	background: transparent url(/sites/all/themes/vibe/images/blue_fade.png) no-repeat;
+}
+
+#celeb-title {
+  height: 1.5em;
+  text-decoration: underline;
 }
 
 .story_title_text_outer {
@@ -1843,6 +1848,10 @@
 	/*float: left;*/
 	margin-bottom: 10px;
 	border-bottom: 1px solid black;
+}
+
+#story_body:first-letter {
+  font-size: 2.5em;
 }
 
 
@@ -3657,19 +3666,21 @@ li.flag-reaction_smh, li.flag-reaction_sexy, li.flag-reaction_lol, li.flag-react
   
 #fbshare{
 	float:left;
-	margin-left: 53px;
-	margin-top: -37px;
+	/*margin-left: 53px;*/
+	/*margin-top: -37px;*/
 }
 
 
 
 #fbrecommend{
-	margin-left: 70px;
-	margin-top: -29px;
-	
+	/*margin-left: 70px;*/
+	/*margin-top: -29px;*/
+	width: 285px;
+	position: absolute;
 }
 
 #tweetshare{
+  float: right;
 }
 
 #fbrecommend .facebook_recommend iframe {
@@ -3683,14 +3694,17 @@ li.flag-reaction_smh, li.flag-reaction_sexy, li.flag-reaction_lol, li.flag-react
 }
 
 #social_network{
-	margin: 9px 156px 0px 10px;
+	/*margin: 9px 156px 0px 10px;*/
 	width: 525px;
-	height: 30px;
-	
+	height: 22px;
+	border-top: dotted 1px;
+	border-bottom: dotted 1px;
+	padding-top: 4px;
+	padding-bottom: 5px;
+	margin-bottom: 5px;
 }
 
 #social_wrapper{
-	float:left;
 	width: 500px;
 }
 
@@ -4759,6 +4773,7 @@ margin-left:0px;
 Celebrity Page Stuff
 */
 
+/*THESE AREN'T APPLIED? -tracy
 .view-celebrity-list ul{
     list-style:none;
     padding:0;
@@ -4789,9 +4804,9 @@ Celebrity Page Stuff
     float:left;
     height:150px;
     display:block;
-    filter: progid:DXImageTransform.Microsoft.gradient(startColorstr='#fffff', endColorstr='#F0F0F0'); /* for IE */
-    background: -webkit-gradient(linear, left top, left bottom, from(#ffffff), to(#F0F0F0)); /* for webkit browsers */
-    background: -moz-linear-gradient(top,  #fff,  #F0F0F0); /* for firefox 3.6+ */
+    filter: progid:DXImageTransform.Microsoft.gradient(startColorstr='#fffff', endColorstr='#F0F0F0');
+    background: -webkit-gradient(linear, left top, left bottom, from(#ffffff), to(#F0F0F0)); 
+    background: -moz-linear-gradient(top,  #fff,  #F0F0F0);
     padding:0 10px 0 10px;
     border-bottom: 1px solid #DCDCDC;
 }
@@ -4825,3 +4840,75 @@ Celebrity Page Stuff
     color:#CCC;
     text-align:center;
 }
+*/
+
+/* Hotest Celeb block - Casey EDITS Start */
+
+.section-celebrities #latest_on_vibe_header_bar {
+	width:315px !important
+	}
+
+#hottest-celeb-landing-block .views-row {
+    float: left;
+    height: 140px;
+    padding: 5px;
+    width: 160px;
+  }
+
+#hottest-celeb-landing-block .views-row:hover {
+	background-color:#cae8f1
+}
+
+#hottest-celeb-landing-block #latest_on_vibe_posts .views-row.views-row-3,
+#hottest-celeb-landing-block #latest_on_vibe_posts .views-row.views-row-6
+{
+  margin-right: 8px;
+}
+
+
+
+#hottest-celeb-landing-block #latest_on_vibe_posts .views-field-title {
+	 color: #000000;
+    font-size: 13px;
+    font-weight: bold;
+    text-align: center;
+}
+
+#hottest-celeb-landing-block #latest_on_vibe_posts .views-field-title a {
+  color: #000;
+  text-decoration: none;
+}
+
+.page-celebrities .panel-pane {
+  clear: both;
+}
+
+/*celebrity A-Z Listing*/
+
+.section-celebrities #latest_on_vibe_posts h3 {
+	font-size:24px;
+	 margin-top: 20px;
+}
+
+.section-celebrities #latest_on_vibe_posts .views-row a {
+	color: #00abe1;
+	font-size:12px;
+	text-decoration:none
+}
+.section-celebrities #latest_on_vibe_posts .views-row a:hover {
+	text-decoration:underline
+}
+
+
+#story_data_celeb p {
+	font-size:14px;
+	line-height:14px;
+	margin:0 0 12px}
+
+#story_data_celeb p label {
+	font-size:10px
+}
+
+
+
+/* Hotest Celeb block - End */
