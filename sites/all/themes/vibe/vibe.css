@@ -3000,8 +3000,7 @@ li.flag-reaction_smh, li.flag-reaction_sexy, li.flag-reaction_lol, li.flag-react
 }
 
 
-.gallery_title,
-#hottest-celeb-landing-block #latest_on_vibe_posts .views-field-title {
+.gallery_title {
  	padding-left: 6px;
 	padding-top: 0;
 	line-height: 1;
@@ -3016,8 +3015,7 @@ li.flag-reaction_smh, li.flag-reaction_sexy, li.flag-reaction_lol, li.flag-react
 
 
 
-.gallery_title_bg,
-#hottest-celeb-landing-block #latest_on_vibe_posts .views-field-title {
+.gallery_title_bg {
 	background-color: #000000;
 	opacity: .5;
  	filter:alpha(opacity=50);
@@ -4842,7 +4840,6 @@ Celebrity Page Stuff
     color:#CCC;
     text-align:center;
 }
-<<<<<<< HEAD
 */
 
 /* Hotest Celeb block - Casey EDITS Start */
@@ -4860,23 +4857,6 @@ Celebrity Page Stuff
 
 #hottest-celeb-landing-block .views-row:hover {
 	background-color:#cae8f1
-=======
-
-/* Hotest Celeb block - Casey EDITS Start */
-#hottest-celeb-landing-block #latest_on_vibe_posts {
-  /*width: 100px;*/
-  display: inline;
-}
-
-#hottest-celeb-landing-block #latest_on_vibe_posts .views-row {
-  position: relative;
-  width: 140px;
-  height: 105px;
-  display: inline;
-  float: left;
-  margin-left: 8px;
-  margin-bottom: 16px;
->>>>>>> f936271dda7d2f492782b057e16887ca23138d27
 }
 
 #hottest-celeb-landing-block #latest_on_vibe_posts .views-row.views-row-3,
@@ -4885,7 +4865,6 @@ Celebrity Page Stuff
   margin-right: 8px;
 }
 
-<<<<<<< HEAD
 
 
 #hottest-celeb-landing-block #latest_on_vibe_posts .views-field-title {
@@ -4897,20 +4876,6 @@ Celebrity Page Stuff
 
 #hottest-celeb-landing-block #latest_on_vibe_posts .views-field-title a {
   color: #000;
-=======
-#hottest-celeb-landing-block #latest_on_vibe_posts .views-field-field-celebrity-thumbnail-fid {
-  position: absolute;
-}
-
-#hottest-celeb-landing-block #latest_on_vibe_posts .views-field-title {
-  position: absolute;
-  bottom: 0px;
-  font-size: 1.25em;
-}
-
-#hottest-celeb-landing-block #latest_on_vibe_posts .views-field-title a {
-  color: white;
->>>>>>> f936271dda7d2f492782b057e16887ca23138d27
   text-decoration: none;
 }
 
@@ -4918,7 +4883,6 @@ Celebrity Page Stuff
   clear: both;
 }
 
-<<<<<<< HEAD
 /*celebrity A-Z Listing*/
 
 .section-celebrities #latest_on_vibe_posts h3 {
@@ -4948,6 +4912,3 @@ Celebrity Page Stuff
 
 
 /* Hotest Celeb block - End */
-=======
-/* Hotest Celeb block - Casey EDITS Start */
->>>>>>> f936271dda7d2f492782b057e16887ca23138d27
