@@ -957,6 +957,72 @@ function vibes_content_types_content_default_fields() {
     ),
   );
 
+  // Exported field: field_celebrity_birth_date
+  $fields['celebrity-field_celebrity_birth_date'] = array(
+    'field_name' => 'field_celebrity_birth_date',
+    'type_name' => 'celebrity',
+    'display_settings' => array(
+      'label' => array(
+        'format' => 'above',
+        'exclude' => 0,
+      ),
+      '5' => array(
+        'format' => 'default',
+        'exclude' => 0,
+      ),
+      'teaser' => array(
+        'format' => 'default',
+        'exclude' => 0,
+      ),
+      'full' => array(
+        'format' => 'default',
+        'exclude' => 0,
+      ),
+      '4' => array(
+        'format' => 'default',
+        'exclude' => 0,
+      ),
+      '2' => array(
+        'format' => 'default',
+        'exclude' => 0,
+      ),
+      '3' => array(
+        'format' => 'default',
+        'exclude' => 0,
+      ),
+      'token' => array(
+        'format' => 'default',
+        'exclude' => 0,
+      ),
+    ),
+    'widget_active' => '1',
+    'type' => 'text',
+    'required' => '0',
+    'multiple' => '0',
+    'module' => 'text',
+    'active' => '1',
+    'text_processing' => '0',
+    'max_length' => '',
+    'allowed_values' => '',
+    'allowed_values_php' => '',
+    'widget' => array(
+      'rows' => 5,
+      'size' => '12',
+      'default_value' => array(
+        '0' => array(
+          'value' => '',
+          '_error_element' => 'default_value_widget][field_celebrity_birth_date][0][value',
+        ),
+      ),
+      'default_value_php' => NULL,
+      'label' => 'Date of Birth',
+      'weight' => '-4',
+      'description' => 'mm/dd/yyyy',
+      'type' => 'text_textfield',
+      'module' => 'text',
+    ),
+  );
+
   // Exported field: field_celebrity_birth_place
   $fields['celebrity-field_celebrity_birth_place'] = array(
     'field_name' => 'field_celebrity_birth_place',
@@ -1016,7 +1082,7 @@ function vibes_content_types_content_default_fields() {
       ),
       'default_value_php' => NULL,
       'label' => 'Birth Place',
-      'weight' => '-2',
+      'weight' => '-3',
       'description' => '',
       'type' => 'text_textfield',
       'module' => 'text',
@@ -1076,8 +1142,8 @@ function vibes_content_types_content_default_fields() {
       'progress_indicator' => 'bar',
       'max_filesize_per_file' => '',
       'max_filesize_per_node' => '',
-      'max_resolution' => '0',
-      'min_resolution' => '0',
+      'max_resolution' => 0,
+      'min_resolution' => 0,
       'alt' => '',
       'custom_alt' => 0,
       'title' => '',
@@ -1086,10 +1152,76 @@ function vibes_content_types_content_default_fields() {
       'default_image' => NULL,
       'use_default_image' => 0,
       'label' => 'Thumbnail',
-      'weight' => 0,
+      'weight' => '-2',
       'description' => '',
       'type' => 'imagefield_widget',
       'module' => 'imagefield',
+    ),
+  );
+
+  // Exported field: field_celebrity_twitter
+  $fields['celebrity-field_celebrity_twitter'] = array(
+    'field_name' => 'field_celebrity_twitter',
+    'type_name' => 'celebrity',
+    'display_settings' => array(
+      'label' => array(
+        'format' => 'above',
+        'exclude' => 0,
+      ),
+      '5' => array(
+        'format' => 'default',
+        'exclude' => 0,
+      ),
+      'teaser' => array(
+        'format' => 'default',
+        'exclude' => 0,
+      ),
+      'full' => array(
+        'format' => 'default',
+        'exclude' => 0,
+      ),
+      '4' => array(
+        'format' => 'default',
+        'exclude' => 0,
+      ),
+      '2' => array(
+        'format' => 'default',
+        'exclude' => 0,
+      ),
+      '3' => array(
+        'format' => 'default',
+        'exclude' => 0,
+      ),
+      'token' => array(
+        'format' => 'default',
+        'exclude' => 0,
+      ),
+    ),
+    'widget_active' => '1',
+    'type' => 'text',
+    'required' => '0',
+    'multiple' => '0',
+    'module' => 'text',
+    'active' => '1',
+    'text_processing' => '0',
+    'max_length' => '',
+    'allowed_values' => '',
+    'allowed_values_php' => '',
+    'widget' => array(
+      'rows' => 5,
+      'size' => '20',
+      'default_value' => array(
+        '0' => array(
+          'value' => '',
+          '_error_element' => 'default_value_widget][field_celebrity_twitter][0][value',
+        ),
+      ),
+      'default_value_php' => NULL,
+      'label' => 'Twitter Tag',
+      'weight' => '-1',
+      'description' => '',
+      'type' => 'text_textfield',
+      'module' => 'text',
     ),
   );
 
@@ -1211,7 +1343,7 @@ function vibes_content_types_content_default_fields() {
     'description_field' => '0',
     'widget' => array(
       'file_extensions' => 'png gif jpg jpeg',
-      'file_path' => 'images',
+      'file_path' => '',
       'progress_indicator' => 'bar',
       'max_filesize_per_file' => '',
       'max_filesize_per_node' => '',
@@ -1234,7 +1366,6 @@ function vibes_content_types_content_default_fields() {
         'imagefield_title' => 0,
         'imagefield_alt' => 0,
         'imagefield_description' => 0,
-        'taxonomy_15' => 0,
         'taxonomy_5' => 0,
         'taxonomy_13' => 0,
         'cck_field_img_credit' => 0,
@@ -2651,6 +2782,7 @@ Yes',
   t('Audio File Title');
   t('Birth Place');
   t('Cover Image');
+  t('Date of Birth');
   t('Excerpt');
   t('Extra HTML');
   t('Featured Photo Gallery');
@@ -2664,6 +2796,7 @@ Yes',
   t('MT Entry ID');
   t('Source');
   t('Thumbnail');
+  t('Twitter Tag');
   t('User Submitted');
   t('Video');
   t('Video Id');

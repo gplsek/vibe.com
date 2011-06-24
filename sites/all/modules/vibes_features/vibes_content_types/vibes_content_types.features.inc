@@ -34,41 +34,6 @@ function vibes_content_types_imagecache_default_presets() {
         ),
       ),
     ),
-    'node-gallery-display' => array(
-      'presetname' => 'node-gallery-display',
-      'actions' => array(
-        '0' => array(
-          'weight' => '0',
-          'module' => 'imagecache',
-          'action' => 'imagecache_scale',
-          'data' => array(
-            'height' => 1500,
-          ),
-        ),
-        '1' => array(
-          'weight' => '1',
-          'module' => 'imagecache',
-          'action' => 'imagecache_scale',
-          'data' => array(
-            'width' => 600,
-          ),
-        ),
-      ),
-    ),
-    'node-gallery-thumbnail' => array(
-      'presetname' => 'node-gallery-thumbnail',
-      'actions' => array(
-        '0' => array(
-          'weight' => '0',
-          'module' => 'imagecache',
-          'action' => 'imagecache_scale_and_crop',
-          'data' => array(
-            'width' => 100,
-            'height' => 100,
-          ),
-        ),
-      ),
-    ),
   );
   return $items;
 }
@@ -111,6 +76,17 @@ function vibes_content_types_node_info() {
       'min_word_count' => '0',
       'help' => '',
     ),
+    'celebrity' => array(
+      'name' => t('Celebrity'),
+      'module' => 'features',
+      'description' => '',
+      'has_title' => '1',
+      'title_label' => t('Name'),
+      'has_body' => '1',
+      'body_label' => t('Bio'),
+      'min_word_count' => '0',
+      'help' => '',
+    ),
     'event' => array(
       'name' => t('Event'),
       'module' => 'features',
@@ -141,28 +117,6 @@ function vibes_content_types_node_info() {
       'title_label' => t('Title'),
       'has_body' => '0',
       'body_label' => '',
-      'min_word_count' => '0',
-      'help' => '',
-    ),
-    'node_gallery_gallery' => array(
-      'name' => t('Gallery'),
-      'module' => 'features',
-      'description' => t('This is a gallery (album). This will be the parent of your individual images.'),
-      'has_title' => '1',
-      'title_label' => t('Gallery Name'),
-      'has_body' => '1',
-      'body_label' => t('Description'),
-      'min_word_count' => '0',
-      'help' => '',
-    ),
-    'node_gallery_image' => array(
-      'name' => t('Gallery Image'),
-      'module' => 'features',
-      'description' => t('This is an individual image that will be linked to a gallery. This should not be accessed via node/add/node_gallery_image'),
-      'has_title' => '1',
-      'title_label' => t('Title'),
-      'has_body' => '1',
-      'body_label' => t('Caption'),
       'min_word_count' => '0',
       'help' => '',
     ),

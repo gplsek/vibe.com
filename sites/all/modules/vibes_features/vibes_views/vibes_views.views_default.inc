@@ -7198,37 +7198,6 @@ $this->query->add_field("feeds_node_item","url","feed_item_url");',
   $view->disabled = FALSE; /* Edit this to true to make a default view disabled initially */
   $handler = $view->new_display('default', 'Defaults', 'default');
   $handler->override_option('fields', array(
-    'comment_count' => array(
-      'label' => 'Comment count',
-      'alter' => array(
-        'alter_text' => 0,
-        'text' => '',
-        'make_link' => 0,
-        'path' => '',
-        'link_class' => '',
-        'alt' => '',
-        'prefix' => '',
-        'suffix' => '',
-        'help' => '',
-        'trim' => 0,
-        'max_length' => '',
-        'word_boundary' => 1,
-        'ellipsis' => 1,
-        'strip_tags' => 0,
-        'html' => 0,
-      ),
-      'set_precision' => FALSE,
-      'precision' => 0,
-      'decimal' => '.',
-      'separator' => ',',
-      'prefix' => '',
-      'suffix' => '',
-      'exclude' => 0,
-      'id' => 'comment_count',
-      'table' => 'node_comment_statistics',
-      'field' => 'comment_count',
-      'relationship' => 'none',
-    ),
     'created' => array(
       'label' => 'Post date',
       'alter' => array(
@@ -8412,7 +8381,6 @@ echo $result->name;
     'title' => '',
     'description' => '',
     'weight' => 0,
-    'name' => 'navigation',
   ));
   $handler->override_option('displays', array());
   $handler->override_option('sitename_title', FALSE);
@@ -9168,7 +9136,6 @@ echo $result->name;
     'title' => '',
     'description' => '',
     'weight' => 0,
-    'name' => 'navigation',
   ));
   $handler->override_option('displays', array());
   $handler->override_option('sitename_title', FALSE);
@@ -9924,7 +9891,6 @@ echo $result->name;
     'title' => '',
     'description' => '',
     'weight' => 0,
-    'name' => 'navigation',
   ));
   $handler->override_option('displays', array());
   $handler->override_option('sitename_title', FALSE);
@@ -10386,7 +10352,6 @@ echo $result->name;
     'title' => '',
     'description' => '',
     'weight' => 0,
-    'name' => 'navigation',
   ));
   $handler->override_option('displays', array(
     'default' => 'default',
@@ -11145,7 +11110,6 @@ echo $result->name;
     'title' => '',
     'description' => '',
     'weight' => 0,
-    'name' => 'navigation',
   ));
   $handler->override_option('displays', array());
   $handler->override_option('sitename_title', FALSE);
@@ -11870,7 +11834,7 @@ echo $result->name;
     'type' => 'none',
   ));
   $handler->override_option('title', 'vixen');
-  $handler->override_option('items_per_page', 0);
+  $handler->override_option('items_per_page', 20);
   $handler->override_option('use_pager', 'mini');
   $handler->override_option('distinct', 1);
   $handler = $view->new_display('block', 'Block', 'block_1');
@@ -11888,10 +11852,6 @@ echo $result->name;
     'description' => '',
   ));
   $handler->override_option('row_plugin', 'node_rss');
-  $handler->override_option('row_options', array(
-    'relationship' => 'none',
-    'item_length' => 'fulltext',
-  ));
   $handler->override_option('path', 'vixen/rss');
   $handler->override_option('menu', array(
     'type' => 'none',
@@ -11905,273 +11865,9 @@ echo $result->name;
     'title' => '',
     'description' => '',
     'weight' => 0,
-    'name' => 'navigation',
   ));
   $handler->override_option('displays', array());
   $handler->override_option('sitename_title', FALSE);
-  $handler = $view->new_display('page', 'Page', 'page_1');
-  $handler->override_option('row_plugin', 'node');
-  $handler->override_option('row_options', array(
-    'relationship' => 'none',
-    'build_mode' => 'full',
-    'links' => 0,
-    'comments' => 0,
-  ));
-  $handler->override_option('path', 'vixen-test');
-  $handler->override_option('menu', array(
-    'type' => 'none',
-    'title' => '',
-    'description' => '',
-    'weight' => 0,
-    'name' => 'navigation',
-  ));
-  $handler->override_option('tab_options', array(
-    'type' => 'none',
-    'title' => '',
-    'description' => '',
-    'weight' => 0,
-    'name' => 'navigation',
-  ));
-  $handler = $view->new_display('page', 'Page - vixen xml', 'page_2');
-  $handler->override_option('fields', array(
-    'created' => array(
-      'label' => 'Post date',
-      'alter' => array(
-        'alter_text' => 0,
-        'text' => '',
-        'make_link' => 0,
-        'path' => '',
-        'link_class' => '',
-        'alt' => '',
-        'prefix' => '',
-        'suffix' => '',
-        'help' => '',
-        'trim' => 0,
-        'max_length' => '',
-        'word_boundary' => 1,
-        'ellipsis' => 1,
-        'strip_tags' => 0,
-        'html' => 0,
-      ),
-      'date_format' => 'small',
-      'custom_date_format' => '',
-      'exclude' => 0,
-      'id' => 'created',
-      'table' => 'node',
-      'field' => 'created',
-      'relationship' => 'none',
-    ),
-    'title' => array(
-      'label' => 'Title',
-      'alter' => array(
-        'alter_text' => 0,
-        'text' => '',
-        'make_link' => 0,
-        'path' => '',
-        'link_class' => '',
-        'alt' => '',
-        'prefix' => '',
-        'suffix' => '',
-        'help' => '',
-        'trim' => 0,
-        'max_length' => '',
-        'word_boundary' => 1,
-        'ellipsis' => 1,
-        'strip_tags' => 0,
-        'html' => 0,
-      ),
-      'link_to_node' => 0,
-      'exclude' => 0,
-      'id' => 'title',
-      'table' => 'node',
-      'field' => 'title',
-      'relationship' => 'none',
-    ),
-    'body' => array(
-      'label' => 'Body',
-      'alter' => array(
-        'alter_text' => 0,
-        'text' => '',
-        'make_link' => 0,
-        'path' => '',
-        'link_class' => '',
-        'alt' => '',
-        'prefix' => '',
-        'suffix' => '',
-        'help' => '',
-        'trim' => 0,
-        'max_length' => '',
-        'word_boundary' => 1,
-        'ellipsis' => 1,
-        'strip_tags' => 0,
-        'html' => 0,
-      ),
-      'exclude' => 0,
-      'id' => 'body',
-      'table' => 'node_revisions',
-      'field' => 'body',
-      'relationship' => 'none',
-    ),
-    'field_story_thumb_data' => array(
-      'label' => 'Thumbnail (field_story_thumb) - data',
-      'alter' => array(
-        'alter_text' => 0,
-        'text' => '',
-        'make_link' => 0,
-        'path' => '',
-        'link_class' => '',
-        'alt' => '',
-        'prefix' => '',
-        'suffix' => '',
-        'help' => '',
-        'trim' => 0,
-        'max_length' => '',
-        'word_boundary' => 1,
-        'ellipsis' => 1,
-        'strip_tags' => 0,
-        'html' => 0,
-      ),
-      'link_to_node' => 0,
-      'data_key' => 'description',
-      'exclude' => 0,
-      'id' => 'field_story_thumb_data',
-      'table' => 'node_data_field_story_thumb',
-      'field' => 'field_story_thumb_data',
-      'relationship' => 'none',
-    ),
-    'field_story_thumb_fid' => array(
-      'label' => 'Image',
-      'alter' => array(
-        'alter_text' => 0,
-        'text' => '',
-        'make_link' => 0,
-        'path' => '',
-        'link_class' => '',
-        'alt' => '',
-        'prefix' => '',
-        'suffix' => '',
-        'target' => '',
-        'help' => '',
-        'trim' => 0,
-        'max_length' => '',
-        'word_boundary' => 1,
-        'ellipsis' => 1,
-        'html' => 0,
-        'strip_tags' => 0,
-      ),
-      'empty' => '',
-      'hide_empty' => 0,
-      'empty_zero' => 0,
-      'link_to_node' => 0,
-      'label_type' => 'custom',
-      'format' => 'url_plain',
-      'multiple' => array(
-        'group' => TRUE,
-        'multiple_number' => '',
-        'multiple_from' => '',
-        'multiple_reversed' => FALSE,
-      ),
-      'exclude' => 0,
-      'id' => 'field_story_thumb_fid',
-      'table' => 'node_data_field_story_thumb',
-      'field' => 'field_story_thumb_fid',
-      'override' => array(
-        'button' => 'Use default',
-      ),
-      'relationship' => 'none',
-    ),
-    'field_excerpt_value' => array(
-      'label' => 'Excerpt',
-      'alter' => array(
-        'alter_text' => 0,
-        'text' => '',
-        'make_link' => 0,
-        'path' => '',
-        'link_class' => '',
-        'alt' => '',
-        'prefix' => '',
-        'suffix' => '',
-        'help' => '',
-        'trim' => 0,
-        'max_length' => '',
-        'word_boundary' => 1,
-        'ellipsis' => 1,
-        'strip_tags' => 0,
-        'html' => 0,
-      ),
-      'link_to_node' => 0,
-      'label_type' => 'widget',
-      'format' => 'default',
-      'multiple' => array(
-        'group' => TRUE,
-        'multiple_number' => '',
-        'multiple_from' => '',
-        'multiple_reversed' => FALSE,
-      ),
-      'exclude' => 0,
-      'id' => 'field_excerpt_value',
-      'table' => 'node_data_field_excerpt',
-      'field' => 'field_excerpt_value',
-      'relationship' => 'none',
-    ),
-    'field_img_src_fid' => array(
-      'label' => 'Image File',
-      'alter' => array(
-        'alter_text' => 0,
-        'text' => '',
-        'make_link' => 0,
-        'path' => '',
-        'link_class' => '',
-        'alt' => '',
-        'prefix' => '',
-        'suffix' => '',
-        'target' => '',
-        'help' => '',
-        'trim' => 0,
-        'max_length' => '',
-        'word_boundary' => 1,
-        'ellipsis' => 1,
-        'html' => 0,
-        'strip_tags' => 0,
-      ),
-      'empty' => '',
-      'hide_empty' => 0,
-      'empty_zero' => 0,
-      'link_to_node' => 0,
-      'label_type' => 'widget',
-      'format' => 'url_plain',
-      'multiple' => array(
-        'group' => TRUE,
-        'multiple_number' => '',
-        'multiple_from' => '',
-        'multiple_reversed' => FALSE,
-      ),
-      'exclude' => 0,
-      'id' => 'field_img_src_fid',
-      'table' => 'node_data_field_img_src',
-      'field' => 'field_img_src_fid',
-      'relationship' => 'none',
-      'override' => array(
-        'button' => 'Use default',
-      ),
-    ),
-  ));
-  $handler->override_option('style_plugin', 'views_xml_style');
-  $handler->override_option('path', 'vixen.xml');
-  $handler->override_option('menu', array(
-    'type' => 'none',
-    'title' => '',
-    'description' => '',
-    'weight' => 0,
-    'name' => 'navigation',
-  ));
-  $handler->override_option('tab_options', array(
-    'type' => 'none',
-    'title' => '',
-    'description' => '',
-    'weight' => 0,
-    'name' => 'navigation',
-  ));
 
   $views[$view->name] = $view;
 
@@ -18918,7 +18614,6 @@ print $data->override_title;
     'title' => '',
     'description' => '',
     'weight' => 0,
-    'name' => 'navigation',
   ));
 
   $views[$view->name] = $view;
@@ -20184,8 +19879,225 @@ print $data->override_title;
     'title' => '',
     'description' => '',
     'weight' => 0,
-    'name' => 'navigation',
   ));
+
+  $views[$view->name] = $view;
+
+  // Exported view: celebrities
+  $view = new view;
+  $view->name = 'celebrities';
+  $view->description = 'celebrities';
+  $view->tag = 'celebrities';
+  $view->view_php = '';
+  $view->base_table = 'node';
+  $view->is_cacheable = FALSE;
+  $view->api_version = 2;
+  $view->disabled = FALSE; /* Edit this to true to make a default view disabled initially */
+  $handler = $view->new_display('default', 'Defaults', 'default');
+  $handler->override_option('relationships', array(
+    'nodequeue_rel' => array(
+      'label' => 'queue',
+      'required' => 0,
+      'limit' => 0,
+      'qids' => array(
+        '1' => 0,
+      ),
+      'id' => 'nodequeue_rel',
+      'table' => 'node',
+      'field' => 'nodequeue_rel',
+      'relationship' => 'none',
+    ),
+  ));
+  $handler->override_option('fields', array(
+    'field_celebrity_thumbnail_fid' => array(
+      'label' => '',
+      'alter' => array(
+        'alter_text' => 0,
+        'text' => '',
+        'make_link' => 0,
+        'path' => '',
+        'link_class' => '',
+        'alt' => '',
+        'prefix' => '',
+        'suffix' => '',
+        'help' => '',
+        'trim' => 0,
+        'max_length' => '',
+        'word_boundary' => 1,
+        'ellipsis' => 1,
+        'strip_tags' => 0,
+        'html' => 0,
+      ),
+      'link_to_node' => 0,
+      'label_type' => 'none',
+      'format' => 'image-140x105_default',
+      'multiple' => array(
+        'group' => TRUE,
+        'multiple_number' => '',
+        'multiple_from' => '',
+        'multiple_reversed' => FALSE,
+      ),
+      'exclude' => 0,
+      'id' => 'field_celebrity_thumbnail_fid',
+      'table' => 'node_data_field_celebrity_thumbnail',
+      'field' => 'field_celebrity_thumbnail_fid',
+      'relationship' => 'none',
+    ),
+    'title' => array(
+      'label' => '',
+      'alter' => array(
+        'alter_text' => 0,
+        'text' => '',
+        'make_link' => 0,
+        'path' => '',
+        'link_class' => '',
+        'alt' => '',
+        'prefix' => '',
+        'suffix' => '',
+        'help' => '',
+        'trim' => 0,
+        'max_length' => '',
+        'word_boundary' => 1,
+        'ellipsis' => 1,
+        'strip_tags' => 0,
+        'html' => 0,
+      ),
+      'link_to_node' => 0,
+      'exclude' => 0,
+      'id' => 'title',
+      'table' => 'node',
+      'field' => 'title',
+      'relationship' => 'none',
+    ),
+  ));
+  $handler->override_option('sorts', array(
+    'position' => array(
+      'order' => 'ASC',
+      'id' => 'position',
+      'table' => 'nodequeue_nodes',
+      'field' => 'position',
+      'relationship' => 'nodequeue_rel',
+    ),
+  ));
+  $handler->override_option('filters', array(
+    'in_queue' => array(
+      'operator' => '=',
+      'value' => '1',
+      'group' => '0',
+      'exposed' => FALSE,
+      'expose' => array(
+        'operator' => FALSE,
+        'label' => '',
+      ),
+      'id' => 'in_queue',
+      'table' => 'nodequeue_nodes',
+      'field' => 'in_queue',
+      'relationship' => 'nodequeue_rel',
+    ),
+  ));
+  $handler->override_option('access', array(
+    'type' => 'none',
+  ));
+  $handler->override_option('cache', array(
+    'type' => 'none',
+  ));
+  $handler = $view->new_display('block', 'Featured Celeb Landing Block', 'block_1');
+  $handler->override_option('items_per_page', 6);
+  $handler->override_option('block_description', '');
+  $handler->override_option('block_caching', -1);
+  $handler = $view->new_display('block', 'Celeb Alpha Listing - Block', 'block_2');
+  $handler->override_option('fields', array(
+    'title_1' => array(
+      'label' => '',
+      'alter' => array(
+        'alter_text' => 0,
+        'text' => '',
+        'make_link' => 0,
+        'path' => '',
+        'link_class' => '',
+        'alt' => '',
+        'prefix' => '',
+        'suffix' => '',
+        'help' => '',
+        'trim' => 1,
+        'max_length' => '1',
+        'word_boundary' => 0,
+        'ellipsis' => 0,
+        'strip_tags' => 0,
+        'html' => 0,
+      ),
+      'link_to_node' => 0,
+      'exclude' => 0,
+      'id' => 'title_1',
+      'table' => 'node',
+      'field' => 'title',
+      'override' => array(
+        'button' => 'Use default',
+      ),
+      'relationship' => 'none',
+    ),
+    'title' => array(
+      'label' => '',
+      'alter' => array(
+        'alter_text' => 0,
+        'text' => '',
+        'make_link' => 0,
+        'path' => '',
+        'link_class' => '',
+        'alt' => '',
+        'prefix' => '',
+        'suffix' => '',
+        'help' => '',
+        'trim' => 0,
+        'max_length' => '',
+        'word_boundary' => 1,
+        'ellipsis' => 1,
+        'strip_tags' => 0,
+        'html' => 0,
+      ),
+      'link_to_node' => 0,
+      'exclude' => 0,
+      'id' => 'title',
+      'table' => 'node',
+      'field' => 'title',
+      'relationship' => 'none',
+    ),
+  ));
+  $handler->override_option('sorts', array(
+    'title' => array(
+      'order' => 'ASC',
+      'id' => 'title',
+      'table' => 'node',
+      'field' => 'title',
+      'override' => array(
+        'button' => 'Use default',
+      ),
+      'relationship' => 'none',
+    ),
+  ));
+  $handler->override_option('filters', array(
+    'type' => array(
+      'operator' => 'in',
+      'value' => array(
+        'celebrity' => 'celebrity',
+      ),
+      'group' => '0',
+      'exposed' => FALSE,
+      'expose' => array(
+        'operator' => FALSE,
+        'label' => '',
+      ),
+      'id' => 'type',
+      'table' => 'node',
+      'field' => 'type',
+      'override' => array(
+        'button' => 'Use default',
+      ),
+      'relationship' => 'none',
+    ),
+  ));
+  $handler->override_option('block_description', '');
+  $handler->override_option('block_caching', -1);
 
   $views[$view->name] = $view;
 
@@ -21202,7 +21114,6 @@ print $data->override_title;
     'title' => '',
     'description' => '',
     'weight' => 0,
-    'name' => 'navigation',
   ));
 
   $views[$view->name] = $view;
@@ -22772,7 +22683,6 @@ echo $data->jp_blog_celeb_website_image;
     'title' => '',
     'description' => '',
     'weight' => 0,
-    'name' => 'navigation',
   ));
 
   $views[$view->name] = $view;
@@ -23735,7 +23645,6 @@ else print \'News\';
     'title' => '',
     'description' => '',
     'weight' => 0,
-    'name' => 'navigation',
   ));
   $handler = $view->new_display('block', 'Block', 'block');
   $handler->override_option('items_per_page', 5);
@@ -24843,7 +24752,6 @@ else print \'News\';
     'title' => '',
     'description' => '',
     'weight' => 0,
-    'name' => 'navigation',
   ));
 
   $views[$view->name] = $view;
@@ -25218,7 +25126,6 @@ else print \'News\';
     'title' => '',
     'description' => '',
     'weight' => 0,
-    'name' => 'navigation',
   ));
 
   $views[$view->name] = $view;
@@ -25662,7 +25569,6 @@ else print \'News\';
     'title' => '',
     'description' => '',
     'weight' => 0,
-    'name' => 'navigation',
   ));
 
   $views[$view->name] = $view;
@@ -26393,7 +26299,6 @@ else print \'News\';
     'title' => '',
     'description' => '',
     'weight' => 0,
-    'name' => 'navigation',
   ));
   $handler = $view->new_display('block', 'Block', 'block_1');
   $handler->override_option('block_description', '');
@@ -26594,7 +26499,6 @@ else print \'News\';
     'title' => '',
     'description' => '',
     'weight' => 0,
-    'name' => 'navigation',
   ));
 
   $views[$view->name] = $view;
