@@ -1,0 +1,56 @@
+<?php
+// $Id$
+
+/**
+ * @file
+ * Install and uninstall functions for the gallery module.
+ */
+
+/**
+ * Implement hook_install().
+ */
+function gallery_install() {
+	// Create tables.
+	drupal_install_schema('gallery');
+}
+
+/**
+ * Implement hook_uninstall().
+ */
+function gallery_uninstall() {
+	// Remove tables.
+	drupal_uninstall_schema('gallery');
+}
+
+/**
+ * Implement hook_schema().
+ */
+function gallery_schema() {
+	$schema['gallery_images'] = array(
+		'description' => 'Stores gallery image information.',
+		'fields' => array(
+			'gallery_nid' => array(
+				'type' => 'int',
+				'unsigned' => TRUE,
+				'not null' => TRUE,
+				'default' => 0,
+				'description' => "The gallery's {node}.nid.",
+			),
+			'image_nid' => array(
+				'type' => 'int',
+				'unsigned' => TRUE,
+				'not null' => TRUE,
+				'default' => 0,
+				'description' => "The image's {node}.nid",
+			),
+			'weight' => array(
+				'description' => 'The order in which images appear in the gallery.',
+				'type' => 'int',
+				'size' => 'small',
+				'not null' => TRUE,
+				'default' => 0,
+			),
+		),
+	);
+	return $schema;
+}

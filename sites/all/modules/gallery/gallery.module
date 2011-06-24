@@ -1,0 +1,962 @@
+<?php
+
+/**
+ * Implement hook_menu().
+ */
+function gallery_menu() {
+	$items = array();
+	
+/*
+	//future gallery administration page
+	$items['admin/content/gallery/galleries'] = array(
+		'title' => 'Galleries',
+		'page callback' => 'gallery_admin_galleries',
+		'access arguments' => array('edit gallery'),
+	);
+*/
+	//Add an Images tab to the node/%node/edit page and use gallery_access with custom $op to prevent it from showing up on other node forms	
+	$items['node/%node/images'] = array(
+		'title' => 'Images',		
+		'page callback' => 'drupal_get_form',
+		'page arguments' => array('gallery_images_form', 1),
+		'access callback' => 'gallery_access',
+		'access arguments' => array('tab', 1),
+		'type' => MENU_LOCAL_TASK, 
+		'weight' => 10,
+	);
+	
+	//Add sub-tabs to images tab 
+	$items['node/%node/images/manage'] = array(
+		'title' => 'Manage',
+		'description' => 'Manage gallery images.',
+		'access callback' => 'gallery_access',
+		'access arguments' => array('tab', 1),
+		'type' => MENU_DEFAULT_LOCAL_TASK,
+		'weight' => 0,
+	);
+	
+	$items['node/%node/images/add'] = array(
+		'title' => 'Add',		
+		'page callback' => 'drupal_get_form',
+		'access callback' => 'gallery_access',
+		'access arguments' => array('tab', 1),
+		'page arguments' => array('gallery_images_add_form', 1),	
+		'type' => MENU_LOCAL_TASK, 
+		'weight' => 1,
+	);
+	
+	$items['node/%node/images/upload'] = array(	
+		'title' => 'Upload',
+		'page callback' => 'drupal_get_form',
+		'page arguments' => array('gallery_images_upload_form', 1),
+		'access callback' => 'gallery_access',
+		'access arguments' => array('tab', 1),
+		'type' => MENU_LOCAL_TASK, 
+		'weight' => 2,
+	);	
+	
+	//bulk upload page that form on  node/%node/images/upload submits to
+	$items['gallery/swfupload'] = array(
+		'page callback' => 'gallery_swfupload',
+		'access arguments' => array('access content'),
+		'type' => MENU_CALLBACK,
+	);
+	
+	//ajax urls for gallery node view
+	$items['gallery/ajax/image/%node'] = array(
+		'page callback' => '_gallery_ajax_image',
+		'page arguments' => array(3),
+		'access arguments' => array('access content'),
+		'type' => MENU_CALLBACK,
+	);
+	
+	$items['gallery/ajax/load/%node'] = array(
+		'page callback' => '_gallery_ajax_load',
+		'page arguments' => array(3),
+		'access arguments' => array('access content'),
+		'type' => MENU_CALLBACK,
+	);
+	
+	return $items;
+}
+
+//Image upload function that processes image files uploaded from node/%node/images/upload
+function gallery_swfupload() {
+	
+	global $user;	
+	
+	$sid = $_POST['token'];	
+	
+	// validate given session id
+	$result = db_query("SELECT * FROM {sessions} WHERE sid = '%s' AND hostname = '%s' LIMIT 1", $sid, ip_address());	
+	$session = db_fetch_object($result);
+	
+	$gallery = node_load($_POST['gallery_nid']);	
+	
+	// Get users profile
+	$user = user_load(array('uid' => $session->uid));
+  
+	// Do some checks before upload
+	$field_access = FALSE;
+	$validators = array();
+	if(!empty($session)) {
+		//If user is able to create or edit galleries
+		if((user_access('edit gallery', $user) || user_access('create gallery', $user)) && $gallery->nid) {
+			// Adapt to drupal files structure
+			$_FILES['files']['name']['image'] 		= $_FILES['Filedata']['name'];
+			$_FILES['files']['tmp_name']['image'] 	= $_FILES['Filedata']['tmp_name'];
+			$_FILES['files']['type']['image'] 		= $_FILES['Filedata']['type'];	    
+			$_FILES['files']['error']['image'] 		= $_FILES['Filedata']['error'];
+			$_FILES['files']['size']['image']		= $_FILES['Filedata']['size'];		
+			
+			// Clean filename using transliterate module if available or use code borrowed from it
+			if(module_exists('transliteration')) {
+				require_once(drupal_get_path('module', 'transliteration') .'/transliteration.inc');
+				$_FILES['files']['name']['image'] = transliteration_clean_filename($_FILES['Filedata']['name']);
+			} else {
+				$_FILES['files']['name']['image'] = _gallery_clean_filename($_FILES['Filedata']['name']);
+			}
+			
+			// get suitable validators for our upload: image module
+			$validators['file_validate_is_image'] = array();
+			$file_path = file_create_path(file_directory_path().'/'.variable_get('image_default_path', 'images'));			
+			if($file = file_save_upload('image', $validators, $file_path)) {
+				
+				// Check the file size limit.
+				if($file->filesize > variable_get('image_max_upload_size', 800) * 1024) {
+					drupal_set_message($file->filename.t(' is too big. You are only allowed upload files less than '.format_size((variable_get('image_max_upload_size', 800) * 1024)).' but your file was '.format_size($file->filesize)).'.', 'error');
+					file_delete($file->filepath);
+					drupal_json(array('status' => FALSE, 'messages' => theme_status_messages('error')));
+					exit;
+				}
+				
+				$image_info = image_get_info($file->filepath); //Get real mime-type 				
+				if(!db_query("UPDATE {files} SET filename = '%s', filemime = '%s' WHERE fid = %d", IMAGE_ORIGINAL, $image_info['mime_type'], $file->fid)) {					
+					drupal_set_message(t('A database related problem appeared during upload. Please inform the site administrator if this is a permanent problem.'), 'error');					
+					drupal_json(array('status' => FALSE, 'messages' => theme_status_messages('error')));
+					exit;
+				}
+				
+				//call image module function to create new image node
+				$image = image_create_node_from($file->filepath, _gallery_create_title($file));
+				if($image->nid) {
+					gallery_add_image($gallery, $image);
+				}
+				
+				drupal_set_message(t('Upload successful'), 'status');
+				drupal_json(array('status' => TRUE, 'messages' => theme_status_messages('status')));
+			} else {
+				drupal_json(array('status' => FALSE, 'messages' => theme_status_messages('error')));
+			}     
+		} else {
+			drupal_access_denied();
+		}
+	} else {
+		drupal_access_denied();
+	}
+}
+
+
+// Add image to a gallery
+function gallery_add_image(&$gallery, $image) {
+	$gallery_image = new stdClass();
+	$gallery_image->gallery_nid = $gallery->nid;
+	$gallery_image->image_nid = $image->nid;
+	
+	if(drupal_write_record('gallery_images', $gallery_image)) {
+		$gallery->gallery_images[$image->nid] = array(); 
+		$gallery->gallery_images[$image->nid]['nid'] 	= $image->nid;
+		$gallery->gallery_images[$image->nid]['title'] 	= $image->title;
+		$gallery->gallery_images[$image->nid]['author'] = $image->name;
+		$gallery->gallery_images[$image->nid]['status'] = $image->status;
+		$gallery->gallery_images[$image->nid]['files'] 	= $image->images;
+		$gallery->gallery_images[$image->nid]['weight'] = $row->weight;			
+		
+		//convert to object
+		$gallery->gallery_images[$image->nid] = (object)$images[$image->nid];
+	} else {
+		return FALSE;
+	}
+}
+
+//Removes images for a gallery. $gallery = nid, $images = array(nid, nid, nid);
+function gallery_remove_images($gallery, $images) {
+
+	$nids = array($gallery) + $images;	
+
+	$query = "DELETE FROM {gallery_images} WHERE gallery_nid = %d AND image_nid IN (".implode(', ', array_fill(0, count($images), '%d')).")";	
+	db_query($query, $nids);
+	cache_clear_all();
+}
+
+function gallery_images_upload_form(&$form_state, $gallery) {	
+	gallery_set_admin_theme();
+	global $user;
+		
+	$image = new stdClass();
+	$image->filepath = 'sites/default/files/images/The Ellsworth Bumpy #CA71CA.jpg';	
+	drupal_add_js(drupal_get_path('module', 'gallery') .'/swfupload/swfupload.js');		
+	drupal_add_js(drupal_get_path('module', 'gallery') .'/js/gallery-swfupload-queue.js');
+	drupal_add_js(drupal_get_path('module', 'gallery') .'/js/gallery-swfupload-progress.js');
+	drupal_add_js(array('gallery' => array('token' =>  $user->sid)), 'setting');
+	drupal_add_js(drupal_get_path('module', 'gallery') .'/js/gallery-swfupload-settings.js');	
+	drupal_add_js(drupal_get_path('module', 'gallery') .'/js/gallery-swfupload-handlers.js');
+	
+	drupal_add_css(drupal_get_path('module', 'gallery') .'/css/gallery-swfupload.css');		
+	
+	$form = array();
+	
+	$form['gallery_nid'] = array(
+		'#type' => 'hidden',
+		'#value' => $gallery->nid,
+	);
+	
+	$form['swfupload'] = array(
+		'#type' => 'item',
+		'#value' => '<div id="swfupload"><span id="swfupload-button"></div></div><div class="clear-block"></div>',
+	);
+	
+	$form['upload-queue'] = array(		
+		'#value' => '<div id="upload-queue-wrapper"><h1>'.t('Selected Images & Photos').'</h1><div id="upload-queue"></div></div>',
+	);
+	
+	$form['cancel'] = array(
+		'#type' => 'button', 
+		'#button_type' => 'button',
+		'#value' => t('Cancel All'),
+		'#name' => 'cancel-all',
+		'#disabled' => TRUE,
+	);
+	
+	$form['upload'] = array(
+		'#type' => 'button', 
+		'#button_type' => 'button',
+		'#value' => t('Upload'),
+		'#name' => 'upload-all',
+		'#disabled' => TRUE,
+	);
+		
+	return $form;
+}
+
+function gallery_images_form(&$form_state, $gallery) {
+	gallery_set_admin_theme();
+	$images = array();	
+	
+	$form = array();	
+	
+	$form['gallery_nid'] = array(
+		'#type' => 'hidden', 
+		'#value' => $gallery->nid,
+	);
+	
+	$form['images'] = array();
+	$form['images']['#tree'] = true;	
+	
+	$query = 'SELECT n.*, i.filepath, g.weight FROM {gallery_images} g 
+				JOIN (SELECT n.*, u.name FROM {node} n JOIN {users} u ON n.uid = u.uid) n ON n.nid = g.image_nid
+				JOIN (SELECT i.nid, f.filepath FROM {image} i JOIN {files} f ON i.fid = f.fid WHERE i.image_size = "_original") i ON i.nid = g.image_nid
+				WHERE g.gallery_nid = %d ORDER BY g.weight ASC';
+	
+	$result = pager_query(db_rewrite_sql($query), 25, 0, NULL, array($gallery->nid));
+	
+	while($image = db_fetch_object($result)) {	
+				
+		$image->images[IMAGE_ORIGINAL] = $image->filepath;
+		$image->images = _image_build_derivatives($image);
+		
+		$images[$image->nid] = '';
+		
+		$form['images'][$image->nid]['weight'] = array(
+			'#type' => 'weight',
+			'#delta' => count($gallery->gallery_images),
+			'#default_value' => $image->weight,
+			'#attributes' => array(
+				'class' => 'weight-group',
+			),
+		);
+		
+		$form['images'][$image->nid]['image_nid'] = array(
+			'#type' => 'hidden',
+			'#value' => $image->nid,
+		);
+		
+		$form['images'][$image->nid]['thumbnail'] = array(
+			'#value' => image_display($image, IMAGE_THUMBNAIL),
+		);
+		
+		
+		$form['images'][$image->nid]['title'] = array(
+			'#value' => l($image->title, 'node/'.$image->nid),
+		);
+		
+		$form['images'][$image->nid]['username'] = array(
+			'#value' => theme('username', $image->author)
+		);
+		
+		$form['images'][$image->nid]['status'] =  array(
+			'#value' => ($image->status ? t('published') : t('not published'))
+		);
+	}	
+
+	$form['nodes'] = array(
+		'#type' => 'checkboxes',
+		'#options' => $images,
+	);
+	
+	$form['action']	= array(
+		'#type' => 'select',
+		'#title' => t('With selected'),		
+		'#options' => array(
+			/* 'publish' => t('Publish'), */
+			/* 'unpublish' => t('Unpublish'), */
+			'remove' => t('Remove'),
+			/* 'delete' => t('Delete'), */
+		),
+	);
+	
+	$form['submit'] = array(
+		'#type' => 'submit',
+		'#value' => t('Save'),	
+	);
+	
+	$form['#theme'] = 'gallery_images';
+	$form['#validate'] = array('gallery_images_form_validate');	
+	$form['#submit'] = array('gallery_images_form_submit');	
+	
+	return $form;
+}
+
+function gallery_images_form_validate($form, &$form_state) {
+	$values = $form_state['values'];
+}
+
+function gallery_images_form_submit($form, &$form_state) {	
+	$values = $form_state['values'];	
+	
+	//Update Weights
+	foreach($values['images'] as $image) {
+		$image['gallery_nid'] = $values['gallery_nid'];		
+		if(!drupal_write_record('gallery_images', $image, array('gallery_nid', 'image_nid'))) {
+			form_set_error('submit', t('An error occurred while attempting to update this gallery. Unable to update at this time.'));
+		}		
+	}	
+		
+	//Perform selected action if any nodes were selected
+	$nodes = array_filter($values['nodes']);
+	
+	if(!empty($nodes)) {
+		switch($values['action']) {			
+			case 'remove':				
+				gallery_remove_images($values['gallery_nid'], $nodes);				
+			break;			
+		}
+	}
+}
+
+//format form into table
+function theme_gallery_images($form) {
+	
+	drupal_add_tabledrag('gallery-images', 'order', 'sibling', 'weight-group');
+	
+	$output = '';
+	
+	$header = array(
+		'',		
+		t('Weight'),
+		theme('table_select_header_cell'),
+		'',
+		t('Title'),
+		t('Author'),
+		t('Status'),
+		t('Actions'),
+	);
+	
+	$rows = array();	
+	
+	foreach(element_children($form['images']) as $key) {	
+		$row = array();			
+		
+		$row[] = ''; 
+		
+		$row['weight'] = array( 
+			'data' => drupal_render($form['images'][$key]['weight']).drupal_render($form['images'][$key]['image_nid']),
+			'sort' => 'asc',
+		);
+		
+		$row['node'] = array( 
+			'data' => drupal_render($form['nodes'][$key]),
+		);
+		
+		$row['thumbnail'] = array( 
+			'data' => drupal_render($form['images'][$key]['thumbnail']),
+			'style' => 'vertical-align: middle;',
+		);
+		
+		$row['title'] = array( 
+			'data' => drupal_render($form['images'][$key]['title'])
+		);
+		
+		$row['username'] = array( 
+			'data' => drupal_render($form['images'][$key]['username'])
+		);
+		
+		$row['status'] = array( 
+			'data' => drupal_render($form['images'][$key]['status'])
+		);		
+		
+		$row['edit'] = array( 
+			'data' => l('edit', 'node/'.$key.'/edit'),
+		);		
+		
+		$rows[] = array('data' => $row, 'class' => 'draggable');
+	}
+	
+	ksort($rows, SORT_NUMERIC);
+	
+	$output .= theme('table', $header, $rows, array('id' => 'gallery-images'));
+	$output .= drupal_render($form);	
+	
+	return $output;	
+}
+
+function gallery_images_add_form(&$form_state, $node) {
+	gallery_set_admin_theme();
+	
+	$form = array();
+	/* $result = db_query("SELECT i.image_size, f.filepath FROM {image} i INNER JOIN {files} f ON i.fid = f.fid WHERE i.nid = %d", $node->nid); */
+	/* $result = pager_query(db_rewrite_sql('SELECT n.*, u.name, i.image_size, f.filepath FROM {node} n INNER JOIN {users} u ON (n.uid = u.uid) INNER JOIN {image} i ON (i.nid = n.nid) INNER JOIN {files} f ON (f.fid = i.fid) WHERE n.type = "image" AND i.image_size = "'.IMAGE_ORIGINAL.'" ORDER BY n.changed DESC'), 3, 0); */
+	$query = 'SELECT n.*, u.name, j.filepath FROM {node} n INNER JOIN {users} u ON n.uid = u.uid JOIN 
+			(SELECT i.nid, f.filepath FROM {image} i INNER JOIN {files} f ON i.fid = f.fid WHERE i.image_size = "_original") j
+			ON (j.nid = n.nid) WHERE n.type = "image" ORDER BY n.changed DESC';
+	
+	$result = pager_query(db_rewrite_sql($query), 25, 0);
+
+	
+	$images = array();
+	
+	while($image = db_fetch_object($result)) {
+		$image->images = _image_build_derivatives($image);
+		
+		$images[$image->nid] = '';
+		
+		$image->images[IMAGE_ORIGINAL] = $image->filepath;
+		$image->images = _image_build_derivatives($image);			
+		
+		$form['thumbnail'][$image->nid] = array(
+			'#value' => image_display($image, IMAGE_THUMBNAIL),
+		);
+		
+		$form['title'][$image->nid] = array(
+			'#value' => l($image->title, 'node/'.$image->nid).' '.theme('mark', node_mark($images->nid, $images->changed)),
+		);
+		
+		$form['username'][$image->nid] = array('#value' => theme('username', $image));
+		$form['status'][$image->nid] =  array('#value' => ($image->status ? t('published') : t('not published')));
+		$form['operations'][$image->nid] = array('#value' => l(t('edit'), 'node/' . $image->nid . '/edit'));		
+	}
+	
+	$form['gallery'] = array(
+		'#type' => 'value',
+		'#value' => $node,
+	);
+	
+	$form['gallery_nid'] = array(
+		'#type' => 'hidden',
+		'#value' => $node->nid,
+	);
+	
+	$form['nodes'] = array(
+		'#type' => 'checkboxes',
+		'#options' => $images,
+	);
+	
+	$form['pager'] = array(
+		'#value' => theme('pager', NULL, 25, 0),		
+	);
+	
+	$form['submit'] = array(
+		'#type' => 'submit', 
+		'#value' => t('Add Images')
+	);
+	
+	$form['#theme'] = 'gallery_images_add';
+	$form['#validate'] = array('gallery_images_add_form_validate');
+	$form['#submit'] = array('gallery_images_add_form_submit');
+	
+	return $form;
+}
+
+function gallery_images_add_form_validate($form, &$form_state) {
+	$values = $form_state['values'];	
+}
+
+function gallery_images_add_form_submit($form, &$form_state) {
+	$values = $form_state['values'];	
+	
+	$gallery = $values['gallery'];	
+	
+	foreach(array_filter($values['nodes']) as $nid) {
+		//If image is not already in gallery then add, otherwise do nothing
+		if(!array_key_exists($nid, $gallery->gallery_images)) {
+			$gallery_image = new stdClass();			
+			$gallery_image->gallery_nid = $gallery->nid;
+			$gallery_image->image_nid = $nid;		
+			
+			if(drupal_write_record('gallery_images', $gallery_image)) {
+				cache_clear_all();
+				$form_state['redirect'] = 'node/'.$gallery->nid.'/images';
+			} else {
+				form_set_error('submit', t('An error occurred while attempting to add selected images.'));
+			}
+		} 
+	}	
+}
+
+function theme_gallery_images_add($form) {
+	$output = '';
+	$has_posts = isset($form['title']) && is_array($form['title']);
+	
+	$select_header = $has_posts ? theme('table_select_header_cell') : '';
+	
+	$header = array($select_header, '', t('Title'), t('Type'), t('Author'), t('Status'));
+	
+	if($has_posts) {
+		foreach(element_children($form['title']) as $key) {
+			$row = array();
+			$row[] = drupal_render($form['nodes'][$key]);
+			$row[] = drupal_render($form['thumbnail'][$key]);
+			$row[] = drupal_render($form['title'][$key]);			
+			$row[] = drupal_render($form['username'][$key]);
+			$row[] = drupal_render($form['status'][$key]);			
+			$row[] = drupal_render($form['operations'][$key]);
+			$rows[] = $row;
+		}
+	
+	} else {
+		$rows[] = array(array(
+			'data' => t('No posts available.'),
+			'colspan' => '6',
+		));
+	}
+	
+	
+	
+	$output .= theme('table', $header, $rows);
+	
+	if ($form['pager']['#value']) {
+		$output .= drupal_render($form['pager']);
+	}
+	
+	$output .= drupal_render($form);	
+	
+	return $output;
+}
+
+/**
+ * Implement hook_perm().
+ */
+function gallery_perm() {
+	return array('edit own gallery', 'edit gallery', 'create gallery');
+}
+
+
+/**
+ * Implement hook_access().
+ */
+function gallery_access($op, $node, $account = NULL) {
+	global $user;
+	
+	if (empty($account)) {
+		$account = $user;
+	}
+	
+	if ($op != 'create') {
+		$node = (object)$node;
+	}
+	
+	//Op used to prevent the Images tab from appearing on other node types
+	if($op == 'tab') {
+		if((user_access('edit gallery') || user_access('edit own gallery')) && $node->type == 'gallery') {
+			return TRUE;
+		}
+	}
+	
+	if ($op == 'create') {
+		if (user_access('create gallery')) {
+			return TRUE;
+		}
+	} elseif($op == 'update' || $op == 'delete') {
+		if (user_access('edit gallery')) {
+			return TRUE;
+		} elseif (user_access('edit own gallery') && $account->uid == $node->uid) {
+			return TRUE;
+		}
+	}
+}
+
+//Checks if the given node type is gallery and the user has rights to edit galleries
+function gallery_edit_tabs_access($node) {
+	if($node->type == 'gallery') {
+		if(user_access('edit gallery')) {
+			return TRUE;
+		}
+	} else {
+		//Generate a page not found for nodes that aren't gallery...makes more sense
+		drupal_not_found();
+	}
+}
+
+
+function gallery_load($node) {
+
+	$result = db_query('SELECT * FROM {gallery_images} g WHERE g.gallery_nid = %d ORDER BY g.weight ASC', $node->nid);
+	
+	$info = array();
+	
+	$images = array();
+	
+	while($row = db_fetch_object($result)) {		
+		
+		$image = node_load($row->image_nid);
+		
+		if($image) {
+			
+			$img = array();					
+			$img['nid'] = $image->nid;
+			$img['title'] = $image->title;
+			$img['author'] = $image->name;
+			$img['status'] = $image->status;
+			$img['files'] = $image->images;
+			$img['weight'] = $row->weight;			
+			$img = (object)$img;			
+			
+			$images[] = $img;
+		}	
+	}
+	
+	$info['gallery_images'] = $images;
+	
+	return $info;
+}
+
+function gallery_view($node, $teaser = FALSE, $page = FALSE) {
+	$node = node_prepare($node, $teaser);
+	$node->content['thumbnails'] = array(
+		'#value' => theme('gallery_thumbnails', $node),
+		'#weight' => 0,
+	);
+	
+	$node->content['body'] = array(
+		'#value' => theme('gallery_body', $node),
+		'#weight' => 1
+	);	
+	
+	
+	$images = array();
+	
+	foreach($node->gallery_images as $image) {
+		$images[] = $image->nid;
+	}
+	
+	drupal_add_js(array('gallery' => array('nid' => $node->nid)), 'setting');
+	drupal_add_js(array('gallery' => array('images' => $images)), 'setting');	
+	drupal_add_js(array('gallery' => array('position' => 0)), 'setting');
+	drupal_add_js(drupal_get_path('module', 'gallery') .'/js/jquery.jcarousel.min.js');
+	drupal_add_js(drupal_get_path('module', 'gallery') .'/js/gallery.js');	
+	drupal_add_css(drupal_get_path('module', 'gallery') .'/css/jcarousel/skin.css', 'module');	
+	drupal_add_css(drupal_get_path('module', 'gallery') .'/css/gallery.css', 'module');	
+
+	return $node;
+}
+
+/**
+ * Implement hook_node_info().
+ */
+function gallery_node_info() {
+	return array(
+		'gallery' => array(
+			'name' => t('Gallery'),
+			'module' => 'gallery',
+			'description' => t('Create image galleries.'),
+			'title_label' => t('Gallery Name'),
+			'has_body' => FALSE,
+		),
+	);
+}
+
+/**
+ * Implement hook_form().
+ */
+function gallery_form(&$node, $form_state) {
+	$type = node_get_types('type', $node);
+	
+	// Title.
+	$form['title'] = array(
+		'#type' => 'textfield',
+		'#title' => check_plain($type->title_label),
+		'#default_value' => $node->title,
+		'#required' => FALSE,
+		'#weight' => 0,
+	);	
+	
+	if($node->nid) {
+		$form['images'] = array(
+			'#value' => l(t('Manage Images'), 'gallery/'.$node->nid.'/images'),
+		);
+	} 
+	
+	return $form;
+}
+
+/**
+ * Implementation of hook_insert().
+ */
+function gallery_insert($node) {}
+
+function gallery_theme($existing, $type, $theme, $path) {
+	return array(
+		'gallery_images' => array(
+			'arguments' => array(
+				'form' => NULL,
+			),
+		),
+		'gallery_images_add' => array(
+			'arguments' => array(
+				'form' => NULL,
+			),
+		),
+		'gallery_upload_file' => array(
+			'arguments' => array(
+				'name' => NULL,
+				'id' => NULL,				
+			),			
+		),
+		'gallery_body' => array(
+			'arguments' => array(
+				'node' => NULL,
+			),
+			'template' => 'gallery-body',
+			
+		),
+		'gallery_thumbnails' => array(
+			'arguments' => array(
+				'node' => NULL,
+			),
+			'template' => 'gallery-thumbnails',		
+		),
+		'gallery_content' => array(
+			'arguments' => array(
+				'node' => NULL,
+			),
+			'template' => 'gallery-content',
+		),
+	);
+}
+
+function gallery_preprocess_gallery_content(&$vars) {
+	$node = &$vars['node'];	
+	$vars['title'] = check_plain($node->title);	
+	$vars['image'] = theme('image', $node->images[IMAGE_ORIGINAL], $node->title, $node->title, array('class' => 'image'));	
+	$vars['description'] = check_markup($node->body);
+}
+
+function gallery_preprocess_gallery_thumbnails(&$vars) {
+	$node = $vars['node'];
+	$thumbnails = '';
+	$thumbnails .= '<div id="gallery-thumbnails">';
+		$thumbnails .= '<ul id="gallery-carousel" class="jcarousel-skin-tango">';
+			foreach($node->gallery_images as $image) {
+				$thumbnails .= '<li><div class="gallery-thumbnail-wrapper">';					
+					$thumbnails .= l(theme_image($image->files[IMAGE_THUMBNAIL], $image->title, $image->title), 'gallery/ajax/image/'.$image->nid, array('attributes' => array('class' => 'gallery-thumbnail', 'name' => $image->nid, 'title' => $image->title), 'html' => TRUE));
+				$thumbnails .= '</div></li>';
+			}
+		$thumbnails .= '</ul>';
+	$thumbnails .= '</div>';
+	$vars['thumbnails'] = $thumbnails;	
+}
+
+function gallery_preprocess_gallery_body(&$vars) {
+
+	$node = $vars['node'];
+	
+	$body = '';	
+	$body .= '<div id="gallery-body">';
+		$body .= '<div id="gallery-controls" class="clearfix">';
+			$body .= '<span class="gallery-control" id="gallery-control-prev">'.l('previous ', 'node/'.$node->nid).'</span>';
+			$body .= '<span class="gallery-control" id="gallery-control-next">'.l('next', 'node/'.$node->nid).'</span>';
+		$body .= '</div>';
+		$body .= '<div id="gallery-loader"><div id="gallery-loader-inner"><div id="gallery-loader-image"></div></div></div>';
+		$body .= '<div id="gallery-content">';	
+		$body .= '</div>';
+	$body .= '</div>';
+	$vars['body'] = $body;
+	
+	
+/*
+	$gallery .= '<div id="gallery-navigation-container">';
+		$gallery .= '<div id="gallery-navigation" class="">';
+			$gallery .= '<a class="pageLink prev" style="visibility: hidden;" href="#" title="Previous Page"></a>';
+			$gallery .= '<ul id="gallery-thumbnails noscript">';					
+				foreach($node->gallery_images as $image) {
+					$gallery .= '<li><a class="gallery-thumbnail" name="leaf" href="/'.$image->files['_original'].'" title="'.$image->title.'">'.theme_image($image->files['thumbnail'], $image->title).'</a>';					
+				}
+			$gallery .= '</ul>';
+		$gallery .= '</div>';
+	$gallery .= '</div>';
+	$gallery .= '<div class="gallery-slideshow-container">';
+		$gallery .= '<div class="gallery-slideshow">';
+			$gallery .= '<div id="controls" class="controls"></div>';
+			$gallery .= '<div id="loading" class="loader"></div>';
+			$gallery .= '<div id="slideshow" class="slideshow"></div>';
+			$gallery .= '<div id="caption" class="caption-container">';
+				$gallery .= '<div class="photo-index"></div>';
+			$gallery .= '</div>';
+		$gallery .= '</div>';
+	$gallery .= '</div>';
+*/
+	
+	
+/*
+	$thumbnails = '';
+	foreach($node->gallery_images as $image) {
+		$thumbnails .= '<div id="gallery-thumbnail-'.$image->nid.'" class="gallery-thumbnail"><span id="gallery-thumbnail-image-'.$image->nid.'" class="gallery-thumbnail-image" title="'.$image->nid.'">'.theme_image($image->files['thumbnail']).'</span></div>';
+	}
+
+	$gallery = '';
+	
+	$gallery .= '<div id="gallery-'.$node->nid.'" class="gallery">';
+		
+		$gallery .= '<div id="gallery-'.$node->nid.'-controls" class="gallery-controls">';			
+			$gallery .= '<span id="gallery-control-prev" class="gallery-control"><a href="#prev" id="gallery-prev"><< Previous </a></span>';
+			$gallery .= '<span id="gallery-control-next" class="gallery-control"><a href="#next" id="gallery-next"> Next >> </a></span>';
+			$gallery .= '<div class="clear-block"></div>';
+		$gallery .= '</div>';
+		
+		$gallery .= '<div id="gallery-'.$node->nid.'-thumbnails" class="gallery-thumbnails">';
+			$gallery .= '<div id="gallery-'.$node->nid.'-thumbnails-inner" class="gallery-thumbnails-inner">';
+				$gallery .= '<div id="gallery-'.$node->nid.'-thumbnails-container" class="gallery-thumbnails-container clearfix" style="width:'.(count($node->gallery_images) * 65).'px;">';
+					$gallery .= $thumbnails;
+				$gallery .= '</div>';
+			$gallery .= '</div>';
+		$gallery .= '</div>';
+		
+		$gallery .= '<div id="gallery-stage-'.$node->nid.'" class="gallery-stage">';
+			$gallery .= '<div id="gallery-current-'.$node->nid.'" class="gallery-current">';				
+			$gallery .= '</div>';
+		$gallery .= '</div>';
+	$gallery .= '</div>';	
+	$vars['gallery'] = $gallery;
+*/
+
+}
+
+
+function theme_gallery_upload_file($name, $id) {
+	return '<div class="file-wrapper" id="file-wrapper-'.$id.'"><div class="file" id="file-'.$id.'">'.$name.'</div><div class="upload-progress" id="upload-'.$id.'"></div></div>';	
+}
+
+//create title for images based on filename
+function _gallery_create_title($image) {
+	// Get filename out of filepath
+	$filename = trim(basename($image->filepath), ' ');
+	$length1 = strlen(strrchr($filename, '.'));
+	$length2 = strlen($filename);
+	$image_name = ucfirst(substr($filename, 0, ($length2 - $length1)));
+	
+	// Remove some given (userdefined) elements
+	if (is_null($replacements))
+	$replacements = '_;{;}'; 
+	$image_name = str_replace(explode(';', $replacements), ' ', $image_name);
+	
+	return $image_name;
+}
+
+//santize filenames
+function _gallery_clean_filename($filename) {	
+	$info = pathinfo($filename);
+	
+	$filename = preg_replace('/^\W+|\W+$/', '', $filename); // remove all non-alphanumeric chars at begin & end of string
+	$filename = preg_replace("/[^\w\.-]/", " ", strtolower($filename)); // remove all non-alphanumeric chars inside the string
+	$filename = preg_replace('/\s+/', '_', $filename); // compress internal whitespace and replace with
+	$filename = strtolower(preg_replace('/\W-/', '', $filename)); // remove all non-alphanumeric chars except "_" and "-"	
+	
+	return check_plain($filename);
+	/* return $filename.$info['extension']; //return filename with original extension		 */
+}
+
+//forces admin theme if there is one
+function gallery_set_admin_theme() {
+	global $custom_theme;
+	
+	$custom_theme = ($custom_theme) ? $custom_theme : variable_get('admin_theme', NULL);
+	
+	if($custom_theme) {
+		drupal_add_css(drupal_get_path('module', 'system') .'/admin.css', 'module');
+	}	
+}
+
+/**
+ * Implementation of hook_nodeapi().
+ */
+function gallery_nodeapi(&$node, $op, $teaser, $page) {
+	switch ($op) {
+		case 'delete':
+			//If an image is deleted then remove it from all galleries that it belongs to
+			if($node->type == 'image') {
+				db_query('DELETE FROM {gallery_images} WHERE image_nid = %d', $node->nid);
+			}
+		break;
+	}
+}
+
+/**
+ * Implementation of hook_delete().
+ */
+function gallery_delete($node) {
+	// Notice that we're matching all revision, by using the node's nid.
+	db_query('DELETE FROM {gallery_images} WHERE gallery_nid = %d', $node->nid);
+}
+
+//Ajax callbacks
+function _gallery_ajax_image($node) {
+	echo theme('gallery_content', $node);
+	exit;
+}
+
+function _gallery_ajax_load($node) {	
+	$images = array();
+	
+	foreach($node->gallery_images as $image) {
+		$images[] = $image->nid;
+	}
+	
+	drupal_json($images);
+	exit;
+}
+
+function expose($var) {
+	echo "<pre>";
+		print_r($var);
+	echo "</pre>";
+}
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+

@@ -1,0 +1,109 @@
+div#swfupload object {
+	height: 35px;
+	width: 225px;
+}
+div#upload-queue-wrapper h1 {	
+	border-bottom: 1px solid #CCCCCC;
+	color: #555555;
+	font-family: Tahoma, Geneva, sans-serif;
+	font-size: 24px;
+	letter-spacing: -1px;
+	margin-top: 10px;
+	margin-bottom: 10px;
+	padding-bottom: 20px;
+}
+
+.upload-file {	
+	border: 1px solid #D6D6D6;
+	clear: both;
+	margin: 5px 0;
+	overflow: hidden;
+	padding: 5px 5px 10px;
+}
+
+.upload {
+	float: left;	
+	display: block;
+	margin: 5px;
+	height: 20px;
+}
+
+.upload-file-name {
+	font-size: 12px;
+	line-height: 12px;
+}
+
+.upload-file-cancel {
+	float: right;
+	margin-right: 5px;
+}
+
+/*
+a.cancel-button {
+	display: block;
+	width: 16px;
+	height: 16px;
+	background: url('../images/delete.png');
+}
+
+a.cancel-button span {
+	display: none;
+}
+*/
+
+/*
+.upload-progress {
+	float: left;
+	width: 100%;
+	margin: 0 5px;
+}
+*/
+
+.upload-progress {
+	border: 1px solid #EBEBEB;
+	height: 10px;
+	margin: 0 5px;	
+}
+
+.upload-progress span.upload-status {
+	font-style: italic;
+}
+
+
+
+.progress-bar {
+	height: 10px;	
+	background: #45BF55;
+	width: 0;	
+}
+
+/*
+.file-icon {
+	height: 24px;
+	width: 24px;
+	background-image: url('../images/image.png');
+}
+*/
+
+
+/*
+
+table#upload-queue thead tr th#upload-filename {
+
+}
+
+table#upload-queue thead tr th#upload-size {
+	width: 15px;
+	text-align: center;
+}
+
+table#upload-queue thead tr th#upload-status {
+	width: 100px;
+	text-align: center;
+}
+
+table#upload-queue thead tr th#upload-flag {
+	width: 24px;
+	text-align: center;
+}
+*/
