@@ -1,3 +1,4 @@
 name = Gallery
 description = Allows for the creation of node galleries
+dependencies[] = image
 core = 6.x
