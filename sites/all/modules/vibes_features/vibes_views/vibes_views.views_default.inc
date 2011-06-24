@@ -8381,6 +8381,7 @@ echo $result->name;
     'title' => '',
     'description' => '',
     'weight' => 0,
+    'name' => 'navigation',
   ));
   $handler->override_option('displays', array());
   $handler->override_option('sitename_title', FALSE);
@@ -9136,6 +9137,7 @@ echo $result->name;
     'title' => '',
     'description' => '',
     'weight' => 0,
+    'name' => 'navigation',
   ));
   $handler->override_option('displays', array());
   $handler->override_option('sitename_title', FALSE);
@@ -9891,6 +9893,7 @@ echo $result->name;
     'title' => '',
     'description' => '',
     'weight' => 0,
+    'name' => 'navigation',
   ));
   $handler->override_option('displays', array());
   $handler->override_option('sitename_title', FALSE);
@@ -10352,6 +10355,7 @@ echo $result->name;
     'title' => '',
     'description' => '',
     'weight' => 0,
+    'name' => 'navigation',
   ));
   $handler->override_option('displays', array(
     'default' => 'default',
@@ -11110,6 +11114,7 @@ echo $result->name;
     'title' => '',
     'description' => '',
     'weight' => 0,
+    'name' => 'navigation',
   ));
   $handler->override_option('displays', array());
   $handler->override_option('sitename_title', FALSE);
@@ -11865,6 +11870,7 @@ echo $result->name;
     'title' => '',
     'description' => '',
     'weight' => 0,
+    'name' => 'navigation',
   ));
   $handler->override_option('displays', array());
   $handler->override_option('sitename_title', FALSE);
@@ -18614,6 +18620,7 @@ print $data->override_title;
     'title' => '',
     'description' => '',
     'weight' => 0,
+    'name' => 'navigation',
   ));
 
   $views[$view->name] = $view;
@@ -19879,6 +19886,7 @@ print $data->override_title;
     'title' => '',
     'description' => '',
     'weight' => 0,
+    'name' => 'navigation',
   ));
 
   $views[$view->name] = $view;
@@ -20018,16 +20026,20 @@ print $data->override_title;
         'alt' => '',
         'prefix' => '',
         'suffix' => '',
+        'target' => '',
         'help' => '',
         'trim' => 1,
         'max_length' => '1',
         'word_boundary' => 0,
         'ellipsis' => 0,
-        'strip_tags' => 0,
         'html' => 0,
+        'strip_tags' => 0,
       ),
+      'empty' => '',
+      'hide_empty' => 0,
+      'empty_zero' => 0,
       'link_to_node' => 0,
-      'exclude' => 0,
+      'exclude' => 1,
       'id' => 'title_1',
       'table' => 'node',
       'field' => 'title',
@@ -20047,20 +20059,27 @@ print $data->override_title;
         'alt' => '',
         'prefix' => '',
         'suffix' => '',
+        'target' => '',
         'help' => '',
         'trim' => 0,
         'max_length' => '',
         'word_boundary' => 1,
         'ellipsis' => 1,
-        'strip_tags' => 0,
         'html' => 0,
+        'strip_tags' => 0,
       ),
-      'link_to_node' => 0,
+      'empty' => '',
+      'hide_empty' => 0,
+      'empty_zero' => 0,
+      'link_to_node' => 1,
       'exclude' => 0,
       'id' => 'title',
       'table' => 'node',
       'field' => 'title',
       'relationship' => 'none',
+      'override' => array(
+        'button' => 'Use default',
+      ),
     ),
   ));
   $handler->override_option('sorts', array(
@@ -20095,6 +20114,9 @@ print $data->override_title;
       ),
       'relationship' => 'none',
     ),
+  ));
+  $handler->override_option('style_options', array(
+    'grouping' => 'title_1',
   ));
   $handler->override_option('block_description', '');
   $handler->override_option('block_caching', -1);
@@ -21114,6 +21136,7 @@ print $data->override_title;
     'title' => '',
     'description' => '',
     'weight' => 0,
+    'name' => 'navigation',
   ));
 
   $views[$view->name] = $view;
@@ -22683,6 +22706,7 @@ echo $data->jp_blog_celeb_website_image;
     'title' => '',
     'description' => '',
     'weight' => 0,
+    'name' => 'navigation',
   ));
 
   $views[$view->name] = $view;
@@ -23645,6 +23669,7 @@ else print \'News\';
     'title' => '',
     'description' => '',
     'weight' => 0,
+    'name' => 'navigation',
   ));
   $handler = $view->new_display('block', 'Block', 'block');
   $handler->override_option('items_per_page', 5);
@@ -24752,6 +24777,7 @@ else print \'News\';
     'title' => '',
     'description' => '',
     'weight' => 0,
+    'name' => 'navigation',
   ));
 
   $views[$view->name] = $view;
@@ -25126,6 +25152,7 @@ else print \'News\';
     'title' => '',
     'description' => '',
     'weight' => 0,
+    'name' => 'navigation',
   ));
 
   $views[$view->name] = $view;
@@ -25569,6 +25596,7 @@ else print \'News\';
     'title' => '',
     'description' => '',
     'weight' => 0,
+    'name' => 'navigation',
   ));
 
   $views[$view->name] = $view;
@@ -26299,6 +26327,7 @@ else print \'News\';
     'title' => '',
     'description' => '',
     'weight' => 0,
+    'name' => 'navigation',
   ));
   $handler = $view->new_display('block', 'Block', 'block_1');
   $handler->override_option('block_description', '');
@@ -26499,6 +26528,7 @@ else print \'News\';
     'title' => '',
     'description' => '',
     'weight' => 0,
+    'name' => 'navigation',
   ));
 
   $views[$view->name] = $view;
