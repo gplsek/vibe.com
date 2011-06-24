@@ -1,0 +1,3 @@
+name = Gallery
+description = Allows for the creation of node galleries
+core = 6.x
