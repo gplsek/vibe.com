@@ -34,7 +34,7 @@
 				//var_dump($message);
 				$block = module_invoke('similar', 'block', 'view', 0);
 				//$memcache->set($key,$block['content'],0,rand(21600,43200));
-				print $block['content'];
+				 print $block['content'];
 			//}
 			//else{
 				//$message = "Cached";

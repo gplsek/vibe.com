@@ -1142,8 +1142,8 @@ function vibes_content_types_content_default_fields() {
       'progress_indicator' => 'bar',
       'max_filesize_per_file' => '',
       'max_filesize_per_node' => '',
-      'max_resolution' => 0,
-      'min_resolution' => 0,
+      'max_resolution' => '0',
+      'min_resolution' => '0',
       'alt' => '',
       'custom_alt' => 0,
       'title' => '',
@@ -2316,6 +2316,95 @@ Yes',
     ),
   );
 
+  // Exported field: field_story_celeb
+  $fields['story-field_story_celeb'] = array(
+    'field_name' => 'field_story_celeb',
+    'type_name' => 'story',
+    'display_settings' => array(
+      'label' => array(
+        'format' => 'above',
+        'exclude' => 0,
+      ),
+      '5' => array(
+        'format' => 'default',
+        'exclude' => 0,
+      ),
+      'teaser' => array(
+        'format' => 'default',
+        'exclude' => 0,
+      ),
+      'full' => array(
+        'format' => 'default',
+        'exclude' => 0,
+      ),
+      '4' => array(
+        'format' => 'default',
+        'exclude' => 0,
+      ),
+      '2' => array(
+        'format' => 'default',
+        'exclude' => 0,
+      ),
+      '3' => array(
+        'format' => 'default',
+        'exclude' => 0,
+      ),
+      'token' => array(
+        'format' => 'default',
+        'exclude' => 0,
+      ),
+    ),
+    'widget_active' => '1',
+    'type' => 'nodereference',
+    'required' => '0',
+    'multiple' => '1',
+    'module' => 'nodereference',
+    'active' => '1',
+    'referenceable_types' => array(
+      'celebrity' => 'celebrity',
+      'audio' => 0,
+      'billboard' => 0,
+      'advpoll_binary' => 0,
+      'event' => 0,
+      'feed' => 0,
+      'feed_item' => 0,
+      'gallery' => 0,
+      'img' => 0,
+      'image' => 0,
+      'jp_collection' => 0,
+      'link' => 0,
+      'book' => 0,
+      'page' => 0,
+      'panel' => 0,
+      'photo_gallery' => 0,
+      'post_up' => 0,
+      'advpoll_ranking' => 0,
+      'single_column_page' => 0,
+      'story' => 0,
+      'questions' => 0,
+      'video' => 0,
+      'webform' => 0,
+    ),
+    'advanced_view' => '--',
+    'advanced_view_args' => '',
+    'widget' => array(
+      'autocomplete_match' => 'contains',
+      'size' => '60',
+      'default_value' => array(
+        '0' => array(
+          'nid' => NULL,
+          '_error_element' => 'default_value_widget][field_story_celeb][0][nid][nid',
+        ),
+      ),
+      'default_value_php' => NULL,
+      'label' => 'Related Celebrity',
+      'weight' => '10',
+      'description' => '',
+      'type' => 'nodereference_autocomplete',
+      'module' => 'nodereference',
+    ),
+  );
+
   // Exported field: field_story_thumb
   $fields['story-field_story_thumb'] = array(
     'field_name' => 'field_story_thumb',
@@ -2794,6 +2883,7 @@ Yes',
   t('Link');
   t('Link Source');
   t('MT Entry ID');
+  t('Related Celebrity');
   t('Source');
   t('Thumbnail');
   t('Twitter Tag');
