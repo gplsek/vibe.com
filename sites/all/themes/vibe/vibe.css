@@ -1334,8 +1334,9 @@
  	filter:alpha(opacity=50);
   }
   
-  .latest_on_vibe_thumbnail {
-  	width: 100px;
+  .latest_on_vibe_thumbnail,
+#latest-in-celeb .views-field-field-story-thumb-fid {
+  	width: 150px;
   	float: left;
   	margin-left: 10px;
   	position: relative;
@@ -1413,7 +1414,8 @@
   }
   
  
-  .latest_on_vibe_post {
+  .latest_on_vibe_post,
+#latest-in-celeb .views-row {
 	
 	width: 520px;
   	margin-top: 10px;
@@ -1569,7 +1571,8 @@
   }
   
   
-  .content_title, .content_title a {
+  .content_title, .content_title a,
+.section-celebrities #latest-in-celeb #latest_on_vibe_posts .views-row .views-field-title a {
   	color: #000000;
 	font:Arial, Helvetica, sans-serif;
 	font-weight: bold;
@@ -1597,13 +1600,23 @@
   
 
   
-  .latest_on_vibe_info, .latest_on_vibe_info a {	  	
+  .latest_on_vibe_info, .latest_on_vibe_info a,
+#latest-in-celeb .views-field-created {	  	
 	font:Arial, Helvetica, sans-serif;
 	font-size: 10.5px;
 	line-height:14px;
 	color:#098ec1;
   	text-decoration:none;
   }
+
+#latest-in-celeb .views-field-created {
+  color: black;
+}
+
+.section-celebrities #latest-in-celeb #latest_on_vibe_posts .views-row .views-field-teaser a {
+  color: black;
+  text-decoration: underline;
+}
 
   
   #featured_photo_home {
@@ -1849,12 +1862,6 @@
 	margin-bottom: 10px;
 	border-bottom: 1px solid black;
 }
-
-#story_body:first-letter {
-  font-size: 2.5em;
-}
-
-
 
 #story_body p{
 	/*float: left;*/
