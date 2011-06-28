@@ -19936,7 +19936,7 @@ print $data->override_title;
         'strip_tags' => 0,
         'html' => 0,
       ),
-      'link_to_node' => 0,
+      'link_to_node' => 1,
       'label_type' => 'none',
       'format' => 'image-140x105_default',
       'multiple' => array(
@@ -19950,6 +19950,9 @@ print $data->override_title;
       'table' => 'node_data_field_celebrity_thumbnail',
       'field' => 'field_celebrity_thumbnail_fid',
       'relationship' => 'none',
+      'override' => array(
+        'button' => 'Override',
+      ),
     ),
     'title' => array(
       'label' => '',
