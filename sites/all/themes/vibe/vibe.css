@@ -1422,8 +1422,8 @@
   	border-bottom: 1px solid black;
   	padding-bottom: 10px;
 	height: auto !important;
-	
-  }
+  min-height: 100px;	
+}
   
   .latest_on_blogs_post {
 	background: url(images/VIBE_REDESIGN_BLOGFADE.gif) repeat-x bottom;
@@ -4923,6 +4923,10 @@ Celebrity Page Stuff
 
 #latest-in-celeb h2.pane-title {
   display: none;
+}
+
+#latest-in-celeb .views-field-teaser p {
+font-size: small;
 }
 
 /* Latest in Celeb pane - END */
