@@ -1336,7 +1336,7 @@
   
   .latest_on_vibe_thumbnail,
 #latest-in-celeb .views-field-field-story-thumb-fid {
-  	width: 150px;
+  	width: 110px;
   	float: left;
   	margin-left: 10px;
   	position: relative;
@@ -1553,7 +1553,8 @@
   	
   }
   
-  .latest_on_vibe_thumbnail_img img{
+  .latest_on_vibe_thumbnail_img img, 
+#latest-in-celeb .views-field-field-story-thumb-fid img {
   	border: 2px solid #3bb2e4;
   	width: 98px;
   	height: 98px; !important;

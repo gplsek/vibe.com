@@ -20398,7 +20398,7 @@ print $data->override_title;
       ),
       'link_to_node' => 0,
       'label_type' => 'none',
-      'format' => 'image-140x105_linked',
+      'format' => 'square-cropping_linked',
       'multiple' => array(
         'group' => TRUE,
         'multiple_number' => '',
