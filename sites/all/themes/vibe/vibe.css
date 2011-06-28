@@ -4857,11 +4857,12 @@ Celebrity Page Stuff
 	}
 
 #hottest-celeb-landing-block .views-row {
-    float: left;
-    height: 140px;
-    padding: 5px;
-    width: 160px;
-  }
+  float: left;
+  height: 140px;
+  padding: 5px;
+  text-align: center;
+  width: 160px;
+}
 
 #hottest-celeb-landing-block .views-row:hover {
 	background-color:#cae8f1
@@ -4894,8 +4895,14 @@ Celebrity Page Stuff
 /*celebrity A-Z Listing*/
 
 .section-celebrities #latest_on_vibe_posts h3 {
-	font-size:24px;
-	 margin-top: 20px;
+  font-size:24px;
+  margin-bottom: 0;
+  margin-top: 20px;
+}
+
+#alphabetical-list {
+  width:170px;
+  float:left
 }
 
 .section-celebrities #latest_on_vibe_posts .views-row a {
