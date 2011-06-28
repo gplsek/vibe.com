@@ -4909,6 +4909,12 @@ Celebrity Page Stuff
 	font-size:10px
 }
 
-
-
 /* Hotest Celeb block - End */
+
+/* Latest in Celeb pane - START */
+
+#latest-in-celeb h2.pane-title {
+  display: none;
+}
+
+/* Latest in Celeb pane - END */
