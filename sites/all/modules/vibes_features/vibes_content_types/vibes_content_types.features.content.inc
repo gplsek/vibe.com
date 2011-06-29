@@ -962,19 +962,20 @@ function vibes_content_types_content_default_fields() {
     'field_name' => 'field_celebrity_birth_date',
     'type_name' => 'celebrity',
     'display_settings' => array(
+      'weight' => '-4',
+      'parent' => '',
       'label' => array(
         'format' => 'above',
-        'exclude' => 0,
-      ),
-      '5' => array(
-        'format' => 'default',
-        'exclude' => 0,
       ),
       'teaser' => array(
         'format' => 'default',
         'exclude' => 0,
       ),
       'full' => array(
+        'format' => 'default',
+        'exclude' => 0,
+      ),
+      '5' => array(
         'format' => 'default',
         'exclude' => 0,
       ),
@@ -1028,19 +1029,20 @@ function vibes_content_types_content_default_fields() {
     'field_name' => 'field_celebrity_birth_place',
     'type_name' => 'celebrity',
     'display_settings' => array(
+      'weight' => '-3',
+      'parent' => '',
       'label' => array(
         'format' => 'above',
-        'exclude' => 0,
-      ),
-      '5' => array(
-        'format' => 'default',
-        'exclude' => 0,
       ),
       'teaser' => array(
         'format' => 'default',
         'exclude' => 0,
       ),
       'full' => array(
+        'format' => 'default',
+        'exclude' => 0,
+      ),
+      '5' => array(
         'format' => 'default',
         'exclude' => 0,
       ),
@@ -1094,19 +1096,20 @@ function vibes_content_types_content_default_fields() {
     'field_name' => 'field_celebrity_thumbnail',
     'type_name' => 'celebrity',
     'display_settings' => array(
+      'weight' => '-2',
+      'parent' => '',
       'label' => array(
         'format' => 'above',
-        'exclude' => 0,
-      ),
-      '5' => array(
-        'format' => 'image_plain',
-        'exclude' => 0,
       ),
       'teaser' => array(
         'format' => 'image_plain',
         'exclude' => 0,
       ),
       'full' => array(
+        'format' => 'celeb_node_linked',
+        'exclude' => 0,
+      ),
+      '5' => array(
         'format' => 'image_plain',
         'exclude' => 0,
       ),
@@ -1164,19 +1167,20 @@ function vibes_content_types_content_default_fields() {
     'field_name' => 'field_celebrity_twitter',
     'type_name' => 'celebrity',
     'display_settings' => array(
+      'weight' => '-1',
+      'parent' => '',
       'label' => array(
         'format' => 'above',
-        'exclude' => 0,
-      ),
-      '5' => array(
-        'format' => 'default',
-        'exclude' => 0,
       ),
       'teaser' => array(
         'format' => 'default',
         'exclude' => 0,
       ),
       'full' => array(
+        'format' => 'default',
+        'exclude' => 0,
+      ),
+      '5' => array(
         'format' => 'default',
         'exclude' => 0,
       ),
