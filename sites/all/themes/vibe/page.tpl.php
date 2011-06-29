@@ -287,6 +287,7 @@ Meebo('makeEverythingSharable', {shadow:'none'});
     <div id="main"><div id="main-inner" class="clear-block<?php if ($search_box || $primary_links || $secondary_links || $navbar) { print ' with-navbar'; } ?>">
 	  
 	  <div id="main-content">
+		<?php print $messages; ?>
 	  	<div class="content-inner">
 	  		<?php print $content; ?>
 	        <?php print $content_bottom ?>
