@@ -5,6 +5,20 @@
  */
 function vibes_content_types_imagecache_default_presets() {
   $items = array(
+    'celeb_node' => array(
+      'presetname' => 'celeb_node',
+      'actions' => array(
+        '0' => array(
+          'weight' => '0',
+          'module' => 'imagecache',
+          'action' => 'imagecache_resize',
+          'data' => array(
+            'width' => '310px',
+            'height' => '',
+          ),
+        ),
+      ),
+    ),
     'image-full-size' => array(
       'presetname' => 'image-full-size',
       'actions' => array(
