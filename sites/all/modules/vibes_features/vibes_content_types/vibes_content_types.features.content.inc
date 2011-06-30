@@ -1106,7 +1106,7 @@ function vibes_content_types_content_default_fields() {
         'exclude' => 0,
       ),
       'full' => array(
-        'format' => 'celeb_node_linked',
+        'format' => 'w310_default',
         'exclude' => 0,
       ),
       '5' => array(

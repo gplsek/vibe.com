@@ -5,20 +5,6 @@
  */
 function vibes_content_types_imagecache_default_presets() {
   $items = array(
-    'celeb_node' => array(
-      'presetname' => 'celeb_node',
-      'actions' => array(
-        '0' => array(
-          'weight' => '0',
-          'module' => 'imagecache',
-          'action' => 'imagecache_resize',
-          'data' => array(
-            'width' => '310px',
-            'height' => '',
-          ),
-        ),
-      ),
-    ),
     'image-full-size' => array(
       'presetname' => 'image-full-size',
       'actions' => array(
@@ -44,6 +30,21 @@ function vibes_content_types_imagecache_default_presets() {
           'data' => array(
             'width' => '100',
             'height' => '100',
+          ),
+        ),
+      ),
+    ),
+    'w310' => array(
+      'presetname' => 'w310',
+      'actions' => array(
+        '0' => array(
+          'weight' => '0',
+          'module' => 'imagecache',
+          'action' => 'imagecache_scale',
+          'data' => array(
+            'width' => '310px',
+            'height' => '',
+            'upscale' => 0,
           ),
         ),
       ),
