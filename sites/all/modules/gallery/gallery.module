@@ -13,7 +13,6 @@ function gallery_menu() {
 		'access arguments' => array('edit gallery'),
 	);
 */
-
 	//Add an Images tab to the node/%node/edit page and use gallery_access with custom $op to prevent it from showing up on other node forms	
 	$items['node/%node/images'] = array(
 		'title' => 'Images',		
@@ -627,7 +626,7 @@ function gallery_load($node) {
 	
 	$images = array();
 	
-	while($row = db_fetch_object($result)) {		
+	while($row = db_fetch_object($result)) {
 		
 		$image = node_load($row->image_nid);
 		
@@ -643,10 +642,11 @@ function gallery_load($node) {
 			$img = (object)$img;			
 			
 			$images[] = $img;
-		}	
-	}
+		}
+	}	
 	
 	$info['gallery_images'] = $images;
+	$node->thumbnail = $images[0]->files[IMAGE_THUMBNAIL];	
 	
 	return $info;
 }
@@ -691,7 +691,8 @@ function gallery_node_info() {
 			'module' => 'gallery',
 			'description' => t('Create image galleries.'),
 			'title_label' => t('Gallery Name'),
-			'has_body' => FALSE,
+			'has_body' => TRUE,
+			'body_label' => t('Teaser'),
 		),
 	);
 }
@@ -702,21 +703,21 @@ function gallery_node_info() {
 function gallery_form(&$node, $form_state) {
 	$type = node_get_types('type', $node);
 	
-	// Title.
-	$form['title'] = array(
-		'#type' => 'textfield',
-		'#title' => check_plain($type->title_label),
-		'#default_value' => $node->title,
-		'#required' => FALSE,
-		'#weight' => 0,
-	);	
+	if ($type->has_title) {
+		$form['title'] = array(
+			'#type' => 'textfield',
+			'#title' => check_plain($type->title_label),
+			'#default_value' => $node->title,
+			'#required' => FALSE,
+			'#weight' => 0,
+		);	
+	}
 	
-	if($node->nid) {
-		$form['images'] = array(
-			'#value' => l(t('Manage Images'), 'gallery/'.$node->nid.'/images'),
-		);
-	} 
-	
+	if ($type->has_body) {		
+    	$form['body_field'] = node_body_field($node, $type->body_label, $type->min_word_count);
+  	}
+  	
+  		
 	return $form;
 }
 
