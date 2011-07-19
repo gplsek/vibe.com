@@ -54,6 +54,29 @@ function vibes_get_subscribe_popup(){
 }
 
 function vibes_popup_ajax_handler(){
-  $data = drupal_http_request('https://secure.palmcoastd.com/pcd/eSv?iMagId=26601&i4Ky=ISP1');
-  echo  '<div id="vibe-overlay">'.$data->data.'</div>';
+  $headers = apache_request_headers();
+  $ip = $headers['X-Forwarded-For'];
+  $known_ip = vibes_popup_check_ip($ip);
+  if($known_ip){
+    return drupal_set_header('HTTP/1.1 404 Not Found');
+  }else{
+    echo  '<iframe style="width:543px;height:547px;overflow:hidden;border:none;" id="vibe-overlay" src="https://secure.palmcoastd.com/pcd/eSv?iMagId=26601&i4Ky=ISP1"></iframe>';
+    //return drupal_set_header('HTTP/1.1 202 Found');
+    //$data = drupal_http_request('https://secure.palmcoastd.com/pcd/eSv?iMagId=26601&i4Ky=ISP1');
+    //';
+  }
+  
+  
+}
+
+function vibes_popup_check_ip($ip = NULL){
+  $expire = time()-20;
+  $count = db_result(db_query("SELECT COUNT(ip) FROM {vibes_popup} WHERE ip='%s' AND expire >=%d",$ip,$expire));
+  if($count){
+    return TRUE;
+  }else{
+    db_query("REPLACE INTO {vibes_popup} VALUE('%s',%d)",$ip,time());
+    return FALSE;
+  }
+  
 }

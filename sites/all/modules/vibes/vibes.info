@@ -1,4 +1,4 @@
 name = Vibes Utilities
 description = "Utility module that contains Vibes.com related functions"
 core = 6.x
-version = "6.x-2.1"
+version = "6.x-2.2"
