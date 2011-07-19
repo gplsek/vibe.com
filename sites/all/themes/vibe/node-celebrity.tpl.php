@@ -55,7 +55,10 @@
  $author = $matches[1];
  
  $date = date("n-j-Y g:i a", strtotime(str_replace(" - ", " ", $date)));
+ 
+// dsm($node);
 ?>
+<<<<<<< HEAD
 
 
 <div id="celeb-title"><?php print $node->title; ?></div> 
@@ -74,6 +77,12 @@
                     include("sites/all/themes/vibe/tweet_meme.php");
                 ?>          
             </div>
+=======
+<div id="celeb-title"><?php print $node->title; ?></div>
+<div id="social_network">
+        <div id="social_wrapper">
+            
+>>>>>>> 169ca9e664dd6d470e72ddda5da5bad8593022c5
             <script>$('.connect_widget div.connect_confirmation_cell').css("display","none");</script>
             <div id="fbrecommend">
             <iframe id="iframe_like" name="fbLikeIFrame_0" class="social-iframe" scrolling="no" frameborder="0" src="http://www.facebook.com/widgets/like.php?width=100&amp;show_faces=1&amp;layout=standard&amp;colorscheme=light&amp;href=<?php $curr_url = check_plain("http://" .$_SERVER['HTTP_HOST'] .$node_url); echo $curr_url; ?>" width="100%" height="30"></iframe>
@@ -83,6 +92,11 @@
                 //print $block['content'];
             ?>
         	</div>
+	    <div id="tweetshare">
+                <?php
+                    include("sites/all/themes/vibe/tweet_meme.php");
+                ?>          
+            </div>
        </div>
        <div class="clear-block"></div>
 </div>
@@ -93,11 +107,25 @@
     <div id="story_image_celeb" style="float:left;"><?php print $node->field_celebrity_thumbnail[0]["view"]?></div>
   <?php } ?>
   <div id="story_data_celeb" style="float:left;margin-left:10px;">
+<<<<<<< HEAD
     <p><label><strong>NAME:</strong></label><br/><?php print $node->title;?></p>
     <p><label><strong>DATE OF BIRTH</strong><br/></label><?php print $node->field_celebrity_birth_date[0]['view'];?></p>
     <p><label><strong>BIRTH PLACE:</strong></label><br/><?php print $node->field_celebrity_birth_place[0]['view'];?></p>
+=======
+     <p><label><strong>NAME</strong></label><br/><?php print $node->title;?></p>
+     <p><label><strong>DATE OF BIRTH</strong><br/></label><?php print $node->field_celebrity_birth_date[0]['view'];?></p>
+     <p><label><strong>BIRTH PLACE</strong></label><br/><?php print $node->field_celebrity_birth_place[0]['view'];?></p>
+>>>>>>> 169ca9e664dd6d470e72ddda5da5bad8593022c5
   </div>
  </div>
  <div class="clear-block"></div>
   <div id="story_body"><?php print preg_replace("/&lt;!--.*endif.*?-->/","",preg_replace("/&lt;!--/","<!--",$node->content["body"]["#value"]))?></div>
+<<<<<<< HEAD
 	<div id="story_pages"><?php print $node->paging; ?></div> 
+=======
+
+
+
+
+
+>>>>>>> 169ca9e664dd6d470e72ddda5da5bad8593022c5
