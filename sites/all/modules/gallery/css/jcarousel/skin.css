@@ -64,31 +64,18 @@
  */
 .jcarousel-skin-tango .jcarousel-next-horizontal {
     position: absolute;
-<<<<<<< HEAD
     top: 30px;
     right: 5px;
     width: 32px;
     height: 55px;
     cursor: pointer;
     background: transparent url(right-arrow.png) no-repeat 0 0;
-=======
-    top: 43px;
-    right: 5px;
-    width: 32px;
-    height: 32px;
-    cursor: pointer;
-    background: transparent url(next-horizontal.png) no-repeat 0 0;
->>>>>>> 257034e7aea375f788404eae0d11628479f16c2c
 }
 
 .jcarousel-skin-tango .jcarousel-direction-rtl .jcarousel-next-horizontal {
     left: 5px;
     right: auto;
-<<<<<<< HEAD
     background-image: url(right-arrow.png);
-=======
-    background-image: url(prev-horizontal.png);
->>>>>>> 257034e7aea375f788404eae0d11628479f16c2c
 }
 
 .jcarousel-skin-tango .jcarousel-next-horizontal:hover,
@@ -110,31 +97,18 @@
 
 .jcarousel-skin-tango .jcarousel-prev-horizontal {
     position: absolute;
-<<<<<<< HEAD
     top: 30px;
     left: 5px;
     width: 32px;
     height: 55px;
     cursor: pointer;
     background: transparent url(left-arrow.png) no-repeat 0 0;
-=======
-    top: 43px;
-    left: 5px;
-    width: 32px;
-    height: 32px;
-    cursor: pointer;
-    background: transparent url(prev-horizontal.png) no-repeat 0 0;
->>>>>>> 257034e7aea375f788404eae0d11628479f16c2c
 }
 
 .jcarousel-skin-tango .jcarousel-direction-rtl .jcarousel-prev-horizontal {
     left: auto;
     right: 5px;
-<<<<<<< HEAD
     background-image: url(left-arrow.png);
-=======
-    background-image: url(next-horizontal.png);
->>>>>>> 257034e7aea375f788404eae0d11628479f16c2c
 }
 
 .jcarousel-skin-tango .jcarousel-prev-horizontal:hover, 
@@ -212,8 +186,8 @@
 }
 
 .jcarousel-skin-tango .jcarousel-container-horizontal {
-    width: 85%;
-    margin: auto;
+	width: 425px;
+	margin: auto;
 }
 
 .jcarousel-skin-tango .jcarousel-clip-horizontal {

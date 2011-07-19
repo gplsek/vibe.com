@@ -21,6 +21,7 @@ Drupal.behaviors.gallery = function(context) {
 }
 
 function gallery_jcarousel_init() {	
+	$('#gallery-thumbnails').css('visibility', 'visible');
 	
 	$('#gallery-content').hide('fast', function() {		
 		$('#gallery-content').load('/gallery/ajax/image/'+Drupal.settings.gallery.images[0], function() {
@@ -58,6 +59,7 @@ function gallery_load_image(nid) {
 		$(this).load('/gallery/ajax/image/'+nid, function() {
 			$('#gallery-loader').fadeOut('fast', function() {
 				$('#gallery-content').fadeIn('slow');
+				
 				//update ads
 				gallery_update_ads();
 			});			
@@ -67,6 +69,12 @@ function gallery_load_image(nid) {
 }
 
 function gallery_update_ads() {
+	$('.gallery-refresh').each(function() {
+		var ad = $(this).html();
+		$(this).empty();
+		$(this).append(ad);
+	});	
+/*
    var neword = Math.round(Math.random() * 10000000000);
    $('iframe').each(function(i) {
         // Added additional check to prevent interference
@@ -95,6 +103,7 @@ function gallery_update_ads() {
        //console.log(newurl);
         }
    });
+*/
 }
 
 

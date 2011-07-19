@@ -5,7 +5,6 @@
  */
 function gallery_menu() {
 	$items = array();
-	
 /*
 	//future gallery administration page
 	$items['admin/content/gallery/galleries'] = array(
@@ -77,7 +76,18 @@ function gallery_menu() {
 		'type' => MENU_CALLBACK,
 	);
 	
+	$items['joe/test'] = array(
+		'page callback' => '_joe_test',
+		'access arguments' => array('access content'),
+		'type' => MENU_CALLBACK,
+	);
+	
 	return $items;
+}
+
+function _joe_test() {
+	
+	return "";
 }
 
 //Image upload function that processes image files uploaded from node/%node/images/upload
@@ -616,7 +626,7 @@ function gallery_load($node) {
 	
 	$images = array();
 	
-	while($row = db_fetch_object($result)) {		
+	while($row = db_fetch_object($result)) {
 		
 		$image = node_load($row->image_nid);
 		
@@ -632,10 +642,11 @@ function gallery_load($node) {
 			$img = (object)$img;			
 			
 			$images[] = $img;
-		}	
-	}
+		}
+	}	
 	
 	$info['gallery_images'] = $images;
+	$node->thumbnail = $images[0]->files[IMAGE_THUMBNAIL];	
 	
 	return $info;
 }
@@ -680,7 +691,8 @@ function gallery_node_info() {
 			'module' => 'gallery',
 			'description' => t('Create image galleries.'),
 			'title_label' => t('Gallery Name'),
-			'has_body' => FALSE,
+			'has_body' => TRUE,
+			'body_label' => t('Teaser'),
 		),
 	);
 }
@@ -691,21 +703,21 @@ function gallery_node_info() {
 function gallery_form(&$node, $form_state) {
 	$type = node_get_types('type', $node);
 	
-	// Title.
-	$form['title'] = array(
-		'#type' => 'textfield',
-		'#title' => check_plain($type->title_label),
-		'#default_value' => $node->title,
-		'#required' => FALSE,
-		'#weight' => 0,
-	);	
+	if ($type->has_title) {
+		$form['title'] = array(
+			'#type' => 'textfield',
+			'#title' => check_plain($type->title_label),
+			'#default_value' => $node->title,
+			'#required' => FALSE,
+			'#weight' => 0,
+		);	
+	}
 	
-	if($node->nid) {
-		$form['images'] = array(
-			'#value' => l(t('Manage Images'), 'gallery/'.$node->nid.'/images'),
-		);
-	} 
-	
+	if ($type->has_body) {		
+    	$form['body_field'] = node_body_field($node, $type->body_label, $type->min_word_count);
+  	}
+  	
+  		
 	return $form;
 }
 
@@ -786,6 +798,7 @@ function gallery_preprocess_gallery_body(&$vars) {
 			$body .= '<span class="gallery-control" id="gallery-control-prev">'.l('previous ', 'node/'.$node->nid).'</span>';
 			$body .= '<span class="gallery-control" id="gallery-control-next">'.l('next', 'node/'.$node->nid).'</span>';
 		$body .= '</div>';
+		$body .= '<div class="clear-block"></div>';
 		$body .= '<div id="gallery-loader"><div id="gallery-loader-inner"><div id="gallery-loader-image"></div></div></div>';
 		$body .= '<div id="gallery-content">';	
 		$body .= '</div>';

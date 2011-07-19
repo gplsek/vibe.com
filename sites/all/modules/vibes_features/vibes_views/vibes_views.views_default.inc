@@ -19936,7 +19936,7 @@ print $data->override_title;
         'strip_tags' => 0,
         'html' => 0,
       ),
-      'link_to_node' => 0,
+      'link_to_node' => 1,
       'label_type' => 'none',
       'format' => 'image-140x105_default',
       'multiple' => array(
@@ -19950,6 +19950,9 @@ print $data->override_title;
       'table' => 'node_data_field_celebrity_thumbnail',
       'field' => 'field_celebrity_thumbnail_fid',
       'relationship' => 'none',
+      'override' => array(
+        'button' => 'Override',
+      ),
     ),
     'title' => array(
       'label' => '',
@@ -20199,48 +20202,6 @@ print $data->override_title;
         'button' => 'Use default',
       ),
     ),
-    'tid' => array(
-      'label' => 'All terms',
-      'alter' => array(
-        'alter_text' => 0,
-        'text' => '',
-        'make_link' => 0,
-        'path' => '',
-        'link_class' => '',
-        'alt' => '',
-        'prefix' => '',
-        'suffix' => '',
-        'help' => '',
-        'trim' => 0,
-        'max_length' => '',
-        'word_boundary' => 1,
-        'ellipsis' => 1,
-        'strip_tags' => 0,
-        'html' => 0,
-      ),
-      'type' => 'separator',
-      'separator' => ', ',
-      'empty' => '',
-      'link_to_taxonomy' => 1,
-      'limit' => 1,
-      'vids' => array(
-        '5' => 5,
-        '15' => 0,
-        '16' => 0,
-        '12' => 0,
-        '13' => 0,
-        '6' => 0,
-        '14' => 0,
-      ),
-      'exclude' => 0,
-      'id' => 'tid',
-      'table' => 'term_node',
-      'field' => 'tid',
-      'override' => array(
-        'button' => 'Use default',
-      ),
-      'relationship' => 'none',
-    ),
     'teaser' => array(
       'label' => 'Teaser',
       'alter' => array(
@@ -20416,7 +20377,7 @@ print $data->override_title;
   $handler = $view->new_display('panel_pane', 'Content pane - Latest in Celeb', 'panel_pane_1');
   $handler->override_option('relationships', array());
   $handler->override_option('fields', array(
-    'field_celebrity_thumbnail_fid' => array(
+    'field_story_thumb_fid' => array(
       'label' => '',
       'alter' => array(
         'alter_text' => 0,
@@ -20437,7 +20398,7 @@ print $data->override_title;
       ),
       'link_to_node' => 0,
       'label_type' => 'none',
-      'format' => 'image-140x105_default',
+      'format' => 'square-cropping_linked',
       'multiple' => array(
         'group' => TRUE,
         'multiple_number' => '',
@@ -20445,9 +20406,12 @@ print $data->override_title;
         'multiple_reversed' => FALSE,
       ),
       'exclude' => 0,
-      'id' => 'field_celebrity_thumbnail_fid',
-      'table' => 'node_data_field_celebrity_thumbnail',
-      'field' => 'field_celebrity_thumbnail_fid',
+      'id' => 'field_story_thumb_fid',
+      'table' => 'node_data_field_story_thumb',
+      'field' => 'field_story_thumb_fid',
+      'override' => array(
+        'button' => 'Use default',
+      ),
       'relationship' => 'none',
     ),
     'title' => array(
@@ -20479,55 +20443,13 @@ print $data->override_title;
         'button' => 'Use default',
       ),
     ),
-    'tid' => array(
-      'label' => '',
+    'view_node' => array(
+      'label' => 'Link',
       'alter' => array(
         'alter_text' => 0,
-        'text' => '',
-        'make_link' => 0,
-        'path' => '',
-        'link_class' => '',
-        'alt' => '',
-        'prefix' => '',
-        'suffix' => '',
-        'help' => '',
-        'trim' => 0,
-        'max_length' => '',
-        'word_boundary' => 1,
-        'ellipsis' => 1,
-        'strip_tags' => 0,
-        'html' => 0,
-      ),
-      'type' => 'separator',
-      'separator' => ', ',
-      'empty' => '',
-      'link_to_taxonomy' => 1,
-      'limit' => 1,
-      'vids' => array(
-        '5' => 5,
-        '15' => 0,
-        '16' => 0,
-        '12' => 0,
-        '13' => 0,
-        '6' => 0,
-        '14' => 0,
-      ),
-      'exclude' => 0,
-      'id' => 'tid',
-      'table' => 'term_node',
-      'field' => 'tid',
-      'override' => array(
-        'button' => 'Use default',
-      ),
-      'relationship' => 'none',
-    ),
-    'node_link' => array(
-      'label' => '',
-      'alter' => array(
-        'alter_text' => 1,
         'text' => 'READ MORE',
-        'make_link' => 1,
-        'path' => '[node_link]',
+        'make_link' => 0,
+        'path' => '[view_node]',
         'link_class' => '',
         'alt' => '',
         'prefix' => '',
@@ -20540,11 +20462,11 @@ print $data->override_title;
         'strip_tags' => 0,
         'html' => 0,
       ),
-      'teaser' => 0,
+      'text' => 'READ MORE',
       'exclude' => 1,
-      'id' => 'node_link',
-      'table' => 'comments',
-      'field' => 'node_link',
+      'id' => 'view_node',
+      'table' => 'node',
+      'field' => 'view_node',
       'override' => array(
         'button' => 'Use default',
       ),
@@ -20554,7 +20476,7 @@ print $data->override_title;
       'label' => '',
       'alter' => array(
         'alter_text' => 1,
-        'text' => '[teaser] >> [node_link]',
+        'text' => '[teaser] <b>>> [view_node]</b>',
         'make_link' => 0,
         'path' => '',
         'link_class' => '',
@@ -20597,8 +20519,8 @@ print $data->override_title;
         'strip_tags' => 0,
         'html' => 0,
       ),
-      'date_format' => 'large',
-      'custom_date_format' => '',
+      'date_format' => 'custom',
+      'custom_date_format' => 'M jS, Y',
       'exclude' => 0,
       'id' => 'created',
       'table' => 'node',
@@ -20720,7 +20642,7 @@ print $data->override_title;
       'relationship' => 'none',
     ),
   ));
-  $handler->override_option('title', 'Latest in %1');
+  $handler->override_option('title', '%1');
   $handler->override_option('pane_title', '');
   $handler->override_option('pane_description', '');
   $handler->override_option('pane_category', array(

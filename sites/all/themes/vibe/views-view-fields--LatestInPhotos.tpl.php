@@ -27,7 +27,7 @@
 <?//comment_count, created?>
 <div class="latest_on_vibe_post">
 	<div class="latest_on_vibe_thumbnail">
-		<?php $thumbnail = ($fields["field_story_thumb_fid"] && $fields["field_story_thumb_fid"]->content) ? $fields["field_story_thumb_fid"] : $fields["field_img_src_fid"]?>
+		<?php $thumbnail = ($fields["type"]->raw == 'gallery') ? $fields["field_story_thumb_fid"] : (($fields["field_story_thumb_fid"] && $fields["field_story_thumb_fid"]->content) ? $fields["field_story_thumb_fid"] : $fields["field_img_src_fid"];) ?>
 		<div class="latest_on_vibe_thumbnail_img"><?php print $thumbnail->content;?></div>
 		<!--  div class="latest_on_vibe_icon"><img src='<?php print $img_icon;?>' border='0'></div -->
 	</div>

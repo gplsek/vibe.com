@@ -34,6 +34,21 @@ function vibes_content_types_imagecache_default_presets() {
         ),
       ),
     ),
+    'w310' => array(
+      'presetname' => 'w310',
+      'actions' => array(
+        '0' => array(
+          'weight' => '0',
+          'module' => 'imagecache',
+          'action' => 'imagecache_scale',
+          'data' => array(
+            'width' => '310px',
+            'height' => '',
+            'upscale' => 0,
+          ),
+        ),
+      ),
+    ),
   );
   return $items;
 }

@@ -1334,12 +1334,17 @@
  	filter:alpha(opacity=50);
   }
   
-  .latest_on_vibe_thumbnail {
+  .latest_on_vibe_thumbnail,
+#latest-in-celeb .views-field-field-story-thumb-fid {
   	width: 100px;
   	float: left;
   	margin-left: 10px;
   	position: relative;
   }
+
+.node-type-celebrity #latest-in-celeb .views-field-field-story-thumb-fid {
+  width: 110px;
+}
   
   .latest_on_blogs_vibe_thumbnail{
   	width: 100px;
@@ -1413,15 +1418,16 @@
   }
   
  
-  .latest_on_vibe_post {
+  .latest_on_vibe_post,
+#latest-in-celeb .views-row {
 	
 	width: 520px;
   	margin-top: 10px;
   	border-bottom: 1px solid black;
   	padding-bottom: 10px;
 	height: auto !important;
-	
-  }
+  min-height: 100px;	
+}
   
   .latest_on_blogs_post {
 	background: url(images/VIBE_REDESIGN_BLOGFADE.gif) repeat-x bottom;
@@ -1551,7 +1557,8 @@
   	
   }
   
-  .latest_on_vibe_thumbnail_img img{
+  .latest_on_vibe_thumbnail_img img, 
+#latest-in-celeb .views-field-field-story-thumb-fid img {
   	border: 2px solid #3bb2e4;
   	width: 98px;
   	height: 98px; !important;
@@ -1569,7 +1576,8 @@
   }
   
   
-  .content_title, .content_title a {
+  .content_title, .content_title a,
+.section-celebrities #latest-in-celeb #latest_on_vibe_posts .views-row .views-field-title a {
   	color: #000000;
 	font:Arial, Helvetica, sans-serif;
 	font-weight: bold;
@@ -1597,13 +1605,23 @@
   
 
   
-  .latest_on_vibe_info, .latest_on_vibe_info a {	  	
+  .latest_on_vibe_info, .latest_on_vibe_info a,
+#latest-in-celeb .views-field-created {	  	
 	font:Arial, Helvetica, sans-serif;
 	font-size: 10.5px;
 	line-height:14px;
 	color:#098ec1;
   	text-decoration:none;
   }
+
+#latest-in-celeb .views-field-created {
+  color: black;
+}
+
+.section-celebrities #latest-in-celeb #latest_on_vibe_posts .views-row .views-field-teaser a {
+  color: black;
+  text-decoration: underline;
+}
 
   
   #featured_photo_home {
@@ -1849,12 +1867,6 @@
 	margin-bottom: 10px;
 	border-bottom: 1px solid black;
 }
-
-#story_body:first-letter {
-  font-size: 2.5em;
-}
-
-
 
 #story_body p{
 	/*float: left;*/
@@ -4849,11 +4861,12 @@ Celebrity Page Stuff
 	}
 
 #hottest-celeb-landing-block .views-row {
-    float: left;
-    height: 140px;
-    padding: 5px;
-    width: 160px;
-  }
+  float: left;
+  height: 140px;
+  padding: 5px;
+  text-align: center;
+  width: 160px;
+}
 
 #hottest-celeb-landing-block .views-row:hover {
 	background-color:#cae8f1
@@ -4886,8 +4899,14 @@ Celebrity Page Stuff
 /*celebrity A-Z Listing*/
 
 .section-celebrities #latest_on_vibe_posts h3 {
-	font-size:24px;
-	 margin-top: 20px;
+  font-size:24px;
+  margin-bottom: 0;
+  margin-top: 20px;
+}
+
+#alphabetical-list {
+  width:170px;
+  float:left
 }
 
 .section-celebrities #latest_on_vibe_posts .views-row a {
@@ -4909,12 +4928,25 @@ Celebrity Page Stuff
 	font-size:10px
 }
 
+<<<<<<< HEAD
 #vibe-overlay{
   position:absolute;
   top:50px;
   z-index: 1000;
   left: 50%;
   margin-left:-270.5px;
+=======
+/* Hotest Celeb block - End */
+
+/* Latest in Celeb pane - START */
+
+#latest-in-celeb h2.pane-title {
+  display: none;
 }
 
-/* Hotest Celeb block - End */
+#latest-in-celeb .views-field-teaser p {
+font-size: small;
+>>>>>>> 717f219f83c737c98de0b69f0887b118298dd5c7
+}
+
+/* Latest in Celeb pane - END */

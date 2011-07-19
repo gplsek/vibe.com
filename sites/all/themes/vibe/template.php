@@ -38,6 +38,7 @@ if ($GLOBALS['theme'] == 'vibe') { // If we're in the main theme
  * Implements HOOK_theme().
  */
 function vibe_theme(&$existing, $type, $theme, $path) {
+
   if (!db_is_active()) {
        return array();
   }
@@ -195,8 +196,12 @@ function vibe_menu_local_tasks() {
  *   The name of the template being rendered ("page" in this case.)
  */
 function vibe_preprocess_page(&$vars, $hook) {
-  
-	$vars['head_title'] = str_replace('Vibe','VIBE',$vars['head_title']);
+  drupal_set_html_head('<script type="text/javascript" src="http://www.vibe.com/mobify/redirect.js"></script>');
+  drupal_set_html_head('<script type="text/javascript">try{_mobify("http://www.vibe.com/");} catch(err) {};</script>');
+  //drupal_set_html_head('<script src="http://syn.verticalacuity.com/web/js/vaSyn.js" type="text/javascript"></script>');
+  drupal_set_html_head('<script src="http://scripts.verticalacuity.com/vat/mon/vt.js" type="text/javascript"></script>');
+  $vars['head'] = drupal_get_html_head();
+  $vars['head_title'] = str_replace('Vibe','VIBE',$vars['head_title']);
   // Add conditional stylesheets.
   if (!module_exists('conditional_styles')) {
     $vars['styles'] .= $vars['conditional_styles'] = variable_get('conditional_styles_' . $GLOBALS['theme'], '');
