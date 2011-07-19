@@ -4930,13 +4930,26 @@ Celebrity Page Stuff
 }
 
 
-#vibe-overlay{
+#vibe-overlay-wrapper{
   position:fixed;
   top:50px;
   z-index: 1000;
   left: 50%;
   margin-left:-270.5px;
   display: inline;
+  width:543px;
+  height:574px;
+}
+
+#vibe-overlay-wrapper #vibe-overlay-close{
+    color: #FFFFFF;
+    float: right;
+    font-family: Arial;
+    font-size: 11px;
+    position: relative;
+    right: 2px;
+    top: 20px;
+    background: #E06028;
 }
 /* Hotest Celeb block - End */
 

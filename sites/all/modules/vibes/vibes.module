@@ -15,7 +15,7 @@
     'title'=> 'Vibe Popup',
     'type' => MENU_CALLBACK,
     'access callback' => TRUE,
-    'page callback' => 'vibes_popup_ajax_handler', 
+    'page callback' => 'vibes_popup_get_contents', 
    );
    return $items;
  }
@@ -49,28 +49,39 @@ function vibes_block($op = 'list', $delta = 0, $edit = array()){
 
 
 function vibes_get_subscribe_popup(){
+  $fr = drupal_get_path('module','vibes').'/js/vibes.frameready.js';
   $js = drupal_get_path('module','vibes').'/js/vibes_popup.js';
+  drupal_add_js($fr);
   drupal_add_js($js);
 }
 
 function vibes_popup_ajax_handler(){
+  global $base_url;
   $headers = apache_request_headers();
-  $ip = $headers['X-Forwarded-For'];
+  if($$headers['X-Forwarded-For'])
+    $ip = $headers['X-Forwarded-For'];
+  else
+    $ip = $_SERVER['REMOTE_ADDRESS'];
   $known_ip = vibes_popup_check_ip($ip);
   if($known_ip){
     return drupal_set_header('HTTP/1.1 404 Not Found');
   }else{
-    echo  '<iframe style="width:543px;height:547px;overflow:hidden;border:none;" id="vibe-overlay" src="https://secure.palmcoastd.com/pcd/eSv?iMagId=26601&i4Ky=ISP1"></iframe>';
+    //$data = drupal_http_request('https://secure.palmcoastd.com/pcd/eSv?iMagId=26601&i4Ky=ISP1');
+    $output =  '<div id="vibe-overlay-wrapper">';
+    $output.=   '<div id="vibe-overlay-close">CLOSE WINDOW[X]</div>';
+    $output.=   '<iframe style="width:543px;height:547px;overflow:hidden;border:none;" id="vibe-overlay" src="https://secure.palmcoastd.com/pcd/eSv?iMagId=26601&i4Ky=ISP1"></iframe>';
+    $output.=  '</div>';
     //return drupal_set_header('HTTP/1.1 202 Found');
     //$data = drupal_http_request('https://secure.palmcoastd.com/pcd/eSv?iMagId=26601&i4Ky=ISP1');
     //';
+    echo $output;
   }
   
   
 }
 
 function vibes_popup_check_ip($ip = NULL){
-  $expire = time()-20;
+  $expire = time()-1;
   $count = db_result(db_query("SELECT COUNT(ip) FROM {vibes_popup} WHERE ip='%s' AND expire >=%d",$ip,$expire));
   if($count){
     return TRUE;
@@ -79,4 +90,9 @@ function vibes_popup_check_ip($ip = NULL){
     return FALSE;
   }
   
+}
+
+function vibes_popup_get_contents(){
+  $data = drupal_http_request('https://secure.palmcoastd.com/pcd/eSv?iMagId=26601&i4Ky=ISP1');
+  echo $data->data;
 }
