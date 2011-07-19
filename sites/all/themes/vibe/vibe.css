@@ -4909,6 +4909,12 @@ Celebrity Page Stuff
 	font-size:10px
 }
 
-
+#vibe-overlay{
+  position:absolute;
+  top:50px;
+  z-index: 1000;
+  left: 50%;
+  margin-left:-270.5px;
+}
 
 /* Hotest Celeb block - End */
