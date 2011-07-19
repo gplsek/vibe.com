@@ -4928,14 +4928,15 @@ Celebrity Page Stuff
 	font-size:10px
 }
 
-<<<<<<< HEAD
+
 #vibe-overlay{
-  position:absolute;
+  position:fixed;
   top:50px;
   z-index: 1000;
   left: 50%;
   margin-left:-270.5px;
-=======
+  display: inline;
+}
 /* Hotest Celeb block - End */
 
 /* Latest in Celeb pane - START */
@@ -4946,7 +4947,6 @@ Celebrity Page Stuff
 
 #latest-in-celeb .views-field-teaser p {
 font-size: small;
->>>>>>> 717f219f83c737c98de0b69f0887b118298dd5c7
 }
 
 /* Latest in Celeb pane - END */
