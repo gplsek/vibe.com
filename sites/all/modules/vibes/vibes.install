@@ -1,0 +1,25 @@
+<?php
+
+function vibes_schema(){
+$schema['vibes_popup'] = array(
+    'description' => 'The base table for nodes.',
+    'fields' => array(
+      'ip' => array(
+        'description' => 'The primary identifier for a node.',
+        'type' => 'varchar',
+        'length'=>255
+       ),
+      'timestamp' => array(
+        'description' => 'The current {node_revisions}.vid version identifier.',
+        'type' => 'int',
+        'unsigned' => TRUE,
+        'not null' => TRUE,
+        'default' => 0),
+      ),
+    );
+  return $schema;
+}
+
+function vibes_install(){
+  drupal_install_schema('vibes');
+}
