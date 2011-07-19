@@ -197,7 +197,7 @@ function vibe_menu_local_tasks() {
  */
 function vibe_preprocess_page(&$vars, $hook) {
   //drupal_set_html_head('<script src="http://syn.verticalacuity.com/web/js/vaSyn.js" type="text/javascript"></script>');
-  drupal_set_html_head('<script src="http://scripts.verticalacuity.com/vat/mon/vt.js" type="text/javascript"></script>')
+  drupal_set_html_head('<script src="http://scripts.verticalacuity.com/vat/mon/vt.js" type="text/javascript"></script>');
   drupal_set_html_head('<script type="text/javascript" src="http://m.vibe.com/mobify/redirect.js"></script>');
   drupal_set_html_head('<script type="text/javascript">try{_mobify("http://m.vibe.com/");} catch(err) {};</script>');
   $vars['head'] = drupal_get_html_head();
