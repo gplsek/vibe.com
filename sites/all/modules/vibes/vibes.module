@@ -1,4 +1,25 @@
 <?php
+
+/**
+ * Implementation of hook_menu
+ */
+
+ function vibes_menu(){
+   $items['vibespopup/js'] = array(
+    'title'=> 'Vibe Popup Ajax Handler',
+    'type' => MENU_CALLBACK,
+    'access callback' => TRUE,
+    'page callback' => 'vibes_popup_ajax_handler', 
+   );
+   $items['vibespopup/js/getpopup'] = array(
+    'title'=> 'Vibe Popup',
+    'type' => MENU_CALLBACK,
+    'access callback' => TRUE,
+    'page callback' => 'vibes_popup_ajax_handler', 
+   );
+   return $items;
+ }
+ 
 /* 
  * To change this template, choose Tools | Templates
  * and open the template in the editor.
@@ -6,19 +27,19 @@
 
 function vibes_block($op = 'list', $delta = 0, $edit = array()){
   if ($op == 'list') {
-    $blocks['vibes_alphabetical_index'] = array(
-      'info' => t('Orders celebrities alphabetical'),
+     $blocks['vibes_subscribe_popup'] = array(
+      'info' => t('VIBE Subscription Popup'),
     );
 
     return $blocks;
   }
   else if ($op == 'view') {
     switch ($delta) {
-      case 'vibes_alphabetical_index':
+      case 'vibes_subscribe_popup':
         // Your module will need to define this function to render the block.
         $block = array(
           //'subject' => t('Title of block #1'),
-          'content' => vibes_get_celebrity_index(),
+          'content' => vibes_get_subscribe_popup(),
         );
         break;
     }
@@ -27,6 +48,12 @@ function vibes_block($op = 'list', $delta = 0, $edit = array()){
 }
 
 
-function vibes_get_celebrity__index(){
-  
+function vibes_get_subscribe_popup(){
+  $js = drupal_get_path('module','vibes').'/js/vibes_popup.js';
+  drupal_add_js($js);
+}
+
+function vibes_popup_ajax_handler(){
+  $data = drupal_http_request('https://secure.palmcoastd.com/pcd/eSv?iMagId=26601&i4Ky=ISP1');
+  echo  '<div id="vibe-overlay">'.$data->data.'</div>';
 }
