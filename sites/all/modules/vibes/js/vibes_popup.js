@@ -8,8 +8,8 @@ $(document).ready(function() {
       cache: false,
       success: function(html){
         $("#main-content").prepend(html);
-        $('.closeWin').click(function(){
-          $('#vibe-overlay').hide();
+        $("#vibe-overlay-close").click(function(){
+          $("#vibe-overlay-wrapper").hide();
         });
       }
   });
