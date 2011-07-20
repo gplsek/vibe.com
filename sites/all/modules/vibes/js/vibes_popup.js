@@ -6,11 +6,9 @@ $(document).ready(function() {
       $.ajax({
       url: "/vibespopup/js",
       cache: false,
-      success: function(html){
-        $("#main-content").prepend(html);
-        $("#vibe-overlay-close").click(function(){
-          $("#vibe-overlay-wrapper").hide();
-        });
+      success: function(){
+        var url = "http://local.vibe.com/vibespopup/js/getpopup?KeepThis=true&TB_iframe=true&width=545&height=550";
+        tb_show("My Caption", url);
       }
   });
   

@@ -66,15 +66,7 @@ function vibes_popup_ajax_handler(){
   if($known_ip){
     return drupal_set_header('HTTP/1.1 404 Not Found');
   }else{
-    //$data = drupal_http_request('https://secure.palmcoastd.com/pcd/eSv?iMagId=26601&i4Ky=ISP1');
-    $output =  '<div id="vibe-overlay-wrapper">';
-    $output.=   '<div id="vibe-overlay-close">CLOSE WINDOW[X]</div>';
-    $output.=   '<iframe style="width:543px;height:547px;overflow:hidden;border:none;" id="vibe-overlay" src="https://secure.palmcoastd.com/pcd/eSv?iMagId=26601&i4Ky=ISP1"></iframe>';
-    $output.=  '</div>';
-    //return drupal_set_header('HTTP/1.1 202 Found');
-    //$data = drupal_http_request('https://secure.palmcoastd.com/pcd/eSv?iMagId=26601&i4Ky=ISP1');
-    //';
-    echo $output;
+    return drupal_set_header('HTTP/1.1 202 Found');
   }
   
   
